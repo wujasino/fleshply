@@ -24,12 +24,13 @@ exports.handler = async function(event) {
     });
 
     const data = await response.json();
-    
-    // Zwróć surową odpowiedź do debugowania
+    const text = data.content[0].text.trim();
+    const result = JSON.parse(text);
+
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
+      body: JSON.stringify(result)
     };
 
   } catch (error) {
