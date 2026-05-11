@@ -24,7 +24,7 @@ exports.handler = async function(event) {
     });
 
     const data = await response.json();
-    const text = data.content[0].text.trim();
+    const text = data.content[0].text.trim().replace(/```json|```/g, '').trim();
     const result = JSON.parse(text);
 
     return {
