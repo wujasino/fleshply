@@ -181,32 +181,32 @@ export function useBrewing() {
 
       // Zapisz do Supabase
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          await supabase.from('analyses').insert({
-            user_id: user.id,
-            brand_name: brandName,
-            trust_score: analysisResult.trustScore,
-            authority: analysisResult.dimensions.authority,
-            sentiment: analysisResult.dimensions.sentiment,
-            recency: analysisResult.dimensions.recency,
-            mentions: analysisResult.dimensions.mentions,
-            accuracy: analysisResult.dimensions.accuracy
-          });
-        }
-      } catch (dbError) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const { error: dbError } = await supabase.from('analyses').insert({
+      user_id: user.id,
+      brand_name: brandName,
+      trust_score: analysisResult.trustScore,
+      authority: analysisResult.dimensions.authority,
+      sentiment: analysisResult.dimensions.sentiment,
+      recency: analysisResult.dimensions.recency,
+      mentions: analysisResult.dimensions.mentions,
+      accuracy: analysisResult.dimensions.accuracy
+    });
+
+    if (dbError) {
+      if (dbError.message.includes('Analysis limit reached')) {
+        alert('Osiągnąłeś limit analiz w tym miesiącu. Przejdź na wyższy plan aby kontynuować.');
+      } else {
         console.error('Failed to save analysis:', dbError);
       }
+    }
+  }
+} catch (dbError) {
+  console.error('Failed to save analysis:', dbError);
+}
 
-      setTimeout(() => {
-        console.debug('analysis result:', analysisResult);
-        setResult(analysisResult);
-        setStatus('completed');
-      }, 600);
-
-    } catch (error) {
-      clearInterval(interval);
-      console.error('Analysis failed:', error);
+      
 
       // Deterministic fallback based on brandName so different inputs show different results
       const deterministicFallback = (seedStr: string) => {
