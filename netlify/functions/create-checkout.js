@@ -13,7 +13,7 @@ exports.handler = async function(event) {
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
       customer_email: userEmail,
-      metadata: { userId },
+        metadata: { userId, priceId },
       success_url: 'https://bitbrew.pl/cennik?success=true',
       cancel_url: 'https://bitbrew.pl/cennik?canceled=true',
     });

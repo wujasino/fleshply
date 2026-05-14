@@ -23,7 +23,7 @@ exports.handler = async function(event) {
   if (stripeEvent.type === 'checkout.session.completed') {
     const session = stripeEvent.data.object;
     const userId = session.metadata.userId;
-    const priceId = session.line_items?.data[0]?.price?.id || '';
+    const priceId = session.metadata?.priceId || '';
 
     const plan = priceId === process.env.VITE_STRIPE_SOLO_PRICE_ID ? 'solo' : 'growth';
 
