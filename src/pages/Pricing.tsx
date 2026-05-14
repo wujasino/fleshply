@@ -3,9 +3,59 @@ import { Check } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { pricingTiers } from '@/data/mockData';
 import { useTranslation } from '@/lib/locale';
+import { supabase } from '@/lib/supabase';
+import { useEffect, useState } from 'react';
 
 const Pricing = () => {
   const { t } = useTranslation();
+  const [loading, setLoading] = useState<string | null>(null);
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('success')) setMessage('Płatność zakończona sukcesem! Twój plan został aktywowany.');
+    if (params.get('canceled')) setMessage('Płatność anulowana.');
+  }, []);
+
+  const handleCheckout = async (planName: string) => {
+    if (planName === 'Enterprise Roast') {
+      window.location.href = 'mailto:kontakt@bitbrew.pl?subject=Enterprise Plan';
+      return;
+    }
+
+    setLoading(planName);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        window.location.href = '/login';
+        return;
+      }
+
+      const priceId = planName === 'Solo Brew'
+        ? import.meta.env.VITE_STRIPE_SOLO_PRICE_ID
+        : import.meta.env.VITE_STRIPE_GROWTH_PRICE_ID;
+
+      const response = await fetch('/.netlify/functions/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          priceId,
+          userId: user.id,
+          userEmail: user.email
+        })
+      });
+
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+    } finally {
+      setLoading(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -17,6 +67,9 @@ const Pricing = () => {
           <p className="text-muted-foreground text-sm max-w-lg mx-auto">
             {t('pricing_subtitle')}
           </p>
+          {message && (
+            <p className="mt-4 text-sm text-primary font-medium">{message}</p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -50,13 +103,16 @@ const Pricing = () => {
                 ))}
               </ul>
               <button
+                onClick={() => handleCheckout(tier.name)}
+                disabled={loading === tier.name}
                 className={`w-full py-2.5 rounded-xl text-sm font-medium transition-opacity hover:opacity-90 ${
                   tier.highlighted
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-secondary text-secondary-foreground'
                 }`}
               >
-                {tier.price === 'Custom' ? t('contact_sales') : t('get_started')}
+                {loading === tier.name ? 'Ładowanie...' :
+                  tier.price === 'Custom' ? t('contact_sales') : t('get_started')}
               </button>
             </motion.div>
           ))}
