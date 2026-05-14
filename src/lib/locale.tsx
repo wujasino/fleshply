@@ -103,6 +103,8 @@ const translations: Record<Locale, Record<string, string>> = {
     privacy: 'Privacy',
     terms: 'Terms',
     docs: 'Docs',
+    no_credits_guest: 'You have no credits left. Register to get more.',
+    logout: 'Logout',
   },
   pl: {
     home: 'Strona',
@@ -204,6 +206,8 @@ const translations: Record<Locale, Record<string, string>> = {
     privacy: 'Prywatność',
     terms: 'Regulamin',
     docs: 'Dokumentacja',
+    no_credits_guest: 'Brak kredytów. Zarejestruj się, aby otrzymać więcej.',
+    logout: 'Wyloguj',
   },
 };
 

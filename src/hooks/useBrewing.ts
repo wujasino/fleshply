@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { AnalysisResult, SourceResult } from '@/types/analysis';
 import { supabase } from '@/lib/supabase';
+import { useTranslation } from '@/lib/locale';
 
 export function useBrewing() {
   const [progress, setProgress] = useState(0);
@@ -8,6 +9,30 @@ export function useBrewing() {
   const [result, setResult] = useState<AnalysisResult | null>(null);
 
   const startBrewing = useCallback(async (brandName: string) => {
+    const { t } = useTranslation();
+
+    // Check auth first: if user is not authenticated, enforce guest credits
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        const key = 'guestCredits';
+        let credits = Number(localStorage.getItem(key));
+        if (!Number.isFinite(credits) || credits < 0) {
+          credits = 3;
+          localStorage.setItem(key, String(credits));
+        }
+        if (credits <= 0) {
+          alert(t('no_credits_guest') || 'You have no credits left. Register to get more.');
+          return;
+        }
+        // consume one credit for this brew
+        localStorage.setItem(key, String(credits - 1));
+      }
+    } catch (err) {
+      // If auth check fails for any reason, allow the brew but don't modify credits
+      console.warn('Auth check failed, proceeding without consuming guest credits', err);
+    }
+
     setStatus('brewing');
     setProgress(0);
     setResult(null);
