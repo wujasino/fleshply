@@ -21,35 +21,41 @@ export const RadarChartCard = ({ dimensions }: RadarChartCardProps) => {
   const { t } = useTranslation();
 
   const data = [
-    { subject: t('dim_authority'), value: normalize(dimensions.authority) },
-    { subject: t('dim_sentiment'), value: normalize(dimensions.sentiment) },
-    { subject: t('dim_accuracy'), value: normalize(dimensions.accuracy) },
-    { subject: t('dim_mentions'), value: normalize(dimensions.mentions) },
-    { subject: t('dim_recency'), value: normalize(dimensions.recency) },
+    { key: 'authority', subject: t('dim_authority'), value: normalize(dimensions.authority) },
+    { key: 'sentiment', subject: t('dim_sentiment'), value: normalize(dimensions.sentiment) },
+    { key: 'accuracy', subject: t('dim_accuracy'), value: normalize(dimensions.accuracy) },
+    { key: 'mentions', subject: t('dim_mentions'), value: normalize(dimensions.mentions) },
+    { key: 'recency', subject: t('dim_recency'), value: normalize(dimensions.recency) },
   ];
 
-  const valuesBySubject: Record<string, number> = data.reduce((acc, d) => {
-    acc[d.subject] = d.value;
+  const metaBySubject: Record<string, { key: string; value: number }> = data.reduce((acc, d) => {
+    acc[d.subject] = { key: d.key, value: d.value };
     return acc;
-  }, {} as Record<string, number>);
+  }, {} as Record<string, { key: string; value: number }>);
 
-  const renderTick = (props: any) => {
-    const { x, y, payload, cx, cy } = props;
-    const label: string = payload?.value;
-    const val = valuesBySubject[label];
-    // For some labels (Sentiment, Recency) push them slightly outward so they don't overlap the radar fill
+  type TickProps = {
+    x: number;
+    y: number;
+    cx?: number;
+    cy?: number;
+    payload?: { value: string };
+  };
+
+  const renderTick = ({ x, y, cx, cy, payload }: TickProps) => {
+    const label = payload?.value ?? '';
+    const meta = metaBySubject[label];
+    const key = meta?.key;
+    const val = meta?.value;
+
     let tx = x;
     let ty = y;
-    if ((label === 'Sentiment' || label === 'Recency') && typeof cx === 'number' && typeof cy === 'number') {
-      const dx = x - cx;
-      const dy = y - cy;
-      const factor = 1.12; // push 12% further out
-      tx = cx + dx * factor;
-      ty = cy + dy * factor;
+    if ((key === 'sentiment' || key === 'recency') && typeof cx === 'number' && typeof cy === 'number') {
+      const factor = 1.12;
+      tx = cx + (x - cx) * factor;
+      ty = cy + (y - cy) * factor;
     }
 
-    // slight extra nudge to the right for Sentiment to avoid overlap
-    if (label === 'Sentiment') {
+    if (key === 'sentiment') {
       tx += 10;
     }
 

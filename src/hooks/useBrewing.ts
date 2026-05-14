@@ -3,6 +3,21 @@ import { AnalysisResult, SourceResult } from '@/types/analysis';
 import { supabase } from '@/lib/supabase';
 import { useTranslation } from '@/lib/locale';
 
+const normalizeSentiment = (s: unknown): SourceResult['sentiment'] => {
+  if (typeof s === 'string') {
+    const v = s.trim().toLowerCase();
+    if (v === 'positive' || v === 'pozytywny' || v === 'positive\n') return 'Positive';
+    if (v === 'negative' || v === 'negatywny') return 'Negative';
+    return 'Neutral';
+  }
+  if (typeof s === 'number') {
+    if (s >= 66) return 'Positive';
+    if (s <= 33) return 'Negative';
+    return 'Neutral';
+  }
+  return 'Neutral';
+};
+
 export function useBrewing() {
   const { t } = useTranslation();
   const [progress, setProgress] = useState(0);
@@ -126,31 +141,18 @@ export function useBrewing() {
         ? Math.round(data.trustScore)
         : Math.round((derivedDimensions.authority + derivedDimensions.sentiment + derivedDimensions.accuracy + derivedDimensions.mentions + derivedDimensions.recency) / 5);
 
-      // normalize sentiment to the exact literal type expected by SourceResult
-      const normalizeSentiment = (s: unknown): SourceResult['sentiment'] => {
-        if (typeof s === 'string') {
-          const v = s.trim().toLowerCase();
-          if (v === 'positive' || v === 'pozytywny' || v === 'positive\n') return 'Positive';
-          if (v === 'negative' || v === 'negatywny') return 'Negative';
-          return 'Neutral';
-        }
-        if (typeof s === 'number') {
-          if (s >= 66) return 'Positive';
-          if (s <= 33) return 'Negative';
-          return 'Neutral';
-        }
-        return 'Neutral';
-      };
-
       // ensure we have some sources to render in the table and coerce their types
       const ensureSources = (arr: unknown): SourceResult[] => {
         if (arr && Array.isArray(arr) && arr.length > 0) {
-          return arr.map((it: any) => ({
-            model: String(it?.model ?? 'Unknown'),
-            sentiment: normalizeSentiment(it?.sentiment),
-            association: String(it?.association ?? ''),
-            confidence: Math.max(0, Math.min(100, Number(it?.confidence) || 0))
-          } as SourceResult));
+          return arr.map((raw) => {
+            const it = (raw ?? {}) as Record<string, unknown>;
+            return {
+              model: String(it.model ?? 'Unknown'),
+              sentiment: normalizeSentiment(it.sentiment),
+              association: String(it.association ?? ''),
+              confidence: Math.max(0, Math.min(100, Number(it.confidence) || 0))
+            } satisfies SourceResult;
+          });
         }
 
         // deterministic demo sources based on brandName
@@ -181,32 +183,39 @@ export function useBrewing() {
 
       // Zapisz do Supabase
       try {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (user) {
-    const { error: dbError } = await supabase.from('analyses').insert({
-      user_id: user.id,
-      brand_name: brandName,
-      trust_score: analysisResult.trustScore,
-      authority: analysisResult.dimensions.authority,
-      sentiment: analysisResult.dimensions.sentiment,
-      recency: analysisResult.dimensions.recency,
-      mentions: analysisResult.dimensions.mentions,
-      accuracy: analysisResult.dimensions.accuracy
-    });
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { error: dbError } = await supabase.from('analyses').insert({
+            user_id: user.id,
+            brand_name: brandName,
+            trust_score: analysisResult.trustScore,
+            authority: analysisResult.dimensions.authority,
+            sentiment: analysisResult.dimensions.sentiment,
+            recency: analysisResult.dimensions.recency,
+            mentions: analysisResult.dimensions.mentions,
+            accuracy: analysisResult.dimensions.accuracy
+          });
 
-    if (dbError) {
-      if (dbError.message.includes('Analysis limit reached')) {
-        alert('Osiągnąłeś limit analiz w tym miesiącu. Przejdź na wyższy plan aby kontynuować.');
-      } else {
+          if (dbError) {
+            if (dbError.message.includes('Analysis limit reached')) {
+              alert('Osiągnąłeś limit analiz w tym miesiącu. Przejdź na wyższy plan aby kontynuować.');
+            } else {
+              console.error('Failed to save analysis:', dbError);
+            }
+          }
+        }
+      } catch (dbError) {
         console.error('Failed to save analysis:', dbError);
       }
-    }
-  }
-} catch (dbError) {
-  console.error('Failed to save analysis:', dbError);
-}
 
-      
+      setProgress(100);
+      setTimeout(() => {
+        setResult(analysisResult);
+        setStatus('completed');
+      }, 300);
+    } catch (error) {
+      clearInterval(interval);
+      console.error('Analyze request failed, using deterministic fallback:', error);
 
       // Deterministic fallback based on brandName so different inputs show different results
       const deterministicFallback = (seedStr: string) => {
@@ -274,7 +283,7 @@ export function useBrewing() {
         setStatus('completed');
       }, 300);
     }
-  }, []);
+  }, [t]);
 
   const reset = useCallback(() => {
     setStatus('idle');
@@ -290,7 +299,3 @@ const mapSentimentLabel = (v: number): 'Positive' | 'Neutral' | 'Negative' => {
   if (v <= 33) return 'Negative';
   return 'Neutral';
 };
-
-function normalizeSentiment(arg0: string) {
-  throw new Error('Function not implemented.');
-}
