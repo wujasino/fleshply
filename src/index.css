@@ -88,6 +88,60 @@
     @apply bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-600;
   }
 
+    .hero {
+      background: linear-gradient(180deg, #1a1200 0%, #0e0e0e 100%);
+    }
+  
+    .badge {
+      background: rgba(245, 166, 35, 0.2);
+      border: 1px solid rgba(245, 166, 35, 0.4);
+      color: #f5a623;
+    }
+  
+    .hero h1 .highlight {
+      background: linear-gradient(90deg, #f5a623 0%, #ffe066 50%, #f5a623 100%);
+      background-size: 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shimmer 3s linear infinite;
+    }
+  
+    @keyframes shimmer {
+      0% {
+        background-position: 0%
+      }
+  
+      100% {
+        background-position: 200%
+      }
+    }
+  
+    .btn-primary {
+      background: #f5a623;
+      color: #000;
+    }
+  
+    .step-num {
+      background: rgba(245, 166, 35, 0.15);
+      border: 2px solid #f5a623;
+      color: #f5a623;
+    }
+  
+    .card {
+      background: linear-gradient(135deg, #1c1c1c, #161200);
+      border-color: rgba(245, 166, 35, 0.15);
+    }
+  
+    .cta-box {
+      background: linear-gradient(135deg, #1a1200, #111);
+      border-color: rgba(245, 166, 35, 0.2);
+    }
+  
+    .btn-secondary {
+      background: #f5a623;
+      color: #000;
+    }
   .font-display {
     @apply tracking-tighter font-medium;
   }

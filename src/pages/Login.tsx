@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Navbar } from '@/components/layout/Navbar';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -7,11 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useTranslation } from '@/lib/locale';
 import { LogIn } from 'lucide-react';
-import { loginUser, loginWithGoogle } from '@/lib/auth';
+import { getAuthUser, loginUser, loginWithGoogle } from '@/lib/auth';
 
 const Login = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname || '/dashboard';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
@@ -20,13 +22,14 @@ const Login = () => {
   const [googleLoading, setGoogleLoading] = useState(false);
 
   useEffect(() => {
-    const remembered = localStorage.getItem('rememberMe') === 'true';
-    const rememberedEmail = localStorage.getItem('rememberEmail') || '';
-    if (remembered) {
-      setRemember(true);
-      setEmail(rememberedEmail);
-    }
-  }, []);
+    const checkExistingSession = async () => {
+      const user = await getAuthUser();
+      if (!user) return;
+      navigate(from, { replace: true });
+    };
+
+    checkExistingSession();
+  }, [from, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +44,7 @@ const Login = () => {
         localStorage.removeItem('rememberMe');
         localStorage.removeItem('rememberEmail');
       }
-      navigate('/dashboard');
+      navigate(from, { replace: true });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || 'Błąd logowania');

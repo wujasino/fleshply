@@ -10,7 +10,10 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import PdfViewer from "./pages/PdfViewer";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import NewsletterTerms from "./pages/NewsletterTerms";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -22,14 +25,28 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/pricing" element={<Pricing />} />
-          <Route path="/profile" element={<Profile />} />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/polityka-prywatnosci" element={<PdfViewer title="Polityka prywatności" file="/polityka-prywatnosci-pl.pdf" />} />
-          <Route path="/regulamin" element={<PdfViewer title="Regulamin sklepu internetowego" file="/regulamin-sklepu-internetowego-pl.pdf" />} />
-          <Route path="/regulamin-newslettera" element={<PdfViewer title="Regulamin newslettera" file="/regulamin-newslettera-pl.pdf" />} />
+          <Route path="/polityka-prywatnosci" element={<Privacy />} />
+          <Route path="/regulamin" element={<Terms />} />
+          <Route path="/regulamin-newslettera" element={<NewsletterTerms />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

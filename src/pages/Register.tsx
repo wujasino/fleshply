@@ -187,8 +187,12 @@ const Register = () => {
                 required
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading || googleLoading}>
-              {loading ? 'Rejestracja...' : t('submit')}
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={!email || !password || !confirm || loading || googleLoading}
+            >
+              {loading ? 'Rejestracja...' : t('register')}
             </Button>
           </form>
 

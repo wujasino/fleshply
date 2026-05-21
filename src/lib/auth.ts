@@ -2,7 +2,7 @@ import { supabase } from './supabase';
 
 export type AuthUser = {
   id: string;
-  email: string;
+  email?: string | null;
   name?: string;
 };
 
@@ -23,7 +23,7 @@ export async function getAuthUser(): Promise<AuthUser | null> {
   if (!user) return null;
   return {
     id: user.id,
-    email: user.email || '',
+    email: user.email || null,
     name: user.user_metadata?.name
   };
 }

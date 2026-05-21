@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Search, Zap, Eye, BarChart3, Shield, ArrowRight } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
+import { Button } from '@/components/ui/button';
+import { toast } from '@/components/ui/sonner';
 import { useTranslation } from '@/lib/locale';
 
 const features = [
@@ -46,19 +48,21 @@ const Landing = () => {
       <Navbar />
 
       {/* Hero */}
-      <section className="pt-32 pb-20 px-4">
+      <section className="hero pt-32 pb-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <span className="inline-block px-3 py-1 text-xs text-primary border border-primary/20 rounded-lg bg-primary/5 mb-6 font-data uppercase tracking-wider">
+            <span className="inline-block px-3 py-1 text-xs badge rounded-lg mb-6 font-data uppercase tracking-wider">
               {t('hero_tag')}
             </span>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display text-foreground mb-6 leading-[1.1]">
               {t('hero_heading_prefix')}
-              <span className="text-gradient-amber">{t('hero_heading_highlight')}</span>
+              <span className="bg-gradient-to-r from-[#f5a623] via-[#ffe066] to-[#f5a623] bg-[length:200%] bg-clip-text text-transparent animate-shimmer">
+                {t('hero_heading_highlight')}
+              </span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10">
               {t('hero_paragraph')}
@@ -137,8 +141,8 @@ const Landing = () => {
       </section>
 
       {/* Features */}
-      <section className="py-20 px-4">
-        <div className="max-w-6xl mx-auto">
+      <section className="py-20 px-4 bg-[#0e0e0e]">
+        <div className="max-w-6xl mx-auto glass-card p-8 rounded-[2rem] border-[hsl(var(--glass-border))]">
           <motion.h2
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -155,7 +159,7 @@ const Landing = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="glass-card-hover p-6 !bg-card !border-primary/40 shadow-lg shadow-primary/5"
+                className="glass-card-hover card p-6 border border-[hsl(var(--glass-border))] shadow-lg shadow-primary/10"
               >
                 <feature.icon className="w-8 h-8 text-primary mb-4" />
                 <h3 className="text-base font-medium text-foreground mb-2">{t(`feature_${i + 1}_title`)}</h3>
@@ -167,16 +171,43 @@ const Landing = () => {
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-4">
+      <section className="py-20 px-4 cta-box">
         <div className="max-w-2xl mx-auto text-center glass-card p-12">
           <h2 className="text-2xl font-display text-foreground mb-3">{t('startFirstBrew')}</h2>
           <p className="text-muted-foreground text-sm mb-6">{t('noCard')}</p>
           <button
             onClick={() => navigate('/pricing')}
-            className="bg-primary text-primary-foreground px-6 py-2.5 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
+            className="btn-secondary px-6 py-2.5 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
           >
             {t('viewPricing')}
           </button>
+        </div>
+      </section>
+
+      {/* Newsletter banner (moved under CTA) */}
+      <section className="py-8 px-4">
+        <div className="max-w-4xl mx-auto glass-card p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-primary">Newsletter</p>
+            <h3 className="text-lg font-display text-foreground mt-1">Bądź na bieżąco — subskrybuj nasz newsletter</h3>
+            <p className="text-sm text-muted-foreground mt-1">Otrzymuj nowości, promocje i cotygodniowe podsumowania.</p>
+          </div>
+          <div>
+            <Button
+              id="landing-newsletter-btn"
+              onClick={() => {
+                const was = localStorage.getItem('newsletterSubscribed') === 'true';
+                if (!was) {
+                  localStorage.setItem('newsletterSubscribed', 'true');
+                  toast.success('Zapisano do newslettera.');
+                } else {
+                  toast('Już zapisano.');
+                }
+              }}
+            >
+              Zapisz się
+            </Button>
+          </div>
         </div>
       </section>
 
