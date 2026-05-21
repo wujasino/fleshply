@@ -235,21 +235,23 @@ const Profile = () => {
                 <h3 className="text-sm uppercase tracking-[0.3em] text-muted-foreground">Historia subskrypcji</h3>
                 <p className="text-xs text-muted-foreground mt-2">Wybierz format pliku i pobierz pe�n� histori�.</p>
               </div>
-              <div className="flex items-center gap-3">
-                <label htmlFor="export-format" className="text-sm text-muted-foreground">
-                  Format eksportu:
-                </label>
-                <select
-                  id="export-format"
-                  value={exportFormat}
-                  onChange={(event) => setExportFormat(event.target.value as 'csv' | 'json')}
-                  className="rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
-                >
-                  <option value="csv">CSV</option>
-                  <option value="json">JSON</option>
-                </select>
-                <Button variant="secondary" onClick={downloadSubscriptionHistory}>
-                  Pobierz histori�
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full">
+                <div className="w-full sm:w-auto flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                  <label htmlFor="export-format" className="text-sm text-muted-foreground">
+                    Format eksportu:
+                  </label>
+                  <select
+                    id="export-format"
+                    value={exportFormat}
+                    onChange={(event) => setExportFormat(event.target.value as 'csv' | 'json')}
+                    className="w-full sm:w-auto rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="csv">CSV</option>
+                    <option value="json">JSON</option>
+                  </select>
+                </div>
+                <Button variant="secondary" onClick={downloadSubscriptionHistory} className="w-full sm:w-auto">
+                  Pobierz historię
                 </Button>
               </div>
             </div>
@@ -300,13 +302,13 @@ const Profile = () => {
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-[hsl(var(--glass-border))]">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-[hsl(var(--glass-border))]">
             <div className="text-center">
               <div className="text-2xl font-display text-foreground">{analyses.length}</div>
               <div className="text-xs text-muted-foreground mt-1">{t('total_brews')}</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-display text-primary">{avgScore || '�'}</div>
+              <div className="text-2xl font-display text-primary">{avgScore || '-'}</div>
               <div className="text-xs text-muted-foreground mt-1">{t('avg_score')}</div>
             </div>
             <div className="text-center">

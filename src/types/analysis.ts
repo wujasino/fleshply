@@ -26,6 +26,8 @@ export interface SourceResult {
 export interface PricingTier {
   name: string;
   price: string;
+  monthlyPrice?: string;
+  yearlyPrice?: string;
   periodKey: string;
   descriptionKey: string;
   featureKeys: string[];

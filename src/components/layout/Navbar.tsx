@@ -25,6 +25,7 @@ export const Navbar = () => {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isAuthed, setIsAuthed] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
   const { t } = useTranslation();
 
   const handleLogout = async () => {
@@ -39,9 +40,11 @@ export const Navbar = () => {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsAuthed(!!session);
+      setAuthLoading(false);
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsAuthed(!!session);
+      setAuthLoading(false);
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -75,26 +78,27 @@ export const Navbar = () => {
 
           <div className="flex items-center gap-2">
             <div className="hidden md:flex items-center gap-2 mr-2">
-              {isAuthed ? (
-                <Button variant="ghost" size="sm" onClick={handleLogout} className="px-3 py-1.5 rounded-md text-sm">
-                  {t('logout')}
-                </Button>
-              ) : (
-                <>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link to="/login" className="px-3 py-1.5 rounded-md text-sm">
-                      {t('login')}
-                    </Link>
+              {!authLoading && (
+                isAuthed ? (
+                  <Button variant="ghost" size="sm" onClick={handleLogout} className="px-3 py-1.5 rounded-md text-sm">
+                    {t('logout')}
                   </Button>
-                  <Button variant="default" size="sm" asChild>
-                    <Link to="/register" className="px-3 py-1.5 rounded-md text-sm">
-                      {t('register')}
-                    </Link>
-                  </Button>
-                </>
+                ) : (
+                  <>
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link to="/login" className="px-3 py-1.5 rounded-md text-sm">
+                        {t('login')}
+                      </Link>
+                    </Button>
+                    <Button variant="default" size="sm" asChild>
+                      <Link to="/register" className="px-3 py-1.5 rounded-md text-sm">
+                        {t('register')}
+                      </Link>
+                    </Button>
+                  </>
+                  )
               )}
             </div>
-
             <div className="hidden md:block">
               <LanguageSwitcher />
             </div>

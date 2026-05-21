@@ -99,8 +99,21 @@ export const pastBrews = [
 
 export const pricingTiers: PricingTier[] = [
   {
+    name: 'Free',
+    price: 'Free',
+    periodKey: 'tier_period_empty',
+    descriptionKey: 'tier_free_desc',
+    featureKeys: [
+      'tier_free_feat_1',
+      'tier_free_feat_2',
+      'tier_free_feat_3',
+    ],
+  },
+  {
     name: 'Solo Brew',
     price: '99 zł',
+    monthlyPrice: '99 zł',
+    yearlyPrice: '950 zł',
     periodKey: 'tier_period_month',
     descriptionKey: 'tier_solo_desc',
     featureKeys: [
@@ -113,7 +126,9 @@ export const pricingTiers: PricingTier[] = [
   },
   {
     name: 'Growth Roast',
-    price: '349 zł',
+    price: '249 zł',
+    monthlyPrice: '249 zł',
+    yearlyPrice: '2 350 zł',
     periodKey: 'tier_period_month',
     descriptionKey: 'tier_growth_desc',
     featureKeys: [
@@ -122,14 +137,14 @@ export const pricingTiers: PricingTier[] = [
       'tier_growth_feat_3',
       'tier_growth_feat_4',
       'tier_growth_feat_5',
-      'tier_growth_feat_6',
-      'tier_growth_feat_7',
     ],
     highlighted: true,
   },
   {
     name: 'Enterprise Roast',
-    price: 'Custom',
+    price: 'Indywidualna wycena',
+    monthlyPrice: 'Indywidualna wycena',
+    yearlyPrice: 'Indywidualna wycena',
     periodKey: 'tier_period_empty',
     descriptionKey: 'tier_ent_desc',
     featureKeys: [
@@ -138,9 +153,6 @@ export const pricingTiers: PricingTier[] = [
       'tier_ent_feat_3',
       'tier_ent_feat_4',
       'tier_ent_feat_5',
-      'tier_ent_feat_6',
-      'tier_ent_feat_7',
-      'tier_ent_feat_8',
     ],
   },
 ];

@@ -11,6 +11,7 @@ const Pricing = () => {
 
   const [loading, setLoading] = useState<string | null>(null);
   const [message, setMessage] = useState<string>('');
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -27,6 +28,20 @@ const Pricing = () => {
   }, []);
 
   const handleCheckout = async (planName: string) => {
+    if (planName === 'Free') {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        window.location.href = '/register';
+        return;
+      }
+
+      window.location.href = '/dashboard';
+      return;
+    }
+
     // Enterprise → mail
     if (planName === 'Enterprise Roast') {
       window.location.href =
@@ -127,7 +142,7 @@ const Pricing = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <div className="pt-28 pb-20 px-4 max-w-5xl mx-auto">
+      <div className="pt-28 pb-20 px-4 max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-14">
           <h1 className="text-3xl sm:text-4xl font-display text-foreground mb-3">
@@ -138,6 +153,36 @@ const Pricing = () => {
             {t('pricing_subtitle')}
           </p>
 
+          <div className="mt-8 mb-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            <span className="text-sm text-muted-foreground hidden sm:inline-block">
+              {t('billing_cycle_label')}:
+            </span>
+            <div className="inline-flex rounded-full border border-primary/20 bg-background p-1">
+              <button
+                type="button"
+                onClick={() => setBillingCycle('monthly')}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition ${billingCycle === 'monthly'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:text-foreground'}`}
+              >
+                {t('billing_cycle_monthly')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setBillingCycle('yearly')}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition ${billingCycle === 'yearly'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:text-foreground'}`}
+              >
+                {t('billing_cycle_yearly')}
+              </button>
+            </div>
+          </div>
+
+          <p className="text-center text-xs text-muted-foreground mb-10">
+            {t('billing_savings')}
+          </p>
+
           {message && (
             <p className="mt-4 text-sm text-primary font-medium">
               {message}
@@ -146,14 +191,25 @@ const Pricing = () => {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {pricingTiers.map((tier, index) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {pricingTiers.map((tier, index) => {
+            const displayPrice = billingCycle === 'yearly' ? tier.yearlyPrice ?? tier.price : tier.monthlyPrice ?? tier.price;
+            const isEnterprise = tier.name === 'Enterprise Roast';
+            const buttonClass = tier.highlighted
+              ? 'bg-primary text-primary-foreground'
+              : isEnterprise
+                ? 'border border-slate-500 bg-slate-950 text-foreground hover:bg-slate-900'
+                : tier.name === 'Solo Brew'
+                  ? 'border border-yellow-400 bg-yellow-500/10 text-foreground hover:bg-yellow-500/20'
+                  : 'bg-secondary text-secondary-foreground';
+
+            return (
             <motion.div
               key={tier.name}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className={`glass-card-hover p-7 flex flex-col ${
+                className={`glass-card-hover p-8 flex flex-col min-h-[520px] ${
                 tier.highlighted
                   ? 'border-primary/30 ring-1 ring-primary/20'
                   : ''
@@ -174,11 +230,11 @@ const Pricing = () => {
               {/* Price */}
               <div className="mt-3 mb-4">
                 <span className="text-4xl font-display text-foreground">
-                  {tier.price}
+                    {displayPrice}
                 </span>
 
                 <span className="text-muted-foreground text-sm">
-                  {t(tier.periodKey)}
+                    {billingCycle === 'yearly' ? t('tier_period_year') : t(tier.periodKey)}
                 </span>
               </div>
 
@@ -205,20 +261,72 @@ const Pricing = () => {
               <button
                 onClick={() => handleCheckout(tier.name)}
                 disabled={loading === tier.name}
-                className={`w-full py-2.5 rounded-xl text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-50 ${
-                  tier.highlighted
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-secondary-foreground'
-                }`}
+                  className={`w-full py-2.5 rounded-xl text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-50 ${buttonClass}`}
               >
                 {loading === tier.name
                   ? 'Ładowanie...'
-                  : tier.price === 'Custom'
+                    : isEnterprise
                     ? t('contact_sales')
-                    : t('get_started')}
+                      : tier.name === 'Free'
+                        ? t('start_for_free')
+                        : t('get_started')}
               </button>
             </motion.div>
-          ))}
+            );
+          })}
+        </div>
+
+        <div className="mt-12 space-y-10">
+          <div className="rounded-3xl border border-slate-900/10 bg-slate-950/60 p-8 text-center">
+            <p className="text-sm uppercase tracking-[0.35em] text-primary mb-3">
+              {t('pricing_social_proof_heading')}
+            </p>
+            <h2 className="text-2xl font-display text-foreground max-w-2xl mx-auto">
+              {t('pricing_social_proof')}
+            </h2>
+            <p className="mt-4 text-sm text-muted-foreground max-w-2xl mx-auto">
+              {t('pricing_social_proof_subtitle')}
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            <h2 className="text-lg font-semibold text-foreground">
+              {t('pricing_faq_heading')}
+            </h2>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              {[
+                {
+                  question: t('pricing_faq_q_cancel'),
+                  answer: t('pricing_faq_a_cancel'),
+                },
+                {
+                  question: t('pricing_faq_q_overage'),
+                  answer: t('pricing_faq_a_overage'),
+                },
+                {
+                  question: t('pricing_faq_q_switch'),
+                  answer: t('pricing_faq_a_switch'),
+                },
+                {
+                  question: t('pricing_faq_q_support'),
+                  answer: t('pricing_faq_a_support'),
+                },
+              ].map((item) => (
+                <div
+                  key={item.question}
+                  className="rounded-3xl border border-[hsl(var(--glass-border))] bg-background/80 p-6"
+                >
+                  <h3 className="text-sm font-semibold text-foreground">
+                    {item.question}
+                  </h3>
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    {item.answer}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
