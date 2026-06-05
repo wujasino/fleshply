@@ -202,6 +202,7 @@ ${brandContext || '(no stored knowledge for this brand)'}
         });
 
         const data = await response.json();
+        console.log('DEBUG anthropic raw:', JSON.stringify(data).slice(0, 500));
         let text = null;
         if (data?.content && Array.isArray(data.content) && data.content[0]) {
           text = (data.content[0].text || data.content[0]).toString();
@@ -248,7 +249,7 @@ ${brandContext || '(no stored knowledge for this brand)'}
         trustScore,
         sources: [
           { model: 'GPT-4o', sentiment: 'Positive', association: `${seed} product`, confidence: Math.round((authority + 5) % 100) },
-          { model: 'Claude', sentiment: 'Neutral', association: `${seed} brand`, confidence: Math.round((accuracy + 10) % 100) },
+          { model: 'Claude-sonnet-4-5', sentiment: 'Neutral', association: `${seed} brand`, confidence: Math.round((accuracy + 10) % 100) },
           { model: 'Gemini', sentiment: 'Positive', association: `${seed} mentions`, confidence: Math.round((mentions + 2) % 100) }
         ]
       };
