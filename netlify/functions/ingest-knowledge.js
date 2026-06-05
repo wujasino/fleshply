@@ -1,4 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
+import ws from "ws";
+
+// Node 20 nie ma globalnego WebSocket — Supabase realtime go wymaga
+if (!globalThis.WebSocket) {
+  globalThis.WebSocket = ws;
+}
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
@@ -59,8 +65,9 @@ export async function handler(event) {
    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   global: { headers: { Authorization: `Bearer ${token}` } },
   auth: { autoRefreshToken: false, persistSession: false },
-  realtime: { params: { eventsPerSecond: 0 } },
+  realtime: { transport: ws, params: { eventsPerSecond: 0 } },
 });
+
 
     const chunks = chunkText(text);
     if (chunks.length === 0)

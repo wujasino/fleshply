@@ -1,4 +1,5 @@
-import { createLovableConfig } from "lovable-agent-playwright-config/config";
+
+import type { PlaywrightTestConfig } from '@playwright/test';
 
 export default createLovableConfig({
   // Add your custom playwright configuration overrides here
@@ -8,3 +9,8 @@ export default createLovableConfig({
   //   baseURL: 'http://localhost:3000',
   // },
 });
+
+function createLovableConfig(config: PlaywrightTestConfig): PlaywrightTestConfig {
+  return config;
+}
+
