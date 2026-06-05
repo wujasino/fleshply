@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import ws from "ws";
 
-// Node 20 nie ma globalnego WebSocket — Supabase realtime go wymaga
 if (!globalThis.WebSocket) {
   globalThis.WebSocket = ws;
 }
