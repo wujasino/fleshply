@@ -52,7 +52,10 @@ const createAdminClient = () => {
   if (!supabaseUrl || !supabaseServiceKey) {
     throw new Error('Missing Supabase service role configuration');
   }
-  return createClient(supabaseUrl, supabaseServiceKey);
+  return createClient(supabaseUrl, supabaseServiceKey, {
+  auth: { autoRefreshToken: false, persistSession: false },
+  realtime: { params: { eventsPerSecond: 0 } },
+});
 };
 
 // --- RAG: embedding zapytania przez Voyage (input_type "query") ---

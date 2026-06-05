@@ -56,9 +56,11 @@ export async function handler(event) {
       return { statusCode: 413, body: `Tekst za długi (max ${MAX_CHARS} znaków)` };
 
     // Klient w kontekście użytkownika — RLS sam ustawi user_id (default auth.uid())
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      global: { headers: { Authorization: `Bearer ${token}` } },
-    });
+   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  global: { headers: { Authorization: `Bearer ${token}` } },
+  auth: { autoRefreshToken: false, persistSession: false },
+  realtime: { params: { eventsPerSecond: 0 } },
+});
 
     const chunks = chunkText(text);
     if (chunks.length === 0)
