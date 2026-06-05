@@ -1,6 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 
-const { SUPABASE_URL, SUPABASE_ANON_KEY, VOYAGE_API_KEY } = process.env;
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+const VOYAGE_API_KEY = process.env.VOYAGE_API_KEY;
 const MAX_CHARS = 50000; // limit wejścia, żeby nie wrzucić ogromnego tekstu
 
 // Dzieli tekst na nakładające się fragmenty (lepszy recall przy wyszukiwaniu)
@@ -32,6 +34,12 @@ async function embedBatch(inputs) {
   const data = await res.json();
   return data.data.sort((a, b) => a.index - b.index).map((d) => d.embedding);
 }
+
+console.log('DEBUG ingest env:', {
+  hasUrl: !!SUPABASE_URL,
+  hasKey: !!SUPABASE_ANON_KEY,
+  hasVoyage: !!VOYAGE_API_KEY,
+});
 
 export async function handler(event) {
   if (event.httpMethod !== "POST")

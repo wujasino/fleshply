@@ -23,13 +23,32 @@ const Login = () => {
 
   useEffect(() => {
     const checkExistingSession = async () => {
-      const user = await getAuthUser();
-      if (!user) return;
-      navigate(from, { replace: true });
+      try {
+        const user = await getAuthUser();
+        if (!user) return;
+        navigate(from, { replace: true });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (err: any) {
+        console.error('Error checking existing session:', err);
+        setError(err?.message || 'Błąd podczas sprawdzania sesji');
+      }
     };
 
     checkExistingSession();
   }, [from, navigate]);
+
+  useEffect(() => {
+    try {
+      const remembered = localStorage.getItem('rememberMe') === 'true';
+      const rememberedEmail = localStorage.getItem('rememberEmail') || '';
+      if (remembered) {
+        setRemember(true);
+        setEmail(rememberedEmail);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,9 +64,17 @@ const Login = () => {
         localStorage.removeItem('rememberEmail');
       }
       navigate(from, { replace: true });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      setError(err.message || 'Błąd logowania');
+      console.error('Login error:', err);
+      if (err?.response?.error && typeof err.response.error === 'string') {
+        setError(err.response.error);
+      } else if (err.message?.includes('Invalid login credentials')) {
+        setError(t('invalid_credentials') || 'Nieprawidłowe dane logowania');
+      } else if (err.message?.includes('configuration')) {
+        setError('Błąd konfiguracji. Sprawdź zmienne środowiskowe .env');
+      } else {
+        setError(err.message || 'Błąd logowania');
+      }
     } finally {
       setLoading(false);
     }
@@ -61,7 +88,12 @@ const Login = () => {
       // OAuth will redirect — fall-through stays mounted until then
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      setError(err.message || t('google_signin_failed'));
+      console.error('Google login error:', err);
+      if (err.message?.includes('configuration')) {
+        setError('Błąd konfiguracji. Sprawdź zmienne środowiskowe .env');
+      } else {
+        setError(err.message || t('google_signin_failed'));
+      }
       setGoogleLoading(false);
     }
   };

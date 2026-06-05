@@ -10,6 +10,7 @@ import { RadarChartCard } from '@/components/charts/RadarChartCard';
 import { SentimentChart } from '@/components/charts/SentimentChart';
 import { SourceDonutChart } from '@/components/charts/SourceDonutChart';
 import { SourceTable } from '@/components/SourceTable';
+import BrandKnowledgeForm from '@/components/BrandKnowledgeForm';
 import { useBrewing } from '@/hooks/useBrewing';
 import { supabase } from '@/lib/supabase';
 
@@ -133,6 +134,9 @@ const Dashboard = () => {
                 </button>
               )}
             </form>
+
+            {/* RAG: formularz dodawania wiedzy o marce */}
+            <BrandKnowledgeForm brandName={inputValue} />
           </div>
         </header>
 
