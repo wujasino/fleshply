@@ -7,6 +7,7 @@ import { useTranslation } from '@/lib/locale';
 import { PromptInputBox } from '@/components/ui/ai-prompt-box';
 import { CookiePanel } from '@/components/ui/cookie-banner-1';
 import { NewsletterSignup } from '@/components/ui/newsletter-signup';
+import { FloatingPathsBackground } from '@/components/ui/floating-paths';
 
 const features = [
   {
@@ -49,7 +50,7 @@ const Landing = () => {
       <Navbar />
 
       {/* Hero */}
-      <section className="hero pt-32 pb-20 px-4">
+      <FloatingPathsBackground position={1} className="hero pt-32 pb-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -132,9 +133,7 @@ const Landing = () => {
             {t('tryDemo')}
           </motion.p>
         </div>
-      </section>
-
-
+      </FloatingPathsBackground>
 
       {/* Features */}
       <section className="py-20 px-4 bg-[#0e0e0e]">
