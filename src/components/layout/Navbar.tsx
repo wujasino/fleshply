@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { LogOut, User } from 'lucide-react';
 import { useTranslation } from '../../lib/locale';
 import { LanguageSwitcher } from '../ui/LanguageSwitcher';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ import {
   NavigationMenuViewport,
 } from '@/components/ui/navigation-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/lib/supabase';
 import { logout } from '@/lib/auth';
 
@@ -30,11 +32,15 @@ export const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [avatarOpen, setAvatarOpen] = useState(false);
   const [isAuthed, setIsAuthed] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const { t } = useTranslation();
 
   const handleLogout = async () => {
+    setAvatarOpen(false);
     try {
       await logout();
       navigate('/');
@@ -46,16 +52,23 @@ export const Navbar = () => {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsAuthed(!!session);
+      setUserEmail(session?.user?.email ?? null);
+      setUserAvatar(session?.user?.user_metadata?.avatar_url ?? null);
       setAuthLoading(false);
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsAuthed(!!session);
+      setUserEmail(session?.user?.email ?? null);
+      setUserAvatar(session?.user?.user_metadata?.avatar_url ?? null);
       setAuthLoading(false);
     });
     return () => subscription.unsubscribe();
   }, []);
 
   const navLinks = isAuthed ? authedLinks : publicLinks;
+
+  // Initials fallback: first letter of email or "?"
+  const initials = userEmail ? userEmail[0].toUpperCase() : '?';
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-[hsl(var(--glass-border))] bg-background/80 backdrop-blur-xl">
@@ -120,8 +133,9 @@ export const Navbar = () => {
                     isAuthed ? (
                       <button
                         onClick={() => { setMobileOpen(false); handleLogout(); }}
-                        className="px-3 py-2 rounded-md text-sm text-left text-muted-foreground hover:text-foreground hover:bg-accent"
+                        className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-left text-muted-foreground hover:text-foreground hover:bg-accent"
                       >
+                        <LogOut className="w-4 h-4" />
                         {t('logout')}
                       </button>
                     ) : (
@@ -181,11 +195,46 @@ export const Navbar = () => {
           {/* Right: language + auth */}
           <div className="flex items-center gap-2">
             <LanguageSwitcher />
+
             {!authLoading && (
               isAuthed ? (
-                <Button variant="ghost" size="sm" onClick={handleLogout}>
-                  {t('logout')}
-                </Button>
+                /* Avatar dropdown */
+                <Popover open={avatarOpen} onOpenChange={setAvatarOpen}>
+                  <PopoverTrigger asChild>
+                    <button
+                      className="rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 transition-opacity hover:opacity-80"
+                      aria-label="User menu"
+                    >
+                      <Avatar className="h-8 w-8 cursor-pointer">
+                        <AvatarImage src={userAvatar ?? undefined} alt={userEmail ?? ''} />
+                        <AvatarFallback className="text-xs font-semibold bg-primary text-primary-foreground">
+                          {initials}
+                        </AvatarFallback>
+                      </Avatar>
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" className="w-52 p-2">
+                    <div className="px-2 py-1.5 mb-1">
+                      <p className="text-xs font-medium text-foreground truncate">{userEmail}</p>
+                    </div>
+                    <div className="h-px bg-border mb-1" />
+                    <Link
+                      to="/profile"
+                      onClick={() => setAvatarOpen(false)}
+                      className="flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                    >
+                      <User className="w-4 h-4" />
+                      {t('profile')}
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="flex w-full items-center gap-2 px-2 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      {t('logout')}
+                    </button>
+                  </PopoverContent>
+                </Popover>
               ) : (
                 <div className="hidden md:flex items-center gap-2">
                   <Button variant="ghost" size="sm" asChild>
