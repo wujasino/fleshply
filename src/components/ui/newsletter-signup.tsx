@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send } from "lucide-react";
 import confetti from "canvas-confetti";
+import { useTranslation } from "@/lib/locale";
 
 export interface NewsletterSignupProps {
   onSubmit: (email: string) => Promise<void>;
@@ -12,6 +13,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
   onSubmit,
   className = "",
 }) => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -22,13 +24,13 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
     setError("");
 
     if (!email) {
-      setError("Email is required");
+      setError(t("newsletter_error_required"));
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setError("Please enter a valid email address");
+      setError(t("newsletter_error_invalid"));
       return;
     }
 
@@ -43,7 +45,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
         origin: { y: 0.6 },
       });
     } catch {
-      setError("An error occurred. Please try again.");
+      setError(t("newsletter_error_generic"));
     } finally {
       setIsSubmitting(false);
     }
@@ -70,7 +72,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
               >
-                Subscribe to our newsletter
+                {t("newsletter_title")}
               </motion.h2>
               <motion.p
                 className="text-muted-foreground text-sm"
@@ -78,7 +80,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                 transition={{ delay: 0.4 }}
               >
-                Stay up to date with our latest news and updates.
+                {t("newsletter_subtitle")}
               </motion.p>
             </div>
             <div className="space-y-2">
@@ -86,46 +88,39 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
                 initial={{ opacity: 0, filter: "blur(3px)" }}
                 animate={{ opacity: 1, filter: "blur(0px)" }}
                 transition={{ delay: 0.6 }}
-                className="font-medium text-sm"
-                htmlFor="email"
+                className="font-medium text-sm text-foreground"
+                htmlFor="newsletter-email"
               >
-                Email address
+                {t("newsletter_email_label")}
               </motion.label>
               <motion.div
-                className="flex gap-2"
+                className="flex flex-col gap-2 sm:flex-row"
                 initial={{ opacity: 0, filter: "blur(3px)" }}
                 animate={{ opacity: 1, filter: "blur(0px)" }}
                 transition={{ delay: 0.7 }}
               >
                 <input
                   type="email"
-                  id="email"
-                  placeholder="you@example.com"
+                  id="newsletter-email"
+                  placeholder={t("newsletter_email_placeholder")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md focus-visible:ring-0 focus-within:ring-0 focus:outline-white/10"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                 />
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="relative overflow-hidden text-sm flex items-center justify-center gap-2 px-4 py-2 bg-white border-black font-medium"
+                  className="inline-flex shrink-0 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  <motion.div
-                    key="default"
-                    initial={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex items-center px-4"
-                  >
-                    <Send className="h-4 w-4" />
-                    <span className="ml-2">Subscribe</span>
-                  </motion.div>
+                  <Send className="h-4 w-4" />
+                  <span>{t("newsletter_button")}</span>
                 </button>
               </motion.div>
             </div>
             <AnimatePresence>
               {error && (
                 <motion.p
-                  className="text-red-500 text-sm"
+                  className="text-destructive text-sm"
                   initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -5 }}
@@ -144,10 +139,10 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
             className="text-center"
           >
             <h2 className="text-2xl font-bold text-foreground mb-2">
-              Thank you for subscribing!
+              {t("newsletter_success_title")}
             </h2>
             <p className="text-muted-foreground">
-              We've sent a confirmation email to your inbox.
+              {t("newsletter_success_desc")}
             </p>
           </motion.div>
         )}

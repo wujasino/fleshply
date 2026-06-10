@@ -169,6 +169,17 @@ const translations: Record<Locale, Record<string, string>> = {
     newsletter: 'Newsletter Terms',
     no_credits_guest: 'You have no credits left. Register to get more.',
     logout: 'Logout',
+    // Newsletter
+    newsletter_title: 'Subscribe to our newsletter',
+    newsletter_subtitle: 'Stay up to date with our latest news and updates.',
+    newsletter_email_label: 'Email address',
+    newsletter_email_placeholder: 'you@example.com',
+    newsletter_button: 'Subscribe',
+    newsletter_error_required: 'Email is required',
+    newsletter_error_invalid: 'Please enter a valid email address',
+    newsletter_error_generic: 'An error occurred. Please try again.',
+    newsletter_success_title: 'Thank you for subscribing!',
+    newsletter_success_desc: "We've sent a confirmation email to your inbox.",
   },
   pl: {
     home: 'Strona',
@@ -336,6 +347,17 @@ const translations: Record<Locale, Record<string, string>> = {
     newsletter: 'Regulamin newslettera',
     no_credits_guest: 'Brak kredytów. Zarejestruj się, aby otrzymać więcej.',
     logout: 'Wyloguj',
+    // Newsletter
+    newsletter_title: 'Zapisz się do newslettera',
+    newsletter_subtitle: 'Bądź na bieżąco z naszymi nowościami i aktualizacjami.',
+    newsletter_email_label: 'Adres e-mail',
+    newsletter_email_placeholder: 'ty@firma.pl',
+    newsletter_button: 'Zapisz się',
+    newsletter_error_required: 'Adres e-mail jest wymagany',
+    newsletter_error_invalid: 'Podaj poprawny adres e-mail',
+    newsletter_error_generic: 'Wystąpił błąd. Spróbuj ponownie.',
+    newsletter_success_title: 'Dziękujemy za zapisanie się!',
+    newsletter_success_desc: 'Wysłaliśmy e-mail potwierdzający na Twoją skrzynkę.',
   },
 };
 
