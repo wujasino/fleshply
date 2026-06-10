@@ -84,32 +84,25 @@ const Pricing = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { window.location.href = '/login'; return; }
 
-      const priceIdMap: Record<string, string> = {
-        credits_20:  import.meta.env.VITE_STRIPE_CREDITS_20_PRICE_ID  ?? '',
-        credits_50:  import.meta.env.VITE_STRIPE_CREDITS_50_PRICE_ID  ?? '',
-        credits_120: import.meta.env.VITE_STRIPE_CREDITS_120_PRICE_ID ?? '',
+      const linkMap: Record<string, string> = {
+        credits_20:  import.meta.env.VITE_STRIPE_CREDITS_20  ?? '',
+        credits_50:  import.meta.env.VITE_STRIPE_CREDITS_50  ?? '',
+        credits_120: import.meta.env.VITE_STRIPE_CREDITS_120 ?? '',
       };
-      const priceId = priceIdMap[packId];
+      const baseUrl = linkMap[packId];
 
-      if (!priceId) {
-        setMessage('Brak konfiguracji Stripe Price ID dla kredytów. Skontaktuj się z administratorem.');
+      if (!baseUrl) {
+        setMessage('Brak konfiguracji linku Stripe dla kredytów. Skontaktuj się z administratorem.');
         return;
       }
 
-      const response = await fetch('/.netlify/functions/create-checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId, userId: user.id, userEmail: user.email }),
-      });
+      // Append client_reference_id (user.id) so the Stripe webhook can credit the right account,
+      // prefill the email, and route Stripe's success page back to /pricing?success=1.
+      const url = new URL(baseUrl);
+      url.searchParams.set('client_reference_id', user.id);
+      if (user.email) url.searchParams.set('prefilled_email', user.email);
 
-      if (!response.ok) {
-        setMessage('Nie udało się rozpocząć płatności. Spróbuj ponownie później.');
-        return;
-      }
-
-      const data = await response.json();
-      if (!data?.url) { setMessage(data?.error || 'Nie udało się utworzyć sesji płatności.'); return; }
-      window.location.href = data.url;
+      window.location.href = url.toString();
     } catch {
       setMessage('Wystąpił błąd połączenia. Spróbuj ponownie.');
     } finally {
