@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, User, Bell, Shield, Trash2, Moon, Globe, ChevronRight, Save,
+  Upload, Camera, Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,9 +36,16 @@ export default function Settings() {
   const [notifNewsletter, setNotifNewsletter] = useState(false);
   const [notifMarketing, setNotifMarketing] = useState(false);
 
+  const [userId, setUserId] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) { navigate('/login'); return; }
+      setUserId(user.id);
       setEmail(user.email ?? '');
       setDisplayName(user.user_metadata?.full_name ?? '');
       setAvatarUrl(user.user_metadata?.avatar_url ?? null);
@@ -45,6 +53,66 @@ export default function Settings() {
   }, [navigate]);
 
   const initials = email ? email[0].toUpperCase() : '?';
+
+  const handleAvatarFile = async (file: File) => {
+    if (!userId) return;
+    setUploadError(null);
+
+    if (!file.type.startsWith('image/')) {
+      setUploadError(t('settings_avatar_invalid_type'));
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setUploadError(t('settings_avatar_too_large'));
+      return;
+    }
+
+    setUploading(true);
+    const localPreview = URL.createObjectURL(file);
+    setAvatarUrl(localPreview);
+
+    try {
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
+      const path = `${userId}/avatar-${Date.now()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from('avatars').getPublicUrl(path);
+      const publicUrl = data.publicUrl;
+
+      // Persist on user_metadata so Navbar/Avatar picks it up
+      const { error: authError } = await supabase.auth.updateUser({
+        data: { avatar_url: publicUrl },
+      });
+      if (authError) throw authError;
+
+      // Best-effort mirror to profiles table
+      await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', userId);
+
+      setAvatarUrl(publicUrl);
+    } catch (err) {
+      console.error(err);
+      setUploadError(t('settings_avatar_upload_error'));
+      setAvatarUrl(null);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleAvatarRemove = async () => {
+    if (!userId) return;
+    setUploading(true);
+    try {
+      await supabase.auth.updateUser({ data: { avatar_url: null } });
+      await supabase.from('profiles').update({ avatar_url: null }).eq('id', userId);
+      setAvatarUrl(null);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -131,18 +199,91 @@ export default function Settings() {
               {/* ── ACCOUNT ── */}
               {activeTab === 'account' && (
                 <>
-                  {/* Avatar */}
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-16 w-16">
-                      <AvatarImage src={avatarUrl ?? undefined} />
-                      <AvatarFallback className="text-lg font-semibold bg-primary text-primary-foreground">
-                        {initials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{email}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{t('settings_avatar_hint')}</p>
+                  {/* Avatar uploader */}
+                  <div
+                    onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                    onDragLeave={() => setDragOver(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setDragOver(false);
+                      const file = e.dataTransfer.files?.[0];
+                      if (file) handleAvatarFile(file);
+                    }}
+                    className={cn(
+                      'flex items-center gap-5 p-4 rounded-xl border border-dashed transition-colors',
+                      dragOver
+                        ? 'border-primary bg-primary/5'
+                        : 'border-[hsl(var(--glass-border))] bg-muted/20'
+                    )}
+                  >
+                    <div className="relative group">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                        className="relative block"
+                        aria-label={t('settings_avatar_change')}
+                      >
+                        <Avatar className="h-20 w-20 ring-2 ring-primary/30">
+                          <AvatarImage src={avatarUrl ?? undefined} />
+                          <AvatarFallback className="text-xl font-semibold bg-primary text-primary-foreground">
+                            {initials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="absolute inset-0 rounded-full bg-black/55 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          {uploading
+                            ? <Loader2 className="w-5 h-5 text-white animate-spin" />
+                            : <Camera className="w-5 h-5 text-white" />}
+                        </div>
+                      </button>
                     </div>
+
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{email}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {dragOver ? t('settings_avatar_drop') : t('settings_avatar_hint')}
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          disabled={uploading}
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          <Upload className="w-3.5 h-3.5 mr-1.5" />
+                          {avatarUrl ? t('settings_avatar_change') : t('settings_avatar_upload')}
+                        </Button>
+                        {avatarUrl && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            disabled={uploading}
+                            onClick={handleAvatarRemove}
+                            className="text-muted-foreground hover:text-destructive"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                            {t('settings_avatar_remove')}
+                          </Button>
+                        )}
+                      </div>
+                      {uploadError && (
+                        <p className="text-xs text-destructive mt-2">{uploadError}</p>
+                      )}
+                    </div>
+
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleAvatarFile(file);
+                        e.target.value = '';
+                      }}
+                    />
                   </div>
 
                   <div className="h-px bg-border" />

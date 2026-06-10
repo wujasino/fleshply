@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search, Zap, Eye, BarChart3, Shield, ArrowRight } from 'lucide-react';
+import { Zap, Eye, BarChart3, Shield, ChevronDown } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { useTranslation } from '@/lib/locale';
 import { PromptInputBox } from '@/components/ui/ai-prompt-box';
@@ -132,11 +132,28 @@ const Landing = () => {
           >
             {t('tryDemo')}
           </motion.p>
+
+          {/* Scroll to why */}
+          <motion.button
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+            onClick={() => document.getElementById('why-section')?.scrollIntoView({ behavior: 'smooth' })}
+            className="mt-14 mx-auto flex flex-col items-center gap-1.5 text-muted-foreground/50 hover:text-muted-foreground transition-colors group"
+          >
+            <span className="text-[10px] uppercase tracking-[0.25em]">{t('whyTitle')}</span>
+            <motion.div
+              animate={{ y: [0, 4, 0] }}
+              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <ChevronDown className="w-4 h-4" />
+            </motion.div>
+          </motion.button>
         </div>
       </FloatingPathsBackground>
 
       {/* Features */}
-      <FloatingPathsBackground position={0.5} className="py-24 px-4 bg-background">
+      <FloatingPathsBackground id="why-section" position={0.5} className="py-24 px-4 bg-background">
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 16 }}

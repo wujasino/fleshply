@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { LogOut, User, Settings } from 'lucide-react';
+import { LogOut, User, Settings, Code2 } from 'lucide-react';
 import { useTranslation } from '../../lib/locale';
 import { LanguageSwitcher } from '../ui/LanguageSwitcher';
 import { Button } from '@/components/ui/button';
@@ -232,6 +232,14 @@ export const Navbar = () => {
                     >
                       <Settings className="w-4 h-4" />
                       {t('settings')}
+                    </Link>
+                    <Link
+                      to="/developers"
+                      onClick={() => setAvatarOpen(false)}
+                      className="flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                    >
+                      <Code2 className="w-4 h-4" />
+                      Developers
                     </Link>
                     <button
                       onClick={handleLogout}
