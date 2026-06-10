@@ -136,34 +136,133 @@ const Landing = () => {
       </FloatingPathsBackground>
 
       {/* Features */}
-      <section className="py-20 px-4 bg-[#0e0e0e]">
-        <div className="max-w-6xl mx-auto glass-card p-8 rounded-[2rem] border-[hsl(var(--glass-border))]">
-          <motion.h2
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
+      <FloatingPathsBackground position={0.5} className="py-24 px-4 bg-background">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-2xl font-display text-center text-foreground mb-12"
+            className="text-center mb-14"
           >
-            {t('whyTitle')}
-          </motion.h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {features.map((feature, i) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="glass-card-hover card p-6 border border-[hsl(var(--glass-border))] shadow-lg shadow-primary/10"
-              >
-                <feature.icon className="w-8 h-8 text-primary mb-4" />
-                <h3 className="text-base font-medium text-foreground mb-2">{t(`feature_${i + 1}_title`)}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{t(`feature_${i + 1}_desc`)}</p>
-              </motion.div>
-            ))}
+            <span className="inline-block px-3 py-1 text-xs badge rounded-lg mb-4 font-data uppercase tracking-wider">
+              {t('whyTitle')}
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-display text-foreground">
+              {t('whyTitle')}
+            </h2>
+          </motion.div>
+
+          {/* Bento grid */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 auto-rows-[minmax(160px,auto)]">
+            {/* Large card — col 1-7 */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0 }}
+              className="md:col-span-7 glass-card-hover rounded-2xl border border-[hsl(var(--glass-border))] p-8 flex flex-col justify-between bg-card/60 backdrop-blur-sm shadow-lg shadow-primary/5"
+            >
+              <div>
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 mb-5">
+                  <Eye className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-3">{t('feature_1_title')}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">{t('feature_1_desc')}</p>
+              </div>
+              <div className="mt-6 flex gap-2">
+                {['GPT-4o', 'Claude', 'Gemini'].map((m) => (
+                  <span key={m} className="px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
+                    {m}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Small card — col 8-12 */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="md:col-span-5 glass-card-hover rounded-2xl border border-[hsl(var(--glass-border))] p-8 flex flex-col justify-between bg-card/60 backdrop-blur-sm shadow-lg shadow-primary/5"
+            >
+              <div>
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 mb-5">
+                  <BarChart3 className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-3">{t('feature_2_title')}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{t('feature_2_desc')}</p>
+              </div>
+              {/* Mini sparkline decoration */}
+              <div className="mt-6 flex items-end gap-1 h-10 opacity-60">
+                {[3, 5, 4, 7, 6, 8, 7, 9, 8, 10].map((v, i) => (
+                  <div
+                    key={i}
+                    className="flex-1 rounded-sm bg-primary/50"
+                    style={{ height: `${v * 10}%` }}
+                  />
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Small card — col 1-5 */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="md:col-span-5 glass-card-hover rounded-2xl border border-[hsl(var(--glass-border))] p-8 flex flex-col justify-between bg-card/60 backdrop-blur-sm shadow-lg shadow-primary/5"
+            >
+              <div>
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 mb-5">
+                  <Shield className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-3">{t('feature_3_title')}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{t('feature_3_desc')}</p>
+              </div>
+              {/* Score decoration */}
+              <div className="mt-6 flex items-center gap-3">
+                <div className="text-3xl font-display text-primary">94<span className="text-base text-muted-foreground">/100</span></div>
+                <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                  <div className="h-full w-[94%] rounded-full bg-gradient-to-r from-primary/60 to-primary" />
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Large card — col 6-12 */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3 }}
+              className="md:col-span-7 glass-card-hover rounded-2xl border border-[hsl(var(--glass-border))] p-8 flex flex-col justify-between bg-card/60 backdrop-blur-sm shadow-lg shadow-primary/5"
+            >
+              <div>
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 mb-5">
+                  <Zap className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-3">{t('feature_4_title')}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">{t('feature_4_desc')}</p>
+              </div>
+              {/* Competitor bars decoration */}
+              <div className="mt-6 space-y-2">
+                {[['Twoja marka', 78], ['Konkurent A', 52], ['Konkurent B', 61]].map(([label, val]) => (
+                  <div key={label as string} className="flex items-center gap-3 text-xs">
+                    <span className="w-24 text-muted-foreground shrink-0">{label}</span>
+                    <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-primary/70"
+                        style={{ width: `${val}%` }}
+                      />
+                    </div>
+                    <span className="text-muted-foreground w-6 text-right">{val}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
           </div>
         </div>
-      </section>
+      </FloatingPathsBackground>
 
       {/* CTA */}
       <section className="py-20 px-4 cta-box">
