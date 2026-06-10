@@ -3,11 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Search, Zap, Eye, BarChart3, Shield, ArrowRight } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
-import { Button } from '@/components/ui/button';
-import { toast } from '@/components/ui/sonner';
 import { useTranslation } from '@/lib/locale';
 import { PromptInputBox } from '@/components/ui/ai-prompt-box';
 import { CookiePanel } from '@/components/ui/cookie-banner-1';
+import { NewsletterSignup } from '@/components/ui/newsletter-signup';
 
 const features = [
   {
@@ -181,30 +180,18 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Newsletter banner (moved under CTA) */}
+      {/* Newsletter */}
       <section className="py-8 px-4">
-        <div className="max-w-4xl mx-auto glass-card p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-primary">Newsletter</p>
-            <h3 className="text-lg font-display text-foreground mt-1">Bądź na bieżąco — subskrybuj nasz newsletter</h3>
-            <p className="text-sm text-muted-foreground mt-1">Otrzymuj nowości, promocje i cotygodniowe podsumowania.</p>
-          </div>
-          <div>
-            <Button
-              id="landing-newsletter-btn"
-              onClick={() => {
-                const was = localStorage.getItem('newsletterSubscribed') === 'true';
-                if (!was) {
-                  localStorage.setItem('newsletterSubscribed', 'true');
-                  toast.success('Zapisano do newslettera.');
-                } else {
-                  toast('Już zapisano.');
-                }
-              }}
-            >
-              Zapisz się
-            </Button>
-          </div>
+        <div className="max-w-xl mx-auto">
+          <NewsletterSignup
+            onSubmit={async (email) => {
+              await fetch('/api/newsletter', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+              });
+            }}
+          />
         </div>
       </section>
 
