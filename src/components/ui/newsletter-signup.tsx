@@ -1,7 +1,11 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send } from "lucide-react";
-import confetti from "canvas-confetti";
+// Loaded on demand — not part of the initial bundle
+const fireConfetti = () =>
+  import('canvas-confetti').then(({ default: confetti }) =>
+    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } })
+  );
 import { useTranslation } from "@/lib/locale";
 
 export interface NewsletterSignupProps {
@@ -39,11 +43,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
     try {
       await onSubmit(email);
       setIsSubmitted(true);
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-      });
+      fireConfetti();
     } catch {
       setError(t("newsletter_error_generic"));
     } finally {

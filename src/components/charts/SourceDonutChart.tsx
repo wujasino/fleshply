@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from '@/lib/locale';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
@@ -6,7 +7,7 @@ interface SourceDonutChartProps {
   data: { name: string; value: number; color: string }[];
 }
 
-export const SourceDonutChart = ({ data }: SourceDonutChartProps) => {
+export const SourceDonutChart = memo(function SourceDonutChart({ data }: SourceDonutChartProps) {
   const { t } = useTranslation();
   return (
     <motion.div
@@ -55,4 +56,4 @@ export const SourceDonutChart = ({ data }: SourceDonutChartProps) => {
       </div>
     </motion.div>
   );
-};
+});

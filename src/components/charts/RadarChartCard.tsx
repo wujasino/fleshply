@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from '@/lib/locale';
 import {
@@ -11,7 +12,7 @@ interface RadarChartCardProps {
   timestamp?: string;
 }
 
-export const RadarChartCard = ({ dimensions, timestamp }: RadarChartCardProps) => {
+export const RadarChartCard = memo(function RadarChartCard({ dimensions, timestamp }: RadarChartCardProps) {
   // Normalize values to 0-100 and round. Accept either 0-1 or 0-100 inputs.
   const normalize = (v: number) => {
     if (typeof v !== 'number' || isNaN(v)) return 50;
@@ -120,4 +121,4 @@ export const RadarChartCard = ({ dimensions, timestamp }: RadarChartCardProps) =
       </div>
     </motion.div>
   );
-};
+});
