@@ -1,7 +1,8 @@
 import React from "react";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { ArrowUp, Paperclip, Square, X, StopCircle, Mic, Globe, BrainCog, FolderCode } from "lucide-react";
+import * as PopoverPrimitive from "@radix-ui/react-popover";
+import { ArrowUp, Paperclip, Square, X, StopCircle, Mic, Globe, BrainCog, ChevronDown, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Utility function for className merging
@@ -165,35 +166,54 @@ Button.displayName = "Button";
 // VoiceRecorder Component
 interface VoiceRecorderProps {
   isRecording: boolean;
+  deviceId?: string;
+  deviceLabel?: string;
   onStartRecording: () => void;
   onStopRecording: (duration: number) => void;
   visualizerBars?: number;
 }
 const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
   isRecording,
+  deviceId,
+  deviceLabel,
   onStartRecording,
   onStopRecording,
   visualizerBars = 32,
 }) => {
   const [time, setTime] = React.useState(0);
   const timerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const streamRef = React.useRef<MediaStream | null>(null);
 
   React.useEffect(() => {
     if (isRecording) {
       onStartRecording();
+      // Acquire the requested input device. Falls back to default if id is unset.
+      navigator.mediaDevices
+        .getUserMedia({ audio: deviceId ? { deviceId: { exact: deviceId } } : true })
+        .then((stream) => { streamRef.current = stream; })
+        .catch((err) => console.error("getUserMedia failed:", err));
       timerRef.current = setInterval(() => setTime((t) => t + 1), 1000);
     } else {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+      }
       onStopRecording(time);
       setTime(0);
     }
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+      }
     };
-  }, [isRecording, time, onStartRecording, onStopRecording]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isRecording, deviceId]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -208,10 +228,15 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
         isRecording ? "opacity-100" : "opacity-0 h-0"
       )}
     >
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-2">
         <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
         <span className="font-mono text-sm text-white/80">{formatTime(time)}</span>
       </div>
+      {deviceLabel && (
+        <p className="text-[10px] uppercase tracking-wider text-white/40 mb-2 font-mono">
+          🎙 {deviceLabel}
+        </p>
+      )}
       <div className="w-full h-10 flex items-center justify-center gap-0.5 px-4">
         {[...Array(visualizerBars)].map((_, i) => (
           <div
@@ -453,7 +478,9 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
   const [isRecording, setIsRecording] = React.useState(false);
   const [showSearch, setShowSearch] = React.useState(false);
   const [showThink, setShowThink] = React.useState(false);
-  const [showCanvas, setShowCanvas] = React.useState(false);
+  const [audioDevices, setAudioDevices] = React.useState<MediaDeviceInfo[]>([]);
+  const [selectedDeviceId, setSelectedDeviceId] = React.useState<string | undefined>(undefined);
+  const [devicePickerOpen, setDevicePickerOpen] = React.useState(false);
   const uploadInputRef = React.useRef<HTMLInputElement>(null);
   const promptBoxRef = React.useRef<HTMLDivElement>(null);
 
@@ -467,7 +494,32 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
     }
   };
 
-  const handleCanvasToggle = () => setShowCanvas((prev) => !prev);
+  // Enumerate audio input devices. Labels are blank until permission is granted,
+  // so we ask for it lazily when the user opens the picker.
+  const loadAudioDevices = React.useCallback(async () => {
+    try {
+      // Trigger a permission prompt if needed so that device labels become visible.
+      const probe = await navigator.mediaDevices.getUserMedia({ audio: true });
+      probe.getTracks().forEach((t) => t.stop());
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const audio = devices.filter((d) => d.kind === "audioinput");
+      setAudioDevices(audio);
+      if (!selectedDeviceId && audio[0]) setSelectedDeviceId(audio[0].deviceId);
+    } catch (err) {
+      console.error("Failed to enumerate audio devices:", err);
+    }
+  }, [selectedDeviceId]);
+
+  React.useEffect(() => {
+    const onChange = () => { if (devicePickerOpen) loadAudioDevices(); };
+    navigator.mediaDevices?.addEventListener?.("devicechange", onChange);
+    return () => navigator.mediaDevices?.removeEventListener?.("devicechange", onChange);
+  }, [devicePickerOpen, loadAudioDevices]);
+
+  const selectedDeviceLabel = React.useMemo(() => {
+    const d = audioDevices.find((x) => x.deviceId === selectedDeviceId);
+    return d?.label || "Mikrofon domyślny";
+  }, [audioDevices, selectedDeviceId]);
 
   const isImageFile = (file: File) => file.type.startsWith("image/");
 
@@ -537,7 +589,6 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
       let messagePrefix = "";
       if (showSearch) messagePrefix = "[Search: ";
       else if (showThink) messagePrefix = "[Think: ";
-      else if (showCanvas) messagePrefix = "[Canvas: ";
       const formattedInput = messagePrefix ? `${messagePrefix}${input}]` : input;
       onSend(formattedInput, files);
       setInput("");
@@ -616,8 +667,6 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
                 ? "Search the web..."
                 : showThink
                 ? "Think deeply..."
-                : showCanvas
-                ? "Create on canvas..."
                 : placeholder
             }
             className="text-base"
@@ -627,6 +676,8 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
         {isRecording && (
           <VoiceRecorder
             isRecording={isRecording}
+            deviceId={selectedDeviceId}
+            deviceLabel={selectedDeviceLabel}
             onStartRecording={handleStartRecording}
             onStopRecording={handleStopRecording}
           />
@@ -730,84 +781,111 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
                 </AnimatePresence>
               </button>
 
-              <CustomDivider />
-
-              <button
-                type="button"
-                onClick={handleCanvasToggle}
-                className={cn(
-                  "rounded-full transition-all flex items-center gap-1 px-2 py-1 border h-8",
-                  showCanvas
-                    ? "bg-[#F97316]/15 border-[#F97316] text-[#F97316]"
-                    : "bg-transparent border-transparent text-[#9CA3AF] hover:text-[#D1D5DB]"
-                )}
-              >
-                <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
-                  <motion.div
-                    animate={{ rotate: showCanvas ? 360 : 0, scale: showCanvas ? 1.1 : 1 }}
-                    whileHover={{ rotate: showCanvas ? 360 : 15, scale: 1.1, transition: { type: "spring", stiffness: 300, damping: 10 } }}
-                    transition={{ type: "spring", stiffness: 260, damping: 25 }}
-                  >
-                    <FolderCode className={cn("w-4 h-4", showCanvas ? "text-[#F97316]" : "text-inherit")} />
-                  </motion.div>
-                </div>
-                <AnimatePresence>
-                  {showCanvas && (
-                    <motion.span
-                      initial={{ width: 0, opacity: 0 }}
-                      animate={{ width: "auto", opacity: 1 }}
-                      exit={{ width: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="text-xs overflow-hidden whitespace-nowrap text-[#F97316] flex-shrink-0"
-                    >
-                      Canvas
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </button>
             </div>
           </div>
 
-          <PromptInputAction
-            tooltip={
-              isLoading
-                ? "Stop generation"
-                : isRecording
-                ? "Stop recording"
-                : hasContent
-                ? "Send message"
-                : "Voice message"
-            }
-          >
-            <Button
-              variant="default"
-              size="icon"
-              className={cn(
-                "h-8 w-8 rounded-full transition-all duration-200",
-                isRecording
-                  ? "bg-transparent hover:bg-gray-600/30 text-red-500 hover:text-red-400"
+          <div className="flex items-center gap-1">
+            {/* Device picker — only when not typing and not loading */}
+            {!hasContent && !isLoading && (
+              <PopoverPrimitive.Root
+                open={devicePickerOpen}
+                onOpenChange={(o) => { setDevicePickerOpen(o); if (o) loadAudioDevices(); }}
+              >
+                <PopoverPrimitive.Trigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Wybierz mikrofon"
+                    className={cn(
+                      "h-8 w-6 flex items-center justify-center rounded-full transition-colors",
+                      isRecording
+                        ? "text-red-500/80 hover:text-red-400"
+                        : "text-[#9CA3AF] hover:text-[#D1D5DB] hover:bg-gray-600/30"
+                    )}
+                  >
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  </button>
+                </PopoverPrimitive.Trigger>
+                <PopoverPrimitive.Portal>
+                  <PopoverPrimitive.Content
+                    align="end"
+                    sideOffset={8}
+                    className="z-50 w-64 rounded-xl border border-[#333333] bg-[#1F2023] p-1 shadow-xl animate-in fade-in-0 zoom-in-95"
+                  >
+                    <p className="px-3 py-2 text-[10px] uppercase tracking-wider text-white/40 font-mono">
+                      Mikrofon
+                    </p>
+                    <div className="max-h-60 overflow-y-auto">
+                      {audioDevices.length === 0 ? (
+                        <p className="px-3 py-3 text-xs text-white/60">
+                          Brak dostępnych urządzeń lub brak uprawnień.
+                        </p>
+                      ) : (
+                        audioDevices.map((d) => {
+                          const isSelected = d.deviceId === selectedDeviceId;
+                          return (
+                            <button
+                              key={d.deviceId}
+                              onClick={() => { setSelectedDeviceId(d.deviceId); setDevicePickerOpen(false); }}
+                              className={cn(
+                                "w-full flex items-center justify-between gap-2 px-3 py-2 text-left text-sm rounded-lg transition-colors",
+                                isSelected
+                                  ? "bg-white/10 text-white"
+                                  : "text-white/80 hover:bg-white/5 hover:text-white"
+                              )}
+                            >
+                              <span className="truncate">{d.label || `Mikrofon ${d.deviceId.slice(0, 6)}`}</span>
+                              {isSelected && <Check className="h-4 w-4 text-white/80 shrink-0" />}
+                            </button>
+                          );
+                        })
+                      )}
+                    </div>
+                  </PopoverPrimitive.Content>
+                </PopoverPrimitive.Portal>
+              </PopoverPrimitive.Root>
+            )}
+
+            <PromptInputAction
+              tooltip={
+                isLoading
+                  ? "Stop generation"
+                  : isRecording
+                  ? "Stop recording"
                   : hasContent
-                  ? "bg-white hover:bg-white/80 text-[#1F2023]"
-                  : "bg-transparent hover:bg-gray-600/30 text-[#9CA3AF] hover:text-[#D1D5DB]"
-              )}
-              onClick={() => {
-                if (isRecording) setIsRecording(false);
-                else if (hasContent) handleSubmit();
-                else setIsRecording(true);
-              }}
-              disabled={isLoading && !hasContent}
+                  ? "Send message"
+                  : "Voice message"
+              }
             >
-              {isLoading ? (
-                <Square className="h-4 w-4 fill-[#1F2023] animate-pulse" />
-              ) : isRecording ? (
-                <StopCircle className="h-5 w-5 text-red-500" />
-              ) : hasContent ? (
-                <ArrowUp className="h-4 w-4 text-[#1F2023]" />
-              ) : (
-                <Mic className="h-5 w-5 text-[#1F2023] transition-colors" />
-              )}
-            </Button>
-          </PromptInputAction>
+              <Button
+                variant="default"
+                size="icon"
+                className={cn(
+                  "h-8 w-8 rounded-full transition-all duration-200",
+                  isRecording
+                    ? "bg-transparent hover:bg-gray-600/30 text-red-500 hover:text-red-400"
+                    : hasContent
+                    ? "bg-white hover:bg-white/80 text-[#1F2023]"
+                    : "bg-transparent hover:bg-gray-600/30 text-[#9CA3AF] hover:text-[#D1D5DB]"
+                )}
+                onClick={() => {
+                  if (isRecording) setIsRecording(false);
+                  else if (hasContent) handleSubmit();
+                  else setIsRecording(true);
+                }}
+                disabled={isLoading && !hasContent}
+              >
+                {isLoading ? (
+                  <Square className="h-4 w-4 fill-[#1F2023] animate-pulse" />
+                ) : isRecording ? (
+                  <StopCircle className="h-5 w-5 text-red-500" />
+                ) : hasContent ? (
+                  <ArrowUp className="h-4 w-4 text-[#1F2023]" />
+                ) : (
+                  <Mic className="h-5 w-5 text-[#1F2023] transition-colors" />
+                )}
+              </Button>
+            </PromptInputAction>
+          </div>
         </PromptInputActions>
       </PromptInput>
 

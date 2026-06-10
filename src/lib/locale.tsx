@@ -1,8 +1,8 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
 
-type Locale = 'en' | 'pl';
+type Locale = 'en' | 'pl' | 'de' | 'fr' | 'es' | 'it';
 
-const translations: Record<Locale, Record<string, string>> = {
+const translations: Partial<Record<Locale, Record<string, string>>> = {
   en: {
     home: 'Home',
     dashboard: 'Dashboard',
@@ -19,6 +19,27 @@ const translations: Record<Locale, Record<string, string>> = {
     tryDemo: 'Try "Tesla" or "Apple" for a demo analysis',
     startFirstBrew: 'Check your brand now — for free',
     final_cta_subtitle: 'Discover in 30 seconds how AI sees your brand. No credit card required.',
+    // Landing FAQ
+    faq_title: 'Frequently asked questions',
+    faq_subtitle: 'Everything you need to know before your first brew.',
+    faq_more_help: 'Still have questions?',
+    faq_contact: 'Contact us',
+    faq_q1: 'What does BitBrew actually do?',
+    faq_a1: 'We query foundation AI models (GPT-4o, Claude, Gemini, Perplexity and more) with structured prompts about your brand, then score how each model perceives you across 5 dimensions: authority, sentiment, accuracy, mentions and recency. You get a single visibility score plus actionable insights.',
+    faq_q2: 'Which AI models do you query?',
+    faq_a2: 'Free plan uses GPT-4o. Solo adds Claude and Gemini. Growth unlocks all 6 models including Perplexity, Mistral and Llama. Enterprise can add private or custom models on request.',
+    faq_q3: 'How long does an analysis take?',
+    faq_a3: 'Most analyses finish in 8–15 seconds. We query models in parallel, normalize the responses, and compute your score in real time. You can watch the live neural map while brewing.',
+    faq_q4: 'How accurate is the visibility score?',
+    faq_a4: 'The score is a weighted average of 5 dimensions calibrated against a benchmark of 200+ brands. Each dimension is computed from multiple model outputs with confidence scoring, so a single noisy response cannot skew the result.',
+    faq_q5: 'Can I track competitors?',
+    faq_a5: 'Yes — Growth and Enterprise plans include side-by-side competitor comparison across the same dimensions. Add up to 10 competitors and we run them on the same schedule as your brand.',
+    faq_q6: 'Do you offer an API and webhooks?',
+    faq_a6: 'Yes. Generate API keys in the Developers panel and integrate via REST. Webhooks push events (analysis.completed, sentiment.dropped, score.changed) to your own endpoint in real time. See the API docs for details.',
+    faq_q7: 'How is my data handled?',
+    faq_a7: 'All brand context you provide stays in your private workspace. We never train models on your data and never share inputs with third parties beyond the AI providers needed to run an analysis. Full GDPR compliance.',
+    faq_q8: 'Can I cancel anytime?',
+    faq_a8: 'Yes — there are no contracts. Cancel your subscription in one click from Settings and your access continues until the end of your billing period.',
     final_cta_button: 'Check my brand',
     trustedBy: 'First 3 analyses free —',
     trustedCount: 'no credit card required',
@@ -41,8 +62,8 @@ const translations: Record<Locale, Record<string, string>> = {
     noCard: 'No credit card required. Get your first 3 brand analyses free.',
     viewPricing: 'View Pricing',
     copyright: '© 2024 BitBrew. All rights reserved.',
-    login: 'Login',
-    register: 'Register',
+    login: 'Sign in',
+    register: 'Create account',
     email: 'Email',
     password: 'Password',
     confirmPassword: 'Confirm password',
@@ -51,8 +72,8 @@ const translations: Record<Locale, Record<string, string>> = {
     haveAccount_action: 'Login',
     noAccount: "Don't have an account?",
     noAccount_action: 'Register',
-    login_subtitle: 'Welcome back',
-    register_subtitle: 'Create your free account',
+    login_subtitle: 'Good to see you back.',
+    register_subtitle: 'Start free — no credit card required.',
     or: 'or',
     password_strength: 'Password strength',
     password_strength_weak: 'Weak',
@@ -237,9 +258,9 @@ const translations: Record<Locale, Record<string, string>> = {
     credits_addon_subtitle: 'Top up your account with one-time credit packs — no plan change required.',
     credits_pack_label: 'analyses',
     credits_buy: 'Buy pack',
-    credits_pack_10: '10 extra analyses',
-    credits_pack_25: '25 extra analyses',
+    credits_pack_20: '20 extra analyses',
     credits_pack_50: '50 extra analyses',
+    credits_pack_120: '120 extra analyses',
     credits_best_value: 'Best value',
   },
   pl: {
@@ -266,6 +287,27 @@ const translations: Record<Locale, Record<string, string>> = {
     tryDemo: 'Wypróbuj "Tesla" lub "Apple" jako demo analizy',
     startFirstBrew: 'Sprawdź swoją markę teraz — za darmo',
     final_cta_subtitle: 'Sprawdź w 30 sekund, jak AI widzi Twoją markę. Bez karty kredytowej.',
+    // Landing FAQ
+    faq_title: 'Najczęściej zadawane pytania',
+    faq_subtitle: 'Wszystko, co warto wiedzieć przed pierwszą analizą.',
+    faq_more_help: 'Masz jeszcze pytania?',
+    faq_contact: 'Skontaktuj się z nami',
+    faq_q1: 'Co właściwie robi BitBrew?',
+    faq_a1: 'Odpytujemy modele AI (GPT-4o, Claude, Gemini, Perplexity i inne) ustrukturyzowanymi zapytaniami o Twoją markę, a następnie oceniamy ich percepcję w 5 wymiarach: autorytet, sentyment, dokładność, wzmianki i aktualność. Otrzymujesz jeden wynik widoczności oraz wnioski do działania.',
+    faq_q2: 'Jakie modele AI odpytujecie?',
+    faq_a2: 'Plan Free używa GPT-4o. Solo dodaje Claude i Gemini. Growth odblokowuje wszystkie 6 modeli — także Perplexity, Mistral i Llama. Enterprise pozwala dodać prywatne lub własne modele.',
+    faq_q3: 'Ile trwa jedna analiza?',
+    faq_a3: 'Większość analiz kończy się w 8–15 sekund. Modele odpytujemy równolegle, odpowiedzi normalizujemy, a wynik liczymy w czasie rzeczywistym. Podczas parzenia widzisz na żywo mapę aktywnych modeli.',
+    faq_q4: 'Jak dokładny jest wynik widoczności?',
+    faq_a4: 'Wynik to średnia ważona 5 wymiarów, kalibrowana na benchmarku 200+ marek. Każdy wymiar liczymy z wielu odpowiedzi modeli z oceną pewności, więc pojedynczy szum nie zaburza rezultatu.',
+    faq_q5: 'Czy mogę śledzić konkurencję?',
+    faq_a5: 'Tak — plany Growth i Enterprise zawierają porównanie obok siebie z konkurencją w tych samych wymiarach. Dodaj do 10 konkurentów, analizujemy ich w tym samym cyklu co Twoją markę.',
+    faq_q6: 'Czy oferujecie API i webhooki?',
+    faq_a6: 'Tak. Wygeneruj klucze API w panelu Developers i zintegruj się przez REST. Webhooki pushują zdarzenia (analysis.completed, sentiment.dropped, score.changed) na Twój endpoint w czasie rzeczywistym. Szczegóły w dokumentacji API.',
+    faq_q7: 'Jak chronicie moje dane?',
+    faq_a7: 'Kontekst marki, który dodajesz, zostaje w Twoim prywatnym workspace. Nigdy nie trenujemy na nim modeli ani nie udostępniamy go stronom trzecim poza dostawcami AI niezbędnymi do wykonania analizy. Pełna zgodność z RODO.',
+    faq_q8: 'Czy mogę zrezygnować w dowolnym momencie?',
+    faq_a8: 'Tak — nie ma umów na czas określony. Anulujesz subskrypcję jednym kliknięciem w Ustawieniach, dostęp trwa do końca okresu rozliczeniowego.',
     final_cta_button: 'Sprawdź moją markę',
     trustedBy: 'Pierwsze 3 analizy za darmo —',
     trustedCount: 'bez karty kredytowej',
@@ -294,8 +336,8 @@ const translations: Record<Locale, Record<string, string>> = {
     tier_free_feat_4: 'Werdykt AI — wnioski do działania',
     start_for_free: 'Rozpocznij za darmo',
     copyright: '© 2024 BitBrew. Wszelkie prawa zastrzeżone.',
-    login: 'Zaloguj',
-    register: 'Zarejestruj',
+    login: 'Zaloguj się',
+    register: 'Utwórz konto',
     email: 'Email',
     password: 'Hasło',
     confirmPassword: 'Powtórz hasło',
@@ -304,8 +346,8 @@ const translations: Record<Locale, Record<string, string>> = {
     haveAccount_action: 'Zaloguj się',
     noAccount: 'Nie masz konta?',
     noAccount_action: 'Zarejestruj się',
-    login_subtitle: 'Witaj z powrotem',
-    register_subtitle: 'Stwórz konto za darmo',
+    login_subtitle: 'Dobrze Cię widzieć ponownie.',
+    register_subtitle: 'Zacznij za darmo — bez karty kredytowej.',
     or: 'lub',
     password_strength: 'Siła hasła',
     password_strength_weak: 'Słabe',
@@ -476,9 +518,9 @@ const translations: Record<Locale, Record<string, string>> = {
     credits_addon_subtitle: 'Doładuj konto jednorazowymi pakietami kredytów — bez zmiany planu.',
     credits_pack_label: 'analiz',
     credits_buy: 'Kup pakiet',
-    credits_pack_10: '10 dodatkowych analiz',
-    credits_pack_25: '25 dodatkowych analiz',
+    credits_pack_20: '20 dodatkowych analiz',
     credits_pack_50: '50 dodatkowych analiz',
+    credits_pack_120: '120 dodatkowych analiz',
     credits_best_value: 'Najlepsza wartość',
   },
 };
@@ -491,11 +533,30 @@ type LocaleContextValue = {
 
 const LocaleContext = createContext<LocaleContextValue | undefined>(undefined);
 
-export const LocaleProvider = ({ children }: { children: ReactNode }) => {
-  const [locale, setLocale] = useState<Locale>((navigator.language || 'en').startsWith('pl') ? 'pl' : 'en');
+const SUPPORTED: Locale[] = ['en', 'pl', 'de', 'fr', 'es', 'it'];
+const detectInitialLocale = (): Locale => {
+  try {
+    const stored = localStorage.getItem('bb_locale') as Locale | null;
+    if (stored && SUPPORTED.includes(stored)) return stored;
+  } catch { /* ignore */ }
+  const code = (navigator.language || 'en').slice(0, 2).toLowerCase() as Locale;
+  return SUPPORTED.includes(code) ? code : 'en';
+};
 
+export const LocaleProvider = ({ children }: { children: ReactNode }) => {
+  const [locale, setLocaleState] = useState<Locale>(detectInitialLocale);
+
+  const setLocale = (l: Locale) => {
+    setLocaleState(l);
+    try { localStorage.setItem('bb_locale', l); } catch { /* ignore */ }
+  };
+
+  // Fall back to English when a key is missing in the active locale (e.g. de/fr/es/it
+  // until their translations are filled in).
   const t = (key: string) => {
-    return translations[locale][key] ?? key;
+    const dict = translations[locale];
+    if (dict && dict[key]) return dict[key];
+    return translations.en?.[key] ?? key;
   };
 
   return (

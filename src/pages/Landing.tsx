@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Zap, Eye, BarChart3, Shield, ChevronDown } from 'lucide-react';
+import { Zap, Eye, BarChart3, Shield, ChevronDown, HelpCircle, Mail } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Navbar } from '@/components/layout/Navbar';
 import { useTranslation } from '@/lib/locale';
 import { PromptInputBox } from '@/components/ui/ai-prompt-box';
@@ -49,8 +50,9 @@ const Landing = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Hero */}
-      <FloatingPathsBackground position={1} className="hero pt-32 pb-20 px-4">
+      {/* Hero + Why (one continuous animated background) */}
+      <FloatingPathsBackground position={1} className="relative">
+      <section className="hero pt-32 pb-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -150,10 +152,10 @@ const Landing = () => {
             </motion.div>
           </motion.button>
         </div>
-      </FloatingPathsBackground>
+      </section>
 
-      {/* Features */}
-      <FloatingPathsBackground id="why-section" position={0.5} className="py-24 px-4 bg-background">
+      {/* Features (shares the hero's animated background — no hard seam) */}
+      <section id="why-section" className="py-24 px-4 relative">
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -278,7 +280,7 @@ const Landing = () => {
               </div>
             </motion.div>
           </div>
-        </div>
+        </section>
       </FloatingPathsBackground>
 
       {/* CTA */}
@@ -292,6 +294,76 @@ const Landing = () => {
           >
             {t('viewPricing')}
           </button>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section id="faq" className="py-20 px-4">
+        <div className="max-w-3xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs badge rounded-lg mb-4 font-data uppercase tracking-wider">
+              <HelpCircle className="w-3 h-3" /> FAQ
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-display text-foreground">
+              {t('faq_title')}
+            </h2>
+            <p className="text-muted-foreground text-sm mt-3 max-w-lg mx-auto">
+              {t('faq_subtitle')}
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="rounded-2xl border border-[hsl(var(--glass-border))] bg-card/40 backdrop-blur-xl divide-y divide-[hsl(var(--glass-border))] overflow-hidden"
+          >
+            <Accordion type="single" collapsible className="w-full">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+                <AccordionItem
+                  key={n}
+                  value={`q${n}`}
+                  className="border-0 border-b border-[hsl(var(--glass-border))] last:border-b-0 px-6"
+                >
+                  <AccordionTrigger className="text-left text-sm sm:text-base font-medium text-foreground hover:no-underline py-5 [&>svg]:text-primary">
+                    {t(`faq_q${n}`)}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-5 pr-6">
+                    {t(`faq_a${n}`)}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </motion.div>
+
+          {/* Contact card */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary/5 p-5"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Mail className="w-4 h-4 text-primary" />
+              </div>
+              <p className="text-sm text-foreground font-medium">{t('faq_more_help')}</p>
+            </div>
+            <a
+              href="mailto:kontakt@bitbrew.pl"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity whitespace-nowrap"
+            >
+              {t('faq_contact')}
+              <Mail className="w-3.5 h-3.5" />
+            </a>
+          </motion.div>
         </div>
       </section>
 
