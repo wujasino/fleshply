@@ -72,9 +72,9 @@ const Pricing = () => {
   };
 
   const creditPacks = [
-    { id: 'credits_10', label: t('credits_pack_10'), price: '29 zł', analyses: 10, popular: false },
-    { id: 'credits_25', label: t('credits_pack_25'), price: '59 zł', analyses: 25, popular: true },
-    { id: 'credits_50', label: t('credits_pack_50'), price: '99 zł', analyses: 50, popular: false },
+    { id: 'credits_20',  label: t('credits_pack_20'),  price: '39 zł',  analyses: 20,  popular: false },
+    { id: 'credits_50',  label: t('credits_pack_50'),  price: '79 zł',  analyses: 50,  popular: true  },
+    { id: 'credits_120', label: t('credits_pack_120'), price: '169 zł', analyses: 120, popular: false },
   ];
 
   const handleCreditsBuy = async (packId: string) => {
@@ -85,9 +85,9 @@ const Pricing = () => {
       if (!user) { window.location.href = '/login'; return; }
 
       const priceIdMap: Record<string, string> = {
-        credits_10: import.meta.env.VITE_STRIPE_CREDITS_10_PRICE_ID ?? '',
-        credits_25: import.meta.env.VITE_STRIPE_CREDITS_25_PRICE_ID ?? '',
-        credits_50: import.meta.env.VITE_STRIPE_CREDITS_50_PRICE_ID ?? '',
+        credits_20:  import.meta.env.VITE_STRIPE_CREDITS_20_PRICE_ID  ?? '',
+        credits_50:  import.meta.env.VITE_STRIPE_CREDITS_50_PRICE_ID  ?? '',
+        credits_120: import.meta.env.VITE_STRIPE_CREDITS_120_PRICE_ID ?? '',
       };
       const priceId = priceIdMap[packId];
 

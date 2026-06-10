@@ -258,9 +258,9 @@ const translations: Partial<Record<Locale, Record<string, string>>> = {
     credits_addon_subtitle: 'Top up your account with one-time credit packs — no plan change required.',
     credits_pack_label: 'analyses',
     credits_buy: 'Buy pack',
-    credits_pack_10: '10 extra analyses',
-    credits_pack_25: '25 extra analyses',
+    credits_pack_20: '20 extra analyses',
     credits_pack_50: '50 extra analyses',
+    credits_pack_120: '120 extra analyses',
     credits_best_value: 'Best value',
   },
   pl: {
@@ -518,9 +518,9 @@ const translations: Partial<Record<Locale, Record<string, string>>> = {
     credits_addon_subtitle: 'Doładuj konto jednorazowymi pakietami kredytów — bez zmiany planu.',
     credits_pack_label: 'analiz',
     credits_buy: 'Kup pakiet',
-    credits_pack_10: '10 dodatkowych analiz',
-    credits_pack_25: '25 dodatkowych analiz',
+    credits_pack_20: '20 dodatkowych analiz',
     credits_pack_50: '50 dodatkowych analiz',
+    credits_pack_120: '120 dodatkowych analiz',
     credits_best_value: 'Najlepsza wartość',
   },
 };
