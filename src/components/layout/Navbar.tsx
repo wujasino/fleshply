@@ -1,10 +1,16 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from '../../lib/locale';
 import { LanguageSwitcher } from '../ui/LanguageSwitcher';
 import { Button } from '@/components/ui/button';
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuViewport,
+} from '@/components/ui/navigation-menu';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { supabase } from '@/lib/supabase';
 import { logout } from '@/lib/auth';
 
@@ -52,116 +58,149 @@ export const Navbar = () => {
   const navLinks = isAuthed ? authedLinks : publicLinks;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[hsl(var(--glass-border))] bg-background/80 backdrop-blur-xl">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b border-[hsl(var(--glass-border))] bg-background/80 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center gap-2">
-            <img src="/bitbrew-logo.svg" alt="BitBrew" height="28" />
-          </Link>
+        <div className="flex h-16 items-center justify-between gap-4">
 
-          <div className="hidden md:flex items-center justify-center flex-1">
-            <div className="flex items-center gap-2">
-              {navLinks.map(link => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${location.pathname === link.to
-                    ? 'text-primary bg-primary/10'
-                    : 'text-muted-foreground hover:text-foreground'
-                    }`}
+          {/* Left: hamburger + logo + desktop nav */}
+          <div className="flex items-center gap-4">
+            {/* Mobile hamburger */}
+            <Popover open={mobileOpen} onOpenChange={setMobileOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  className="group size-8 md:hidden"
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Toggle menu"
                 >
-                  {t(link.key)}
-                </Link>
-              ))}
+                  <svg
+                    className="pointer-events-none"
+                    width={16}
+                    height={16}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path
+                      d="M4 12L20 12"
+                      className="origin-center -translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
+                    />
+                    <path
+                      d="M4 12H20"
+                      className="origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.8)] group-aria-expanded:rotate-45"
+                    />
+                    <path
+                      d="M4 12H20"
+                      className="origin-center translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[135deg]"
+                    />
+                  </svg>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-56 p-2 md:hidden">
+                <nav className="flex flex-col gap-1">
+                  {navLinks.map((link) => (
+                    <Link
+                      key={link.to}
+                      to={link.to}
+                      onClick={() => setMobileOpen(false)}
+                      className={`px-3 py-2 rounded-md text-sm transition-colors ${
+                        location.pathname === link.to
+                          ? 'text-primary bg-primary/10 font-medium'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                      }`}
+                    >
+                      {t(link.key)}
+                    </Link>
+                  ))}
+                  <div className="my-1 h-px bg-border" />
+                  {!authLoading && (
+                    isAuthed ? (
+                      <button
+                        onClick={() => { setMobileOpen(false); handleLogout(); }}
+                        className="px-3 py-2 rounded-md text-sm text-left text-muted-foreground hover:text-foreground hover:bg-accent"
+                      >
+                        {t('logout')}
+                      </button>
+                    ) : (
+                      <>
+                        <Link
+                          to="/login"
+                          onClick={() => setMobileOpen(false)}
+                          className="px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent"
+                        >
+                          {t('login')}
+                        </Link>
+                        <Link
+                          to="/register"
+                          onClick={() => setMobileOpen(false)}
+                          className="px-3 py-2 rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 text-center"
+                        >
+                          {t('register')}
+                        </Link>
+                      </>
+                    )
+                  )}
+                </nav>
+              </PopoverContent>
+            </Popover>
+
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-2 shrink-0">
+              <img src="/bitbrew-logo.svg" alt="BitBrew" height="28" />
+            </Link>
+
+            {/* Desktop navigation */}
+            <div className="hidden md:block">
+              <NavigationMenu>
+                <NavigationMenuList>
+                  {navLinks.map((link) => (
+                    <NavigationMenuItem key={link.to}>
+                      <NavigationMenuLink asChild>
+                        <Link
+                          to={link.to}
+                          className={`px-3 py-1.5 rounded-lg text-sm transition-colors inline-flex items-center ${
+                            location.pathname === link.to
+                              ? 'text-primary bg-primary/10 font-medium'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                          }`}
+                        >
+                          {t(link.key)}
+                        </Link>
+                      </NavigationMenuLink>
+                    </NavigationMenuItem>
+                  ))}
+                </NavigationMenuList>
+                <NavigationMenuViewport />
+              </NavigationMenu>
             </div>
           </div>
 
+          {/* Right: language + auth */}
           <div className="flex items-center gap-2">
-            <div className="hidden md:flex items-center gap-2 mr-2">
-              {!authLoading && (
-                isAuthed ? (
-                  <Button variant="ghost" size="sm" onClick={handleLogout} className="px-3 py-1.5 rounded-md text-sm">
-                    {t('logout')}
+            <LanguageSwitcher />
+            {!authLoading && (
+              isAuthed ? (
+                <Button variant="ghost" size="sm" onClick={handleLogout}>
+                  {t('logout')}
+                </Button>
+              ) : (
+                <div className="hidden md:flex items-center gap-2">
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link to="/login">{t('login')}</Link>
                   </Button>
-                ) : (
-                  <>
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link to="/login" className="px-3 py-1.5 rounded-md text-sm">
-                        {t('login')}
-                      </Link>
-                    </Button>
-                    <Button variant="default" size="sm" asChild>
-                      <Link to="/register" className="px-3 py-1.5 rounded-md text-sm">
-                        {t('register')}
-                      </Link>
-                    </Button>
-                  </>
-                  )
-              )}
-            </div>
-            <div className="hidden md:block">
-              <LanguageSwitcher />
-            </div>
-            <div className="md:hidden">
-              <LanguageSwitcher />
-            </div>
-            <button
-              onClick={() => setMobileOpen(!mobileOpen)}
-              className="md:hidden text-muted-foreground"
-              aria-label="Toggle menu"
-            >
-              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
+                  <Button size="sm" asChild>
+                    <Link to="/register">{t('register')}</Link>
+                  </Button>
+                </div>
+              )
+            )}
           </div>
+
         </div>
       </div>
-
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-[hsl(var(--glass-border))] bg-background/95 backdrop-blur-xl overflow-hidden"
-          >
-            <div className="px-4 py-3 space-y-1">
-              {navLinks.map(link => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  onClick={() => setMobileOpen(false)}
-                  className={`block px-3 py-2 rounded-lg text-sm ${
-                    location.pathname === link.to
-                      ? 'text-primary bg-primary/10'
-                      : 'text-muted-foreground'
-                  }`}
-                >
-                  {t(link.key)}
-                </Link>
-              ))}
-              <div className="mt-2 border-t border-[hsl(var(--glass-border))] pt-2 space-y-1">
-                {isAuthed ? (
-                  <button
-                    onClick={() => { setMobileOpen(false); handleLogout(); }}
-                    className="block w-full text-left px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground"
-                  >
-                    {t('logout')}
-                  </button>
-                ) : (
-                  <>
-                    <Link to="/login" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground">
-                      {t('login')}
-                    </Link>
-                    <Link to="/register" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground">
-                      {t('register')}
-                    </Link>
-                  </>
-                )}
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </nav>
+    </header>
   );
 };

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, X } from "lucide-react";
+import { useTranslation } from "@/lib/locale";
 
 type BillingCycle = 'monthly' | 'yearly';
 
@@ -31,21 +32,20 @@ interface PricingCardsProps extends React.HTMLAttributes<HTMLDivElement> {
   onCycleChange: (cycle: BillingCycle) => void;
   onPlanSelect: (planId: string, cycle: BillingCycle) => void;
   loadingPlan?: string | null;
-  savingsLabel?: string;
 }
 
 const FeatureItem: React.FC<{ feature: PricingFeature }> = ({ feature }) => {
   const Icon = feature.isIncluded ? Check : X;
   return (
-    <li className="flex items-start space-x-3 py-2">
+    <li className="flex items-start gap-3 py-1.5">
       <Icon
         className={cn(
-          "h-4 w-4 flex-shrink-0 mt-0.5",
-          feature.isIncluded ? "text-primary" : "text-muted-foreground"
+          "h-4 w-4 shrink-0 mt-0.5",
+          feature.isIncluded ? "text-primary" : "text-muted-foreground/50"
         )}
         aria-hidden="true"
       />
-      <span className={cn("text-sm", feature.isIncluded ? "text-foreground" : "text-muted-foreground")}>
+      <span className={cn("text-sm leading-snug", feature.isIncluded ? "text-foreground" : "text-muted-foreground/60 line-through")}>
         {feature.name}
       </span>
     </li>
@@ -58,16 +58,16 @@ export const PricingCards: React.FC<PricingCardsProps> = ({
   onCycleChange,
   onPlanSelect,
   loadingPlan,
-  savingsLabel = "Save 20%",
   className,
   ...props
 }) => {
+  const { t } = useTranslation();
   const allFeatures = Array.from(new Set(plans.flatMap(p => p.features.map(f => f.name))));
 
   return (
     <div className={cn("w-full", className)} {...props}>
-      {/* Billing toggle */}
-      <div className="flex justify-center mb-10 mt-2">
+      {/* Billing toggle — extra top padding so the savings badge doesn't clip */}
+      <div className="flex justify-center pt-6 pb-10">
         <ToggleGroup
           type="single"
           value={billingCycle}
@@ -82,25 +82,25 @@ export const PricingCards: React.FC<PricingCardsProps> = ({
             aria-label="Monthly billing"
             className="px-6 py-1.5 text-sm font-medium data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=on]:border data-[state=on]:ring-1 data-[state=on]:ring-ring/20 rounded-md transition-colors"
           >
-            {billingCycle === 'monthly' ? 'Miesięcznie' : 'Monthly'}
+            {t('billing_cycle_monthly')}
           </ToggleGroupItem>
           <ToggleGroupItem
             value="yearly"
             aria-label="Annual billing"
             className="px-6 py-1.5 text-sm font-medium data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=on]:border data-[state=on]:ring-1 data-[state=on]:ring-ring/20 rounded-md transition-colors relative"
           >
-            {billingCycle === 'yearly' ? 'Rocznie' : 'Yearly'}
-            <span className="absolute -top-3 right-0 text-xs font-semibold text-primary/80 bg-primary/10 px-1.5 rounded-full whitespace-nowrap">
-              {savingsLabel}
+            {t('billing_cycle_yearly')}
+            <span className="absolute -top-3.5 right-0 text-[10px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full whitespace-nowrap leading-none">
+              {t('billing_savings')}
             </span>
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
 
-      {/* Cards */}
+      {/* Cards grid — align-stretch so all cards same height */}
       <div className={cn(
-        "grid gap-6",
-        plans.length === 3 ? "md:grid-cols-3" : "sm:grid-cols-2 lg:grid-cols-4"
+        "grid gap-5 items-stretch",
+        plans.length <= 3 ? "md:grid-cols-3" : "sm:grid-cols-2 lg:grid-cols-4"
       )}>
         {plans.map((plan) => {
           const currentPrice = billingCycle === 'monthly' ? plan.priceMonthly : plan.priceYearly;
@@ -111,46 +111,49 @@ export const PricingCards: React.FC<PricingCardsProps> = ({
             <Card
               key={plan.id}
               className={cn(
-                "flex flex-col transition-all duration-300 shadow-md hover:shadow-lg",
-                plan.isPopular && "ring-2 ring-primary shadow-xl shadow-primary/20 md:scale-[1.02] hover:scale-[1.04]"
+                "flex flex-col transition-shadow duration-300 hover:shadow-lg",
+                plan.isPopular
+                  ? "ring-2 ring-primary shadow-lg shadow-primary/15 border-primary/30"
+                  : "shadow-sm"
               )}
             >
-              <CardHeader className="p-6 pb-4">
-                <div className="flex justify-between items-start gap-2">
-                  <CardTitle className="text-xl font-bold">{plan.name}</CardTitle>
-                  {plan.isPopular && (
-                    <span className="text-xs font-semibold px-3 py-1 bg-primary text-primary-foreground rounded-full shrink-0">
-                      Most Popular
+              <CardHeader className="p-5 pb-4 space-y-0">
+                {/* Popular badge — inline, no absolute positioning */}
+                {plan.isPopular ? (
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <CardTitle className="text-lg font-bold">{plan.name}</CardTitle>
+                    <span className="text-xs font-semibold px-2.5 py-1 bg-primary text-primary-foreground rounded-full shrink-0 whitespace-nowrap">
+                      {t('most_popular')}
                     </span>
-                  )}
-                </div>
-                <CardDescription className="text-sm mt-1">{plan.description}</CardDescription>
-                <div className="mt-4">
-                  <p className="text-4xl font-extrabold text-foreground">
+                  </div>
+                ) : (
+                  <CardTitle className="text-lg font-bold mb-2">{plan.name}</CardTitle>
+                )}
+                <CardDescription className="text-sm">{plan.description}</CardDescription>
+                <div className="pt-4">
+                  <p className="text-3xl font-extrabold text-foreground leading-none">
                     {currentPrice}
-                    <span className="text-base font-normal text-muted-foreground ml-1">{currentPeriod}</span>
+                    {currentPeriod && (
+                      <span className="text-sm font-normal text-muted-foreground ml-1">{currentPeriod}</span>
+                    )}
                   </p>
                 </div>
               </CardHeader>
 
-              <CardContent className="flex-grow p-6 pt-0">
-                <ul className="list-none space-y-0">
+              <CardContent className="flex-1 px-5 py-0">
+                <ul className="space-y-0">
                   {plan.features.map((feature) => (
                     <FeatureItem key={feature.name} feature={feature} />
                   ))}
                 </ul>
               </CardContent>
 
-              <CardFooter className="p-6 pt-0">
+              <CardFooter className="p-5 pt-4">
                 <Button
                   onClick={() => onPlanSelect(plan.id, billingCycle)}
                   disabled={isLoading}
-                  className={cn(
-                    "w-full transition-all duration-200",
-                    plan.isPopular
-                      ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20"
-                      : "bg-muted text-foreground hover:bg-muted/80 border border-input"
-                  )}
+                  variant={plan.isPopular ? 'default' : 'outline'}
+                  className="w-full"
                   size="lg"
                 >
                   {isLoading ? 'Ładowanie...' : plan.buttonLabel}
@@ -167,7 +170,7 @@ export const PricingCards: React.FC<PricingCardsProps> = ({
           <table className="min-w-full divide-y divide-border/80">
             <thead>
               <tr className="bg-muted/30">
-                <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-foreground/80 w-[200px]">
+                <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-foreground/80 min-w-[180px]">
                   Feature
                 </th>
                 {plans.map((plan) => (
@@ -193,7 +196,7 @@ export const PricingCards: React.FC<PricingCardsProps> = ({
                     index % 2 === 0 ? "bg-background" : "bg-muted/10"
                   )}
                 >
-                  <td className="px-6 py-3 text-left text-sm font-medium text-foreground/90 whitespace-nowrap">
+                  <td className="px-6 py-3 text-left text-sm font-medium text-foreground/90">
                     {featureName}
                   </td>
                   {plans.map((plan) => {
@@ -203,13 +206,10 @@ export const PricingCards: React.FC<PricingCardsProps> = ({
                     return (
                       <td
                         key={`${plan.id}-${featureName}`}
-                        className={cn(
-                          "px-6 py-3 text-center",
-                          plan.isPopular && "bg-primary/5"
-                        )}
+                        className={cn("px-6 py-3 text-center", plan.isPopular && "bg-primary/5")}
                       >
                         <Icon
-                          className={cn("h-5 w-5 mx-auto", isIncluded ? "text-primary" : "text-muted-foreground/70")}
+                          className={cn("h-5 w-5 mx-auto", isIncluded ? "text-primary" : "text-muted-foreground/50")}
                           aria-hidden="true"
                         />
                       </td>

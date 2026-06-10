@@ -225,7 +225,6 @@ const Pricing = () => {
           onCycleChange={setBillingCycle}
           onPlanSelect={(planId) => handlePlanSelect(planId)}
           loadingPlan={loading}
-          savingsLabel={t('billing_savings').replace('Save ', '').replace('Oszczędź ', '').split(' ')[0]}
         />
 
         {/* Credit packs add-on */}
