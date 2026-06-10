@@ -98,14 +98,8 @@ const Login = () => {
         className="hidden lg:flex lg:w-[46%] xl:w-[42%] flex-col justify-between p-10 border-r border-[hsl(var(--glass-border))] bg-card/30"
       >
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2.5 group w-fit">
-          <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-            <polygon points="16,2 30,10 30,22 16,30 2,22 2,10" stroke="hsl(45,100%,50%)" strokeWidth="1.6" fill="none"/>
-            <line x1="16" y1="2" x2="16" y2="0" stroke="hsl(45,100%,50%)" strokeWidth="1.6" strokeLinecap="round"/>
-          </svg>
-          <span className="text-lg font-display tracking-tight">
-            Bit<span className="text-primary">Brew</span>
-          </span>
+        <Link to="/" className="flex items-center w-fit">
+          <img src="/bitbrew-logo.svg" alt="BitBrew" height="28" className="h-7" />
         </Link>
 
         {/* Centre copy */}
@@ -158,12 +152,8 @@ const Login = () => {
           className="w-full max-w-[400px] space-y-6"
         >
           {/* Mobile logo */}
-          <Link to="/" className="lg:hidden flex items-center gap-2 mb-2">
-            <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
-              <polygon points="16,2 30,10 30,22 16,30 2,22 2,10" stroke="hsl(45,100%,50%)" strokeWidth="1.6" fill="none"/>
-              <line x1="16" y1="2" x2="16" y2="0" stroke="hsl(45,100%,50%)" strokeWidth="1.6" strokeLinecap="round"/>
-            </svg>
-            <span className="text-base font-display">Bit<span className="text-primary">Brew</span></span>
+          <Link to="/" className="lg:hidden flex items-center mb-2">
+            <img src="/bitbrew-logo.svg" alt="BitBrew" className="h-6" />
           </Link>
 
           {/* Heading */}
