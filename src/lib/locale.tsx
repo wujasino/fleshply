@@ -169,6 +169,7 @@ const translations: Record<Locale, Record<string, string>> = {
     newsletter: 'Newsletter Terms',
     no_credits_guest: 'You have no credits left. Register to get more.',
     logout: 'Logout',
+    settings: 'Settings',
     // Newsletter
     newsletter_title: 'Subscribe to our newsletter',
     newsletter_subtitle: 'Stay up to date with our latest news and updates.',
@@ -356,6 +357,7 @@ const translations: Record<Locale, Record<string, string>> = {
     newsletter: 'Regulamin newslettera',
     no_credits_guest: 'Brak kredytów. Zarejestruj się, aby otrzymać więcej.',
     logout: 'Wyloguj',
+    settings: 'Ustawienia',
     // Newsletter
     newsletter_title: 'Zapisz się do newslettera',
     newsletter_subtitle: 'Bądź na bieżąco z naszymi nowościami i aktualizacjami.',

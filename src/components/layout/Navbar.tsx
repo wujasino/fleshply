@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, User, Settings } from 'lucide-react';
 import { useTranslation } from '../../lib/locale';
 import { LanguageSwitcher } from '../ui/LanguageSwitcher';
 import { Button } from '@/components/ui/button';
@@ -25,7 +25,6 @@ const authedLinks = [
   { to: '/', key: 'home' },
   { to: '/dashboard', key: 'dashboard' },
   { to: '/pricing', key: 'pricing' },
-  { to: '/profile', key: 'profile' },
 ];
 
 export const Navbar = () => {
@@ -225,6 +224,14 @@ export const Navbar = () => {
                     >
                       <User className="w-4 h-4" />
                       {t('profile')}
+                    </Link>
+                    <Link
+                      to="/settings"
+                      onClick={() => setAvatarOpen(false)}
+                      className="flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                    >
+                      <Settings className="w-4 h-4" />
+                      {t('settings')}
                     </Link>
                     <button
                       onClick={handleLogout}
