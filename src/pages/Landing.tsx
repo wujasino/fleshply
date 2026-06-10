@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Search, Zap, Eye, BarChart3, Shield, ArrowRight } from 'lucide-react';
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/sonner';
 import { useTranslation } from '@/lib/locale';
 import { PromptInputBox } from '@/components/ui/ai-prompt-box';
+import { CookiePanel } from '@/components/ui/cookie-banner-1';
 
 const features = [
   {
@@ -33,12 +34,6 @@ const features = [
 
 const Landing = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [showCookieBanner, setShowCookieBanner] = useState(false);
-  const [showCookiePreferences, setShowCookiePreferences] = useState(false);
-  const [cookiePreferences, setCookiePreferences] = useState({
-    functional: true,
-    marketing: false,
-  });
   const navigate = useNavigate();
 
   const handleSearch = (e: React.FormEvent) => {
@@ -46,31 +41,6 @@ const Landing = () => {
     if (searchQuery.trim()) {
       navigate(`/dashboard?brand=${encodeURIComponent(searchQuery.trim())}`);
     }
-  };
-
-  useEffect(() => {
-    const consent = localStorage.getItem('cookieConsent');
-    if (!consent) {
-      setShowCookieBanner(true);
-    }
-  }, []);
-
-  const handleAcceptAllCookies = () => {
-    localStorage.setItem('cookieConsent', 'accepted');
-    localStorage.setItem('cookiePreferences', JSON.stringify({ functional: true, marketing: true }));
-    setShowCookieBanner(false);
-    setShowCookiePreferences(false);
-  };
-
-  const handleSaveCookiePreferences = () => {
-    localStorage.setItem('cookieConsent', 'accepted');
-    localStorage.setItem('cookiePreferences', JSON.stringify(cookiePreferences));
-    setShowCookieBanner(false);
-    setShowCookiePreferences(false);
-  };
-
-  const togglePreference = (key: 'functional' | 'marketing') => {
-    setCookiePreferences((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const { t } = useTranslation();
@@ -249,85 +219,10 @@ const Landing = () => {
           </div>
         </div>
       </footer>
-      {showCookieBanner && (
-        <div className="fixed inset-x-4 bottom-4 z-50 rounded-3xl border border-input bg-card/95 p-4 shadow-2xl backdrop-blur-xl text-left sm:text-center">
-          <div className="flex flex-col gap-3">
-            <div className="space-y-1">
-              <p className="text-sm font-semibold text-foreground">Używamy plików cookies</p>
-              <p className="text-sm text-muted-foreground">
-                Aby dostosować działanie serwisu, możesz zaakceptować wszystkie ciasteczka lub wybrać szczegóły.
-              </p>
-            </div>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <button
-                type="button"
-                onClick={() => setShowCookiePreferences((prev) => !prev)}
-                className="inline-flex items-center rounded-full border border-input bg-background px-4 py-2 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-              >
-                {showCookiePreferences ? 'Ukryj szczegóły' : 'Dostosuj cookies'}
-              </button>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                <button
-                  type="button"
-                  onClick={handleAcceptAllCookies}
-                  className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
-                >
-                  Akceptuję wszystkie
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveCookiePreferences}
-                  className="inline-flex items-center justify-center rounded-full border border-input bg-background px-4 py-2 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-                >
-                  Zapisz preferencje
-                </button>
-              </div>
-            </div>
-            {showCookiePreferences && (
-              <div className="mt-4 rounded-3xl border border-input bg-slate-950/10 p-4 text-left">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between gap-4 rounded-2xl bg-background/80 p-3">
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">Niezbędne cookies</p>
-                      <p className="text-xs text-muted-foreground">Włączone zawsze, aby strona działała poprawnie.</p>
-                    </div>
-                    <span className="inline-flex rounded-full bg-emerald-500 px-3 py-1 text-[0.65rem] font-semibold text-white">Włączone</span>
-                  </div>
-                  <div className="flex items-center justify-between gap-4 rounded-2xl bg-background/80 p-3">
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">Funkcjonalne cookies</p>
-                      <p className="text-xs text-muted-foreground">Pomagają zapamiętać Twoje ustawienia i preferencje.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => togglePreference('functional')}
-                      className={`inline-flex h-9 items-center justify-center rounded-full px-3 text-sm font-semibold ${cookiePreferences.functional ? 'bg-primary text-primary-foreground' : 'border border-input bg-background text-foreground'}`}
-                    >
-                      {cookiePreferences.functional ? 'Włączone' : 'Wyłączone'}
-                    </button>
-                  </div>
-                  <div className="flex items-center justify-between gap-4 rounded-2xl bg-background/80 p-3">
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">Marketingowe cookies</p>
-                      <p className="text-xs text-muted-foreground">Pomagają nam wyświetlać trafniejsze treści i reklamy.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => togglePreference('marketing')}
-                      className={`inline-flex h-9 items-center justify-center rounded-full px-3 text-sm font-semibold ${cookiePreferences.marketing ? 'bg-primary text-primary-foreground' : 'border border-input bg-background text-foreground'}`}
-                    >
-                      {cookiePreferences.marketing ? 'Włączone' : 'Wyłączone'}
-                    </button>
-                  </div>
-                </div>
-                <p className="mt-3 text-xs text-muted-foreground">
-                  Więcej informacji znajdziesz w naszej <a href="/polityka-prywatnosci" className="text-primary underline">Polityce prywatności</a>.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <CookiePanel
+        privacyHref="/polityka-prywatnosci"
+        termsHref="/regulamin"
+      />
     </div>
   );
 };
