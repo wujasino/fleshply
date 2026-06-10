@@ -6,10 +6,12 @@ export function FloatingPathsBackground({
   position,
   children,
   className,
+  id,
 }: {
   position: number;
   className?: string;
   children: React.ReactNode;
+  id?: string;
 }) {
   const paths = Array.from({ length: 36 }, (_, i) => ({
     id: i,
@@ -24,7 +26,7 @@ export function FloatingPathsBackground({
   }));
 
   return (
-    <div className={cn("w-full relative", className)}>
+    <div id={id} className={cn("w-full relative", className)}>
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <svg
           className="w-full h-full text-slate-950 dark:text-white"
