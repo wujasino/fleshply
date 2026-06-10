@@ -132,9 +132,10 @@ const Pricing = () => {
         { name: t('tier_free_feat_1'), isIncluded: true },
         { name: t('tier_free_feat_2'), isIncluded: true },
         { name: t('tier_free_feat_3'), isIncluded: true },
-        { name: t('tier_solo_feat_2'), isIncluded: false },
-        { name: t('tier_solo_feat_4'), isIncluded: false },
-        { name: t('tier_growth_feat_6'), isIncluded: false },
+        { name: t('tier_free_feat_4'), isIncluded: true },
+        { name: t('tier_solo_feat_3'), isIncluded: false },
+        { name: t('tier_solo_feat_5'), isIncluded: false },
+        { name: t('tier_growth_feat_4'), isIncluded: false },
       ],
     },
     {
@@ -153,7 +154,8 @@ const Pricing = () => {
         { name: t('tier_solo_feat_3'), isIncluded: true },
         { name: t('tier_solo_feat_4'), isIncluded: true },
         { name: t('tier_solo_feat_5'), isIncluded: true },
-        { name: t('tier_growth_feat_6'), isIncluded: false },
+        { name: t('tier_solo_feat_6'), isIncluded: true },
+        { name: t('tier_growth_feat_4'), isIncluded: false },
       ],
     },
     {
@@ -173,6 +175,7 @@ const Pricing = () => {
         { name: t('tier_growth_feat_4'), isIncluded: true },
         { name: t('tier_growth_feat_5'), isIncluded: true },
         { name: t('tier_growth_feat_6'), isIncluded: true },
+        { name: t('tier_growth_feat_7'), isIncluded: true },
       ],
     },
     {
@@ -191,7 +194,9 @@ const Pricing = () => {
         { name: t('tier_ent_feat_3'), isIncluded: true },
         { name: t('tier_ent_feat_4'), isIncluded: true },
         { name: t('tier_ent_feat_5'), isIncluded: true },
-        { name: t('tier_growth_feat_6'), isIncluded: true },
+        { name: t('tier_ent_feat_6'), isIncluded: true },
+        { name: t('tier_ent_feat_7'), isIncluded: true },
+        { name: t('tier_ent_feat_8'), isIncluded: true },
       ],
     },
   ];
