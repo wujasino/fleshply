@@ -14,6 +14,8 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import NewsletterTerms from "./pages/NewsletterTerms";
 import Settings from "./pages/Settings";
+import Developers from "./pages/Developers";
+import ApiDocs from "./pages/ApiDocs";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -56,6 +58,15 @@ const App = () => (
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/developers"
+            element={
+              <ProtectedRoute>
+                <Developers />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/docs/api" element={<ApiDocs />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
