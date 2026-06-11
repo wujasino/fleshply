@@ -59,7 +59,6 @@ const normalizeSentiment = (s: unknown): SourceResult['sentiment'] => {
   return 'Neutral';
 };
 
-export const GUEST_CREDITS_KEY = 'guestCredits';
 export const GUEST_LIMIT = 3;
 
 export function useBrewing() {
@@ -71,27 +70,23 @@ export function useBrewing() {
 
   const startBrewing = useCallback(async (brandName: string) => {
 
-    // Check auth first: if user is not authenticated, enforce guest credits
+    // Check auth: if not logged in, enforce IP-based guest limit
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        const key = 'guestCredits';
-        let credits = Number(localStorage.getItem(key));
-        if (!Number.isFinite(credits) || credits < 0) {
-          credits = 3;
-          localStorage.setItem(key, String(credits));
+        const res = await fetch('/.netlify/functions/guest-limit', { method: 'POST' });
+        if (res.ok) {
+          const { allowed, remaining } = await res.json();
+          if (!allowed) {
+            setGuestLimitReached(true);
+            return;
+          }
+          if (remaining <= 0) setGuestLimitReached(true);
         }
-        if (credits <= 0) {
-          setGuestLimitReached(true);
-          return;
-        }
-        // consume one credit for this brew
-        localStorage.setItem(key, String(credits - 1));
-        if (credits - 1 <= 0) setGuestLimitReached(true);
+        // If function unreachable — fail open (allow brew)
       }
-    } catch (err) {
-      // If auth check fails for any reason, allow the brew but don't modify credits
-      console.warn('Auth check failed, proceeding without consuming guest credits', err);
+    } catch {
+      // Network error — allow the brew
     }
 
     setStatus('brewing');
