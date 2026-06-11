@@ -1,24 +1,62 @@
-import { useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Home, ArrowLeft, Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { FloatingPathsBackground } from '@/components/ui/floating-paths';
 
-const NotFound = () => {
+export default function NotFound() {
   const location = useLocation();
 
   useEffect(() => {
-    console.error("404 Error: User attempted to access non-existent route:", location.pathname);
+    console.error('404:', location.pathname);
   }, [location.pathname]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">404</h1>
-        <p className="mb-4 text-xl text-muted-foreground">Oops! Page not found</p>
-        <a href="/" className="text-primary underline hover:text-primary/90">
-          Return to Home
-        </a>
-      </div>
-    </div>
-  );
-};
+    <FloatingPathsBackground position={1} className="min-h-screen flex items-center justify-center px-4">
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="text-center max-w-md"
+      >
+        {/* 404 number */}
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.1, type: 'spring', stiffness: 150 }}
+          className="text-[9rem] font-display leading-none text-primary/10 select-none mb-2"
+        >
+          404
+        </motion.div>
 
-export default NotFound;
+        <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-6 -mt-4">
+          <Search className="w-7 h-7 text-primary" />
+        </div>
+
+        <h1 className="text-2xl font-display text-foreground mb-3">
+          Strona nie istnieje
+        </h1>
+        <p className="text-sm text-muted-foreground leading-relaxed mb-8">
+          Adres <code className="text-primary/80 bg-primary/10 px-1.5 py-0.5 rounded text-xs">{location.pathname}</code> nie
+          istnieje lub został przeniesiony. Sprawdź URL lub wróć na stronę główną.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Button asChild variant="outline" className="gap-2">
+            <Link to={-1 as any}>
+              <ArrowLeft className="w-4 h-4" />
+              Wróć
+            </Link>
+          </Button>
+          <Button asChild className="gap-2">
+            <Link to="/">
+              <Home className="w-4 h-4" />
+              Strona główna
+            </Link>
+          </Button>
+        </div>
+      </motion.div>
+    </FloatingPathsBackground>
+  );
+}

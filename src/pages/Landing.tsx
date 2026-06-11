@@ -373,7 +373,7 @@ const Landing = () => {
         <div className="max-w-xl mx-auto">
           <NewsletterSignup
             onSubmit={async (email) => {
-              await fetch('/api/newsletter', {
+              await fetch('/.netlify/functions/newsletter', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email }),

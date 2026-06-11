@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useTranslation } from '@/lib/locale';
-import { Eye, EyeOff, ArrowRight, Zap, BarChart3, Shield } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, Zap, BarChart3, Shield, Loader2 } from 'lucide-react';
 import { getAuthUser, loginUser, loginWithGoogle } from '@/lib/auth';
 import { FloatingPathsBackground } from '@/components/ui/floating-paths';
+import { supabase } from '@/lib/supabase';
 
 const GoogleIcon = () => (
   <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden>
@@ -38,6 +39,19 @@ const Login = () => {
   const [error, setError]           = useState('');
   const [loading, setLoading]       = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [resetSent, setResetSent]   = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+
+  const handleForgotPassword = async () => {
+    if (!email) { setError('Wpisz adres e-mail, a następnie kliknij „Zapomniałeś hasła?".'); return; }
+    setResetLoading(true);
+    setError('');
+    await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setResetSent(true);
+    setResetLoading(false);
+  };
 
   useEffect(() => {
     getAuthUser().then(user => { if (user) navigate(from, { replace: true }); }).catch(() => {});
@@ -215,7 +229,13 @@ const Login = () => {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('password')}</Label>
-                <button type="button" className="text-[11px] text-primary hover:underline">
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  disabled={resetLoading}
+                  className="text-[11px] text-primary hover:underline disabled:opacity-50 flex items-center gap-1"
+                >
+                  {resetLoading && <Loader2 className="w-2.5 h-2.5 animate-spin" />}
                   Zapomniałeś hasła?
                 </button>
               </div>
@@ -263,6 +283,16 @@ const Login = () => {
               )}
             </Button>
           </form>
+
+          {resetSent && (
+            <motion.p
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-sm text-green-400 bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-2.5 text-center"
+            >
+              ✓ Wysłano link resetujący — sprawdź skrzynkę e-mail.
+            </motion.p>
+          )}
 
           <p className="text-center text-sm text-muted-foreground">
             {t('noAccount')}{' '}

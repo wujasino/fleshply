@@ -41,35 +41,64 @@ const rules = [
   { label: 'Znak specjalny',          test: (p: string) => /[^A-Za-z0-9]/.test(p) },
 ];
 
-const SuccessScreen = ({ email, onLogin }: { email: string; onLogin: () => void }) => (
-  <div className="min-h-screen flex items-center justify-center bg-background px-6">
-    <motion.div
-      initial={{ opacity: 0, scale: 0.96 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="w-full max-w-sm text-center space-y-6"
-    >
+const SuccessScreen = ({ email, onLogin }: { email: string; onLogin: () => void }) => {
+  const [resending, setResending] = useState(false);
+  const [resent, setResent] = useState(false);
+
+  const handleResend = async () => {
+    setResending(true);
+    // Supabase re-sends confirmation if user tries to sign up again with same email
+    const { createClient } = await import('@supabase/supabase-js');
+    const sb = createClient(
+      import.meta.env.VITE_SUPABASE_URL,
+      import.meta.env.VITE_SUPABASE_ANON_KEY
+    );
+    await sb.auth.resend({ type: 'signup', email });
+    setResending(false);
+    setResent(true);
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background px-6">
       <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
-        className="mx-auto w-16 h-16 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center"
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-sm text-center space-y-6"
       >
-        <Mail className="w-7 h-7 text-primary" />
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
+          className="mx-auto w-16 h-16 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center"
+        >
+          <Mail className="w-7 h-7 text-primary" />
+        </motion.div>
+        <div>
+          <h2 className="text-2xl font-display text-foreground">Sprawdź skrzynkę</h2>
+          <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+            Wysłaliśmy link aktywacyjny na{' '}
+            <span className="text-foreground font-medium">{email}</span>.<br />
+            Kliknij w link, żeby aktywować konto.
+          </p>
+        </div>
+        <Button className="w-full gap-2" onClick={onLogin}>
+          Przejdź do logowania <ArrowRight className="w-3.5 h-3.5" />
+        </Button>
+        {resent ? (
+          <p className="text-xs text-green-400">✓ Email wysłany ponownie.</p>
+        ) : (
+          <button
+            onClick={handleResend}
+            disabled={resending}
+            className="text-xs text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
+          >
+            {resending ? 'Wysyłanie…' : 'Nie dostałem emaila — wyślij ponownie'}
+          </button>
+        )}
       </motion.div>
-      <div>
-        <h2 className="text-2xl font-display text-foreground">Sprawdź skrzynkę</h2>
-        <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-          Wysłaliśmy link aktywacyjny na{' '}
-          <span className="text-foreground font-medium">{email}</span>.<br />
-          Kliknij w link, żeby aktywować konto.
-        </p>
-      </div>
-      <Button className="w-full gap-2" onClick={onLogin}>
-        Przejdź do logowania <ArrowRight className="w-3.5 h-3.5" />
-      </Button>
-    </motion.div>
-  </div>
-);
+    </div>
+  );
+};
 
 const Register = () => {
   const { t } = useTranslation();
