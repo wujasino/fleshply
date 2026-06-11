@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from '@/lib/locale';
 import {
@@ -9,7 +10,7 @@ interface SentimentChartProps {
   data: { date: string; score: number }[];
 }
 
-export const SentimentChart = ({ data }: SentimentChartProps) => {
+export const SentimentChart = memo(function SentimentChart({ data }: SentimentChartProps) {
   const { t } = useTranslation();
   return (
     <motion.div
@@ -60,4 +61,4 @@ export const SentimentChart = ({ data }: SentimentChartProps) => {
       </div>
     </motion.div>
   );
-};
+});
