@@ -1,11 +1,19 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Zap } from 'lucide-react';
+import { Zap, AlertTriangle } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { useTranslation } from '@/lib/locale';
 import { supabase } from '@/lib/supabase';
 import { PricingCards, type PricingTierCard } from '@/components/ui/pricing-cards';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 
 const Pricing = () => {
   const { t } = useTranslation();
@@ -13,6 +21,12 @@ const Pricing = () => {
   const [loadingCredits, setLoadingCredits] = useState<string | null>(null);
   const [message, setMessage] = useState<string>('');
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const [showDowngradeDialog, setShowDowngradeDialog] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => setIsLoggedIn(!!user));
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -20,10 +34,19 @@ const Pricing = () => {
     if (params.get('canceled')) setMessage('Płatność została anulowana.');
   }, []);
 
+  const confirmDowngrade = () => {
+    setShowDowngradeDialog(false);
+    window.location.href = '/dashboard';
+  };
+
   const handlePlanSelect = async (planId: string) => {
     if (planId === 'free') {
-      const { data: { user } } = await supabase.auth.getUser();
-      window.location.href = user ? '/dashboard' : '/register';
+      // If already logged in → show confirmation dialog before downgrading
+      if (isLoggedIn) {
+        setShowDowngradeDialog(true);
+        return;
+      }
+      window.location.href = '/register';
       return;
     }
 
@@ -197,6 +220,37 @@ const Pricing = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+
+      {/* Downgrade confirmation dialog */}
+      <Dialog open={showDowngradeDialog} onOpenChange={setShowDowngradeDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-10 h-10 rounded-full bg-yellow-500/10 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5 text-yellow-500" />
+              </div>
+              <DialogTitle>Zmiana planu na Free</DialogTitle>
+            </div>
+            <DialogDescription className="text-sm text-muted-foreground leading-relaxed">
+              Czy na pewno chcesz przejść na plan <strong className="text-foreground">Free</strong>?
+              <ul className="mt-3 space-y-1.5 text-sm">
+                <li className="flex items-start gap-2"><span className="text-yellow-500 mt-0.5">•</span> Stracisz dostęp do zaawansowanych źródeł LLM (Claude, Gemini i inne)</li>
+                <li className="flex items-start gap-2"><span className="text-yellow-500 mt-0.5">•</span> Limit zmniejszy się do 3 analiz miesięcznie</li>
+                <li className="flex items-start gap-2"><span className="text-yellow-500 mt-0.5">•</span> Historia analiz i eksport CSV zostaną wyłączone</li>
+              </ul>
+              <p className="mt-3 text-xs text-muted-foreground/70">Subskrypcja zostanie anulowana przez Stripe — dostęp na wyższym planie trwa do końca opłaconego okresu.</p>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 mt-2">
+            <Button variant="outline" className="flex-1" onClick={() => setShowDowngradeDialog(false)}>
+              Zostań na obecnym planie
+            </Button>
+            <Button variant="destructive" className="flex-1" onClick={confirmDowngrade}>
+              Tak, przejdź na Free
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="pt-28 pb-20 px-4 max-w-6xl mx-auto">
         {/* Header */}
