@@ -11,14 +11,9 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const { data: { user }, error: supabaseError } = await supabase.auth.getUser();
-        if (supabaseError) {
-          setError(`Błąd połączenia z Supabase: ${supabaseError.message}`);
-          setIsAuthenticated(false);
-        } else {
-          setIsAuthenticated(!!user);
-          setError(null);
-        }
+        const { data: { session } } = await supabase.auth.getSession();
+        setIsAuthenticated(!!session);
+        setError(null);
       } catch (err) {
         setError('Błąd podczas sprawdzania sesji. Sprawdź konsolę przeglądarki.');
         setIsAuthenticated(false);
