@@ -68,35 +68,50 @@ export default function Settings() {
     }
 
     setUploading(true);
-    const localPreview = URL.createObjectURL(file);
-    setAvatarUrl(localPreview);
+
+    // Show instant local preview while uploading
+    const blobUrl = URL.createObjectURL(file);
+    setAvatarUrl(blobUrl);
 
     try {
       const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
-      const path = `${userId}/avatar-${Date.now()}.${ext}`;
+      // Always overwrite the same path — avoids orphaned files in storage
+      const storagePath = `${userId}/avatar.${ext}`;
 
-      const { error: uploadError } = await supabase.storage
+      const { error: storageError } = await supabase.storage
         .from('avatars')
-        .upload(path, file, { upsert: true, contentType: file.type });
-      if (uploadError) throw uploadError;
+        .upload(storagePath, file, { upsert: true, contentType: file.type });
+      if (storageError) throw storageError;
 
-      const { data } = supabase.storage.from('avatars').getPublicUrl(path);
-      const publicUrl = data.publicUrl;
+      // Add cache-busting so the browser doesn't show stale image
+      const { data } = supabase.storage.from('avatars').getPublicUrl(storagePath);
+      const publicUrl = `${data.publicUrl}?t=${Date.now()}`;
 
-      // Persist on user_metadata so Navbar/Avatar picks it up
+      // Update auth user_metadata
       const { error: authError } = await supabase.auth.updateUser({
         data: { avatar_url: publicUrl },
       });
       if (authError) throw authError;
 
-      // Best-effort mirror to profiles table
+      // Refresh session so the updated JWT / metadata is returned by getUser()
+      await supabase.auth.refreshSession();
+
+      // Mirror to profiles table (best-effort)
       await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', userId);
 
+      URL.revokeObjectURL(blobUrl);
       setAvatarUrl(publicUrl);
-    } catch (err) {
-      console.error(err);
-      setUploadError(t('settings_avatar_upload_error'));
+    } catch (err: any) {
+      console.error('Avatar upload error:', err);
+      URL.revokeObjectURL(blobUrl);
       setAvatarUrl(null);
+      setUploadError(
+        err?.message?.includes('Bucket not found')
+          ? 'Bucket "avatars" nie istnieje w Supabase Storage. Uruchom migrację SQL.'
+          : err?.message?.includes('row-level security')
+          ? 'Brak uprawnień do zapisu. Sprawdź polityki RLS bucketa "avatars".'
+          : t('settings_avatar_upload_error')
+      );
     } finally {
       setUploading(false);
     }
@@ -107,8 +122,11 @@ export default function Settings() {
     setUploading(true);
     try {
       await supabase.auth.updateUser({ data: { avatar_url: null } });
+      await supabase.auth.refreshSession();
       await supabase.from('profiles').update({ avatar_url: null }).eq('id', userId);
       setAvatarUrl(null);
+    } catch (err) {
+      console.error('Avatar remove error:', err);
     } finally {
       setUploading(false);
     }
