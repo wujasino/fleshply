@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Label } from '@/components/ui/label';
@@ -6,10 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useTranslation } from '@/lib/locale';
-import { Eye, EyeOff, ArrowRight, Zap, BarChart3, Shield, Loader2, ArrowLeft, Mail } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, Zap, BarChart3, Shield, Loader2, ArrowLeft, Mail, KeyRound } from 'lucide-react';
 import { getAuthUser, loginUser, loginWithGoogle } from '@/lib/auth';
 import { FloatingPathsBackground } from '@/components/ui/floating-paths';
-import { supabase } from '@/lib/supabase';
 
 const GoogleIcon = () => (
   <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden>
@@ -21,15 +20,63 @@ const GoogleIcon = () => (
 );
 
 const FEATURES = [
-  { icon: Zap,      text: 'Audyt widoczności w GPT-4, Claude, Gemini' },
-  { icon: BarChart3,text: 'Śledzenie trendu sentymentu w czasie'       },
-  { icon: Shield,   text: 'Wiarygodność źródeł z wynikiem pewności'   },
+  { icon: Zap,       text: 'Audyt widoczności w GPT-4, Claude, Gemini' },
+  { icon: BarChart3, text: 'Śledzenie trendu sentymentu w czasie'       },
+  { icon: Shield,    text: 'Wiarygodność źródeł z wynikiem pewności'   },
 ];
 
 const slideVariants = {
   enter: (dir: number) => ({ x: dir * 40, opacity: 0 }),
   center: { x: 0, opacity: 1 },
-  exit: (dir: number) => ({ x: dir * -40, opacity: 0 }),
+  exit:  (dir: number) => ({ x: dir * -40, opacity: 0 }),
+};
+
+// 6 individual digit inputs
+const OtpInput = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => {
+  const inputs = useRef<(HTMLInputElement | null)[]>([]);
+  const digits = value.padEnd(6, '').split('').slice(0, 6);
+
+  const focus = (i: number) => inputs.current[i]?.focus();
+
+  const handleKey = (i: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace') {
+      const next = digits.map((d, idx) => idx === i ? '' : d).join('');
+      onChange(next);
+      if (i > 0) focus(i - 1);
+    }
+  };
+
+  const handleChange = (i: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const char = e.target.value.replace(/\D/g, '').slice(-1);
+    const next = digits.map((d, idx) => idx === i ? char : d).join('');
+    onChange(next);
+    if (char && i < 5) focus(i + 1);
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (pasted) { onChange(pasted.padEnd(6, '').slice(0, 6)); focus(Math.min(pasted.length, 5)); }
+    e.preventDefault();
+  };
+
+  return (
+    <div className="flex gap-2 justify-center">
+      {digits.map((d, i) => (
+        <input
+          key={i}
+          ref={el => { inputs.current[i] = el; }}
+          type="text"
+          inputMode="numeric"
+          maxLength={1}
+          value={d}
+          onChange={e => handleChange(i, e)}
+          onKeyDown={e => handleKey(i, e)}
+          onPaste={handlePaste}
+          className="w-11 h-14 text-center text-xl font-bold rounded-xl border border-[hsl(var(--glass-border))] bg-background text-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors"
+        />
+      ))}
+    </div>
+  );
 };
 
 const Login = () => {
@@ -45,9 +92,11 @@ const Login = () => {
   const [error, setError]           = useState('');
   const [loading, setLoading]       = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [mode, setMode]             = useState<'login' | 'forgot' | 'forgot_sent'>('login');
+  const [mode, setMode]             = useState<'login' | 'forgot' | 'otp' | 'forgot_sent'>('login');
   const [resetEmail, setResetEmail] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
+  const [otpValue, setOtpValue]     = useState('');
+  const [otpLoading, setOtpLoading] = useState(false);
   const [dir, setDir]               = useState(1);
 
   const switchMode = (next: typeof mode, direction = 1) => {
@@ -61,15 +110,47 @@ const Login = () => {
     if (!resetEmail.trim()) return;
     setResetLoading(true);
     setError('');
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    setResetLoading(false);
-    if (resetError) {
-      setError(resetError.message || 'Błąd wysyłania e-maila. Spróbuj ponownie.');
+    try {
+      const res = await fetch('/.netlify/functions/send-reset-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resetEmail.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Błąd wysyłania kodu.');
+      setOtpValue('');
+      switchMode('otp', 1);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (otpValue.replace(/\D/g, '').length < 6) {
+      setError('Wpisz pełny 6-cyfrowy kod.');
       return;
     }
-    switchMode('forgot_sent', 1);
+    setOtpLoading(true);
+    setError('');
+    try {
+      const res = await fetch('/.netlify/functions/verify-reset-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resetEmail.trim(), code: otpValue.replace(/\D/g, '') }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Nieprawidłowy kod.');
+      // Redirect to Supabase reset URL which will set session and land on /reset-password
+      window.location.href = data.resetUrl;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      setError(err.message);
+      setOtpLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -173,7 +254,7 @@ const Login = () => {
         <p className="text-[11px] text-muted-foreground/50">© 2024 BitBrew</p>
       </FloatingPathsBackground>
 
-      {/* ── Right panel (form) ── */}
+      {/* ── Right panel ── */}
       <div className="flex-1 flex items-center justify-center px-6 py-12 overflow-hidden">
         <div className="w-full max-w-[400px]">
           {/* Top bar: mobile logo + back button */}
@@ -191,257 +272,172 @@ const Login = () => {
           </div>
 
           <AnimatePresence mode="wait" custom={dir}>
+
             {/* ── LOGIN ── */}
             {mode === 'login' && (
-              <motion.div
-                key="login"
-                custom={dir}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{ duration: 0.25, ease: 'easeOut' }}
-                className="space-y-6"
-              >
+              <motion.div key="login" custom={dir} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25, ease: 'easeOut' }} className="space-y-6">
                 <div>
                   <h1 className="text-2xl font-display text-foreground">{t('login')}</h1>
                   <p className="text-sm text-muted-foreground mt-1">{t('login_subtitle')}</p>
                 </div>
 
                 {error && (
-                  <motion.p
-                    initial={{ opacity: 0, y: -6 }}
-                    animate={{ opacity: 1, y: 0 }}
+                  <motion.p initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
                     className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5"
-                  >
-                    {error}
-                  </motion.p>
+                  >{error}</motion.p>
                 )}
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full gap-2.5 h-10"
-                  onClick={handleGoogle}
-                  disabled={googleLoading || loading}
-                >
+                <Button type="button" variant="outline" className="w-full gap-2.5 h-10" onClick={handleGoogle} disabled={googleLoading || loading}>
                   <GoogleIcon />
                   {googleLoading ? '...' : t('sign_in_with_google')}
                 </Button>
 
                 <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-[hsl(var(--glass-border))]" />
-                  </div>
+                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-[hsl(var(--glass-border))]" /></div>
                   <div className="relative flex justify-center">
-                    <span className="bg-background px-3 text-[11px] text-muted-foreground uppercase tracking-widest">
-                      {t('or')}
-                    </span>
+                    <span className="bg-background px-3 text-[11px] text-muted-foreground uppercase tracking-widest">{t('or')}</span>
                   </div>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('email')}</Label>
-                    <Input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="jan@firma.pl"
-                      required
-                      autoComplete="email"
-                      className="h-10"
-                    />
+                    <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="jan@firma.pl" required autoComplete="email" className="h-10" />
                   </div>
 
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
                       <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('password')}</Label>
-                      <button
-                        type="button"
-                        onClick={() => switchMode('forgot', 1)}
-                        className="text-[11px] text-primary hover:underline"
-                      >
+                      <button type="button" onClick={() => switchMode('forgot', 1)} className="text-[11px] text-primary hover:underline">
                         Zapomniałeś hasła?
                       </button>
                     </div>
                     <div className="relative">
-                      <Input
-                        type={showPwd ? 'text' : 'password'}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        autoComplete="current-password"
-                        className="h-10 pr-10"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPwd(v => !v)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                        tabIndex={-1}
-                        aria-label={showPwd ? 'Ukryj hasło' : 'Pokaż hasło'}
-                      >
+                      <Input type={showPwd ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required autoComplete="current-password" className="h-10 pr-10" />
+                      <button type="button" onClick={() => setShowPwd(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" tabIndex={-1} aria-label={showPwd ? 'Ukryj hasło' : 'Pokaż hasło'}>
                         {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 pt-0.5">
-                    <Checkbox id="remember" checked={remember} onCheckedChange={(v) => setRemember(Boolean(v))} />
+                    <Checkbox id="remember" checked={remember} onCheckedChange={v => setRemember(Boolean(v))} />
                     <Label htmlFor="remember" className="!mb-0 text-sm text-muted-foreground cursor-pointer">{t('remember')}</Label>
                   </div>
 
-                  <Button
-                    type="submit"
-                    className="w-full h-10 gap-2"
-                    disabled={loading || googleLoading}
-                  >
+                  <Button type="submit" className="w-full h-10 gap-2" disabled={loading || googleLoading}>
                     {loading ? (
                       <span className="flex items-center gap-2">
                         <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
                         Logowanie...
                       </span>
-                    ) : (
-                      <>
-                        {t('submit')}
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </>
-                    )}
+                    ) : <>{t('submit')}<ArrowRight className="w-3.5 h-3.5" /></>}
                   </Button>
                 </form>
 
                 <p className="text-center text-sm text-muted-foreground">
                   {t('noAccount')}{' '}
-                  <Link to="/register" className="text-primary hover:underline font-medium">
-                    {t('noAccount_action')}
-                  </Link>
+                  <Link to="/register" className="text-primary hover:underline font-medium">{t('noAccount_action')}</Link>
                 </p>
               </motion.div>
             )}
 
             {/* ── FORGOT PASSWORD ── */}
             {mode === 'forgot' && (
-              <motion.div
-                key="forgot"
-                custom={dir}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{ duration: 0.25, ease: 'easeOut' }}
-                className="space-y-6"
-              >
-                <button
-                  type="button"
-                  onClick={() => switchMode('login', -1)}
-                  className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  Powrót do logowania
+              <motion.div key="forgot" custom={dir} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25, ease: 'easeOut' }} className="space-y-6">
+                <button type="button" onClick={() => switchMode('login', -1)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  <ArrowLeft className="w-3.5 h-3.5" /> Powrót do logowania
                 </button>
 
                 <div>
                   <h1 className="text-2xl font-display text-foreground">Resetuj hasło</h1>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Podaj swój adres e-mail — wyślemy link do zresetowania hasła.
-                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">Podaj swój e-mail — wyślemy 6-cyfrowy kod weryfikacyjny.</p>
                 </div>
 
                 {error && (
-                  <motion.p
-                    initial={{ opacity: 0, y: -6 }}
-                    animate={{ opacity: 1, y: 0 }}
+                  <motion.p initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
                     className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5"
-                  >
-                    {error}
-                  </motion.p>
+                  >{error}</motion.p>
                 )}
 
                 <form onSubmit={handleForgotPassword} className="space-y-4">
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">E-mail</Label>
-                    <Input
-                      type="email"
-                      value={resetEmail}
-                      onChange={(e) => setResetEmail(e.target.value)}
-                      placeholder="jan@firma.pl"
-                      required
-                      autoComplete="email"
-                      autoFocus
-                      className="h-10"
-                    />
+                    <Input type="email" value={resetEmail} onChange={e => setResetEmail(e.target.value)} placeholder="jan@firma.pl" required autoComplete="email" autoFocus className="h-10" />
                   </div>
 
-                  <Button
-                    type="submit"
-                    className="w-full h-10 gap-2"
-                    disabled={resetLoading}
-                  >
-                    {resetLoading ? (
-                      <span className="flex items-center gap-2">
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        Wysyłanie...
-                      </span>
-                    ) : (
-                      <>
-                        Wyślij link resetujący
-                        <Mail className="w-3.5 h-3.5" />
-                      </>
-                    )}
+                  <Button type="submit" className="w-full h-10 gap-2" disabled={resetLoading}>
+                    {resetLoading
+                      ? <span className="flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" />Wysyłanie...</span>
+                      : <><Mail className="w-3.5 h-3.5" />Wyślij kod</>}
                   </Button>
                 </form>
               </motion.div>
             )}
 
-            {/* ── FORGOT SENT ── */}
-            {mode === 'forgot_sent' && (
-              <motion.div
-                key="forgot_sent"
-                custom={dir}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{ duration: 0.25, ease: 'easeOut' }}
-                className="space-y-6 text-center"
-              >
-                <div className="flex justify-center">
-                  <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                    <Mail className="w-6 h-6 text-primary" />
-                  </div>
-                </div>
+            {/* ── OTP VERIFICATION ── */}
+            {mode === 'otp' && (
+              <motion.div key="otp" custom={dir} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25, ease: 'easeOut' }} className="space-y-6">
+                <button type="button" onClick={() => switchMode('forgot', -1)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  <ArrowLeft className="w-3.5 h-3.5" /> Zmień e-mail
+                </button>
 
-                <div>
-                  <h1 className="text-2xl font-display text-foreground">Sprawdź skrzynkę</h1>
-                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                    Wysłaliśmy link resetujący hasło na adres{' '}
-                    <span className="text-foreground font-medium">{resetEmail}</span>.
-                    Sprawdź też folder spam.
+                <div className="text-center">
+                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 mb-4">
+                    <KeyRound className="w-6 h-6 text-primary" />
+                  </div>
+                  <h1 className="text-2xl font-display text-foreground">Wpisz kod</h1>
+                  <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                    Wysłaliśmy 6-cyfrowy kod na<br/>
+                    <span className="text-foreground font-medium">{resetEmail}</span>
                   </p>
                 </div>
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full h-10 gap-2"
-                  onClick={() => switchMode('login', -1)}
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  Powrót do logowania
-                </Button>
+                {error && (
+                  <motion.p initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
+                    className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5 text-center"
+                  >{error}</motion.p>
+                )}
 
-                <p className="text-xs text-muted-foreground">
-                  Nie dotarł e-mail?{' '}
-                  <button
-                    type="button"
-                    onClick={() => switchMode('forgot', -1)}
-                    className="text-primary hover:underline"
-                  >
+                <form onSubmit={handleVerifyOtp} className="space-y-5">
+                  <OtpInput value={otpValue} onChange={setOtpValue} />
+
+                  <Button type="submit" className="w-full h-10 gap-2" disabled={otpLoading || otpValue.replace(/\D/g, '').length < 6}>
+                    {otpLoading
+                      ? <span className="flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" />Weryfikacja...</span>
+                      : <><KeyRound className="w-3.5 h-3.5" />Potwierdź kod</>}
+                  </Button>
+                </form>
+
+                <p className="text-xs text-muted-foreground text-center">
+                  Kod wygasa za 10 minut ·{' '}
+                  <button type="button" onClick={() => handleForgotPassword({ preventDefault: () => {} } as React.FormEvent)} className="text-primary hover:underline">
                     Wyślij ponownie
                   </button>
                 </p>
               </motion.div>
             )}
+
+            {/* ── FORGOT SENT (fallback — nie powinien się pojawić przy OTP flow) ── */}
+            {mode === 'forgot_sent' && (
+              <motion.div key="forgot_sent" custom={dir} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25, ease: 'easeOut' }} className="space-y-6 text-center">
+                <div className="flex justify-center">
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                    <Mail className="w-6 h-6 text-primary" />
+                  </div>
+                </div>
+                <div>
+                  <h1 className="text-2xl font-display text-foreground">Sprawdź skrzynkę</h1>
+                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                    Wysłaliśmy kod na <span className="text-foreground font-medium">{resetEmail}</span>.
+                  </p>
+                </div>
+                <Button type="button" variant="outline" className="w-full h-10 gap-2" onClick={() => switchMode('login', -1)}>
+                  <ArrowLeft className="w-3.5 h-3.5" /> Powrót do logowania
+                </Button>
+              </motion.div>
+            )}
+
           </AnimatePresence>
         </div>
       </div>
