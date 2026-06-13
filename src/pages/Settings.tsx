@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from 'next-themes';
 import {
   X, User, Bell, Shield, Trash2, Moon, Globe, ChevronRight, Save,
   Upload, Camera, Loader2, KeyRound, Copy, Check, Mail, ArrowRight, ArrowLeft,
-  Eye, EyeOff, CheckCircle2, Circle, CreditCard, Download,
+  Eye, EyeOff, CheckCircle2, Circle, CreditCard, Download, Sun, Monitor,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +28,7 @@ const tabs: { id: Tab; labelKey: string; icon: React.FC<{ className?: string }> 
 export default function Settings() {
   const navigate = useNavigate();
   const { t, locale, setLocale } = useTranslation();
+  const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState<Tab>('account');
 
   // Billing / subscription
@@ -561,12 +563,23 @@ export default function Settings() {
                     </label>
                     <p className="text-xs text-muted-foreground mb-3">{t('settings_theme_hint')}</p>
                     <div className="flex gap-2">
-                      {['dark', 'light', 'system'].map((theme) => (
+                      {([
+                        { value: 'dark',   labelKey: 'settings_theme_dark',   Icon: Moon   },
+                        { value: 'light',  labelKey: 'settings_theme_light',  Icon: Sun    },
+                        { value: 'system', labelKey: 'settings_theme_system', Icon: Monitor },
+                      ] as const).map(({ value, labelKey, Icon }) => (
                         <button
-                          key={theme}
-                          className="px-4 py-2 rounded-lg text-sm border border-input text-muted-foreground hover:text-foreground hover:bg-accent transition-colors capitalize"
+                          key={value}
+                          onClick={() => setTheme(value)}
+                          className={cn(
+                            'flex items-center gap-2 px-4 py-2 rounded-lg text-sm border transition-colors',
+                            theme === value
+                              ? 'bg-primary text-primary-foreground border-primary'
+                              : 'border-input text-muted-foreground hover:text-foreground hover:bg-accent'
+                          )}
                         >
-                          {theme}
+                          <Icon className="w-3.5 h-3.5" />
+                          {t(labelKey)}
                         </button>
                       ))}
                     </div>

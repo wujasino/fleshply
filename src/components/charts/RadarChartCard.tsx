@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from '@/lib/locale';
 import {
-  RadarChart, PolarGrid, PolarAngleAxis, Radar,
+  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
   ResponsiveContainer,
 } from 'recharts';
 import { AnalysisResult } from '@/types/analysis';
@@ -105,6 +105,14 @@ export const RadarChartCard = memo(function RadarChartCard({ dimensions, timesta
           >
             <PolarGrid stroke="hsl(240, 4%, 22%)" />
             <PolarAngleAxis dataKey="subject" tick={renderTick} />
+            <PolarRadiusAxis
+              domain={[0, 100]}
+              tickCount={6}
+              tick={{ fill: 'hsl(240, 5%, 40%)', fontSize: 9 }}
+              tickFormatter={(v: number) => v > 0 ? `${v}%` : ''}
+              angle={90}
+              stroke="transparent"
+            />
             <Radar
               name="Score"
               dataKey="value"

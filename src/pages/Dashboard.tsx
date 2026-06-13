@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Sparkles, TrendingUp, TrendingDown, Activity, Layers, Target, RefreshCw, Search, Lock } from 'lucide-react';
+import { ArrowLeft, Sparkles, TrendingUp, TrendingDown, Activity, Layers, Target, RefreshCw, Search, Lock, FileDown } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { useTranslation } from '@/lib/locale';
 import { BrewingProgress } from '@/components/BrewingState';
@@ -281,14 +281,14 @@ const Dashboard = () => {
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <div>
               <div className="flex items-center gap-3 mb-1">
-                {status === 'completed' && <LiveSignal label={t('dashboard_live')} />}
+                {status === 'completed' && <LiveSignal label={t('dashboard_monitoring')} />}
               </div>
               <h1 className="text-3xl sm:text-4xl font-display text-foreground">
                 {displayBrand}{' '}
                 <span className="text-muted-foreground font-light">{t('auditSuffix')}</span>
               </h1>
               <p className="text-muted-foreground text-xs mt-1.5 font-data">
-                {status === 'completed' ? `${t('brewed')}${new Date().toLocaleDateString()}` : t('brewingInProgress')}
+                {status === 'completed' ? t('dashboard_monitoring') : t('brewingInProgress')}
               </p>
             </div>
 
@@ -311,21 +311,32 @@ const Dashboard = () => {
                 type="submit"
                 className="bg-primary text-primary-foreground px-4 py-2.5 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity whitespace-nowrap"
               >
-                {t('brew')}
+                {t('analyze')}
               </button>
               {status === 'completed' && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    reset();
-                    setSearchParams({ brand: displayBrand });
-                    setTimeout(() => startBrewing(displayBrand), 100);
-                  }}
-                  className="inline-flex items-center gap-1.5 bg-card/40 backdrop-blur-xl border border-[hsl(var(--glass-border))] text-foreground px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-card/60 transition-colors"
-                  title={t('reBrew')}
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      reset();
+                      setSearchParams({ brand: displayBrand });
+                      setTimeout(() => startBrewing(displayBrand), 100);
+                    }}
+                    className="inline-flex items-center gap-1.5 bg-card/40 backdrop-blur-xl border border-[hsl(var(--glass-border))] text-foreground px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-card/60 transition-colors"
+                    title={t('reBrew')}
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => window.print()}
+                    className="inline-flex items-center gap-1.5 bg-card/40 backdrop-blur-xl border border-[hsl(var(--glass-border))] text-foreground px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-card/60 transition-colors"
+                    title={t('dashboard_export_pdf')}
+                  >
+                    <FileDown className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline text-xs">{t('dashboard_export_pdf')}</span>
+                  </button>
+                </>
               )}
             </form>
           </div>
@@ -346,23 +357,21 @@ const Dashboard = () => {
                 <Lock className="w-4 h-4 text-amber-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground">Wykorzystałeś wszystkie bezpłatne analizy</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Darmowe konto pozwala na 3 analizy. Zarejestruj się lub wybierz plan, aby kontynuować.
-                </p>
+                <p className="text-sm font-medium text-foreground">{t('dashboard_guest_title')}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{t('dashboard_guest_desc')}</p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <Link
                   to="/register"
                   className="text-xs font-medium px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                 >
-                  Zarejestruj się
+                  {t('dashboard_guest_register')}
                 </Link>
                 <Link
                   to="/pricing"
                   className="text-xs font-medium px-3 py-1.5 rounded-lg border border-[hsl(var(--glass-border))] text-foreground hover:bg-muted/40 transition-colors"
                 >
-                  Zobacz plany
+                  {t('dashboard_guest_plans')}
                 </Link>
               </div>
             </motion.div>
@@ -395,8 +404,8 @@ const Dashboard = () => {
                 </div>
                 {!canSeeCharts && (
                   <LockedOverlay
-                    title="Analiza sentymentu w czasie"
-                    description="Zobacz kierunek opinii AI o Twojej marce w ostatnich dniach i złap trend zanim stanie się problemem."
+                    title={t('dashboard_locked_sentiment_title')}
+                    description={t('dashboard_locked_sentiment_desc')}
                     onUpgrade={() => navigate('/pricing')}
                     t={t}
                   />
@@ -408,8 +417,8 @@ const Dashboard = () => {
                 </div>
                 {!canSeeCharts && (
                   <LockedOverlay
-                    title="Rozkład źródeł AI"
-                    description="Zobacz, skąd pochodzą wzmianki o Twojej marce i które kanały wpływają na percepcję AI."
+                    title={t('dashboard_locked_sources_title')}
+                    description={t('dashboard_locked_sources_desc')}
                     onUpgrade={() => navigate('/pricing')}
                     t={t}
                   />
@@ -421,8 +430,8 @@ const Dashboard = () => {
                 </div>
                 {!canSeeSources && (
                   <LockedOverlay
-                    title="Pełna tabela źródeł"
-                    description="Odblokuj wszystkie modele i źródła, aby zobaczyć pełny feed AI i dowiedzieć się, kto dokładnie mówi o Twojej marce."
+                    title={t('dashboard_locked_table_title')}
+                    description={t('dashboard_locked_table_desc')}
                     onUpgrade={() => navigate('/pricing')}
                     t={t}
                   />

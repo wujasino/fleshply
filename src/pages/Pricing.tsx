@@ -15,14 +15,42 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 
+/* ── USD prices ─────────────────────────────────────────────────── */
+const USD = {
+  solo_monthly: '$29',
+  solo_yearly: '$279',
+  growth_monthly: '$79',
+  growth_yearly: '$749',
+  credits_20: '$9',
+  credits_50: '$19',
+  credits_120: '$39',
+};
+
+const PLN = {
+  solo_monthly: '99 zł',
+  solo_yearly: '950 zł',
+  growth_monthly: '249 zł',
+  growth_yearly: '2 350 zł',
+  credits_20: '39 zł',
+  credits_50: '79 zł',
+  credits_120: '169 zł',
+};
+
+const SOCIAL_PROOF_BRANDS = ['Shopify Plus', 'Brainly', 'Booksy', 'inPost', 'Tidio', 'Packhelp'];
+
 const Pricing = () => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [loading, setLoading] = useState<string | null>(null);
   const [loadingCredits, setLoadingCredits] = useState<string | null>(null);
   const [message, setMessage] = useState<string>('');
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const [currency, setCurrency] = useState<'pln' | 'usd'>(locale === 'pl' ? 'pln' : 'usd');
   const [showDowngradeDialog, setShowDowngradeDialog] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+
+  const prices = currency === 'pln' ? PLN : USD;
+  const period_month = currency === 'pln' ? t('tier_period_month') : '/mo';
+  const period_year  = currency === 'pln' ? t('tier_period_year')  : '/yr';
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => setIsLoggedIn(!!user));
@@ -30,9 +58,14 @@ const Pricing = () => {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('success')) setMessage('Płatność zakończona sukcesem! Twój plan został aktywowany.');
-    if (params.get('canceled')) setMessage('Płatność została anulowana.');
-  }, []);
+    if (params.get('success'))  setMessage(t('pricing_payment_success'));
+    if (params.get('canceled')) setMessage(t('pricing_payment_cancelled'));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* Sync currency with locale changes */
+  useEffect(() => {
+    setCurrency(locale === 'pl' ? 'pln' : 'usd');
+  }, [locale]);
 
   const confirmDowngrade = () => {
     setShowDowngradeDialog(false);
@@ -41,15 +74,10 @@ const Pricing = () => {
 
   const handlePlanSelect = async (planId: string) => {
     if (planId === 'free') {
-      // If already logged in → show confirmation dialog before downgrading
-      if (isLoggedIn) {
-        setShowDowngradeDialog(true);
-        return;
-      }
+      if (isLoggedIn) { setShowDowngradeDialog(true); return; }
       window.location.href = '/register';
       return;
     }
-
     if (planId === 'enterprise') {
       window.location.href = 'mailto:kontakt@bitbrew.pl?subject=Enterprise Plan';
       return;
@@ -66,10 +94,7 @@ const Pricing = () => {
         ? import.meta.env.VITE_STRIPE_SOLO_PRICE_ID
         : import.meta.env.VITE_STRIPE_GROWTH_PRICE_ID;
 
-      if (!priceId) {
-        setMessage('Brak konfiguracji Stripe Price ID. Skontaktuj się z administratorem.');
-        return;
-      }
+      if (!priceId) { setMessage(t('pricing_error_stripe_config')); return; }
 
       const response = await fetch('/.netlify/functions/create-checkout', {
         method: 'POST',
@@ -78,26 +103,27 @@ const Pricing = () => {
       });
 
       if (!response.ok) {
-        let errorMessage = `HTTP ${response.status}`;
-        try { const d = await response.json(); errorMessage = d.error || errorMessage; } catch {}
-        setMessage('Nie udało się rozpocząć płatności. Spróbuj ponownie później.');
+        let err = `HTTP ${response.status}`;
+        try { const d = await response.json(); err = d.error || err; } catch {}
+        console.error(err);
+        setMessage(t('pricing_error_payment'));
         return;
       }
 
       const data = await response.json();
-      if (!data?.url) { setMessage(data?.error || 'Nie udało się utworzyć sesji płatności.'); return; }
+      if (!data?.url) { setMessage(data?.error || t('pricing_error_session')); return; }
       window.location.href = data.url;
     } catch {
-      setMessage('Wystąpił błąd połączenia. Spróbuj ponownie.');
+      setMessage(t('pricing_error_connection'));
     } finally {
       setLoading(null);
     }
   };
 
   const creditPacks = [
-    { id: 'credits_20',  label: t('credits_pack_20'),  price: '39 zł',  analyses: 20,  popular: false },
-    { id: 'credits_50',  label: t('credits_pack_50'),  price: '79 zł',  analyses: 50,  popular: true  },
-    { id: 'credits_120', label: t('credits_pack_120'), price: '169 zł', analyses: 120, popular: false },
+    { id: 'credits_20',  label: t('credits_pack_20'),  price: prices.credits_20,  analyses: 20,  popular: false },
+    { id: 'credits_50',  label: t('credits_pack_50'),  price: prices.credits_50,  analyses: 50,  popular: true  },
+    { id: 'credits_120', label: t('credits_pack_120'), price: prices.credits_120, analyses: 120, popular: false },
   ];
 
   const handleCreditsBuy = async (packId: string) => {
@@ -113,21 +139,14 @@ const Pricing = () => {
         credits_120: import.meta.env.VITE_STRIPE_CREDITS_120 ?? '',
       };
       const baseUrl = linkMap[packId];
+      if (!baseUrl) { setMessage(t('pricing_error_credits_config')); return; }
 
-      if (!baseUrl) {
-        setMessage('Brak konfiguracji linku Stripe dla kredytów. Skontaktuj się z administratorem.');
-        return;
-      }
-
-      // Append client_reference_id (user.id) so the Stripe webhook can credit the right account,
-      // prefill the email, and route Stripe's success page back to /pricing?success=1.
       const url = new URL(baseUrl);
       url.searchParams.set('client_reference_id', user.id);
       if (user.email) url.searchParams.set('prefilled_email', user.email);
-
       window.location.href = url.toString();
     } catch {
-      setMessage('Wystąpił błąd połączenia. Spróbuj ponownie.');
+      setMessage(t('pricing_error_connection'));
     } finally {
       setLoadingCredits(null);
     }
@@ -156,12 +175,12 @@ const Pricing = () => {
     },
     {
       id: 'solo',
-      name: 'Solo Brew',
+      name: 'Solo',
       description: t('tier_solo_desc'),
-      priceMonthly: '99 zł',
-      priceYearly: '950 zł',
-      periodMonthly: t('tier_period_month'),
-      periodYearly: t('tier_period_year'),
+      priceMonthly: prices.solo_monthly,
+      priceYearly: prices.solo_yearly,
+      periodMonthly: period_month,
+      periodYearly: period_year,
       isPopular: false,
       buttonLabel: t('get_started'),
       features: [
@@ -178,10 +197,10 @@ const Pricing = () => {
       id: 'growth',
       name: 'Growth',
       description: t('tier_growth_desc'),
-      priceMonthly: '249 zł',
-      priceYearly: '2 350 zł',
-      periodMonthly: t('tier_period_month'),
-      periodYearly: t('tier_period_year'),
+      priceMonthly: prices.growth_monthly,
+      priceYearly: prices.growth_yearly,
+      periodMonthly: period_month,
+      periodYearly: period_year,
       isPopular: true,
       buttonLabel: t('get_started'),
       features: [
@@ -217,11 +236,21 @@ const Pricing = () => {
     },
   ];
 
+  const faqItems = [
+    { q: t('pricing_faq_q_cancel'),   a: t('pricing_faq_a_cancel')   },
+    { q: t('pricing_faq_q_overage'),  a: t('pricing_faq_a_overage')  },
+    { q: t('pricing_faq_q_switch'),   a: t('pricing_faq_a_switch')   },
+    { q: t('pricing_faq_q_vat'),      a: t('pricing_faq_a_vat')      },
+    { q: t('pricing_faq_q_data'),     a: t('pricing_faq_a_data')     },
+    { q: t('pricing_faq_q_midcycle'), a: t('pricing_faq_a_midcycle') },
+    { q: t('pricing_faq_q_support'),  a: t('pricing_faq_a_support')  },
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Downgrade confirmation dialog */}
+      {/* ── Downgrade dialog ─────────────────────────────────────── */}
       <Dialog open={showDowngradeDialog} onOpenChange={setShowDowngradeDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -229,24 +258,26 @@ const Pricing = () => {
               <div className="w-10 h-10 rounded-full bg-yellow-500/10 flex items-center justify-center shrink-0">
                 <AlertTriangle className="w-5 h-5 text-yellow-500" />
               </div>
-              <DialogTitle>Zmiana planu na Free</DialogTitle>
+              <DialogTitle>{t('pricing_downgrade_title')}</DialogTitle>
             </div>
             <DialogDescription className="text-sm text-muted-foreground leading-relaxed">
-              Czy na pewno chcesz przejść na plan <strong className="text-foreground">Free</strong>?
+              {t('pricing_downgrade_desc')}
               <ul className="mt-3 space-y-1.5 text-sm">
-                <li className="flex items-start gap-2"><span className="text-yellow-500 mt-0.5">•</span> Stracisz dostęp do zaawansowanych źródeł LLM (Claude, Gemini i inne)</li>
-                <li className="flex items-start gap-2"><span className="text-yellow-500 mt-0.5">•</span> Limit zmniejszy się do 3 analiz miesięcznie</li>
-                <li className="flex items-start gap-2"><span className="text-yellow-500 mt-0.5">•</span> Historia analiz i eksport CSV zostaną wyłączone</li>
+                {['pricing_downgrade_bullet1', 'pricing_downgrade_bullet2', 'pricing_downgrade_bullet3'].map(k => (
+                  <li key={k} className="flex items-start gap-2">
+                    <span className="text-yellow-500 mt-0.5">•</span> {t(k)}
+                  </li>
+                ))}
               </ul>
-              <p className="mt-3 text-xs text-muted-foreground/70">Subskrypcja zostanie anulowana przez Stripe — dostęp na wyższym planie trwa do końca opłaconego okresu.</p>
+              <p className="mt-3 text-xs text-muted-foreground/70">{t('pricing_downgrade_note')}</p>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex gap-2 mt-2">
             <Button variant="outline" className="flex-1" onClick={() => setShowDowngradeDialog(false)}>
-              Zostań na obecnym planie
+              {t('pricing_downgrade_stay')}
             </Button>
             <Button variant="destructive" className="flex-1" onClick={confirmDowngrade}>
-              Tak, przejdź na Free
+              {t('pricing_downgrade_confirm')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -268,9 +299,26 @@ const Pricing = () => {
           {message && (
             <p className="mt-4 text-sm text-primary font-medium">{message}</p>
           )}
+
+          {/* Currency toggle */}
+          <div className="flex items-center justify-center mt-6 gap-1 p-1 rounded-lg border border-[hsl(var(--glass-border))] bg-muted/40 w-fit mx-auto">
+            {(['pln', 'usd'] as const).map(c => (
+              <button
+                key={c}
+                onClick={() => setCurrency(c)}
+                className={`px-5 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  currency === c
+                    ? 'bg-background text-foreground shadow-sm border border-input'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {t(`pricing_currency_${c}`)}
+              </button>
+            ))}
+          </div>
         </motion.div>
 
-        {/* New pricing cards with toggle + comparison table */}
+        {/* Pricing cards */}
         <PricingCards
           plans={plans}
           billingCycle={billingCycle}
@@ -279,7 +327,7 @@ const Pricing = () => {
           loadingPlan={loading}
         />
 
-        {/* Credit packs add-on */}
+        {/* Credit packs */}
         <motion.div
           className="mt-16"
           initial={{ opacity: 0, y: 20 }}
@@ -312,6 +360,7 @@ const Pricing = () => {
                 <div>
                   <p className="text-3xl font-display text-foreground">{pack.price}</p>
                   <p className="text-sm text-muted-foreground mt-1">{pack.label}</p>
+                  <p className="text-[11px] text-muted-foreground/60 mt-2">{t('credits_one_time')}</p>
                 </div>
                 <Button
                   onClick={() => handleCreditsBuy(pack.id)}
@@ -319,7 +368,7 @@ const Pricing = () => {
                   variant={pack.popular ? 'default' : 'outline'}
                   className="w-full"
                 >
-                  {loadingCredits === pack.id ? 'Ładowanie...' : t('credits_buy')}
+                  {loadingCredits === pack.id ? t('pricing_loading_credits') : t('credits_buy')}
                 </Button>
               </div>
             ))}
@@ -338,6 +387,14 @@ const Pricing = () => {
             <p className="mt-4 text-sm text-muted-foreground max-w-2xl mx-auto">
               {t('pricing_social_proof_subtitle')}
             </p>
+            {/* Logo chips */}
+            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-6">
+              {SOCIAL_PROOF_BRANDS.map((name) => (
+                <span key={name} className="text-sm font-medium text-muted-foreground/40 select-none">
+                  {name}
+                </span>
+              ))}
+            </div>
           </div>
 
           <div className="space-y-6">
@@ -345,18 +402,13 @@ const Pricing = () => {
               {t('pricing_faq_heading')}
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
-              {[
-                { question: t('pricing_faq_q_cancel'), answer: t('pricing_faq_a_cancel') },
-                { question: t('pricing_faq_q_overage'), answer: t('pricing_faq_a_overage') },
-                { question: t('pricing_faq_q_switch'), answer: t('pricing_faq_a_switch') },
-                { question: t('pricing_faq_q_support'), answer: t('pricing_faq_a_support') },
-              ].map((item) => (
+              {faqItems.map((item) => (
                 <div
-                  key={item.question}
+                  key={item.q}
                   className="rounded-3xl border border-[hsl(var(--glass-border))] bg-background/80 p-6"
                 >
-                  <h3 className="text-sm font-semibold text-foreground">{item.question}</h3>
-                  <p className="mt-3 text-sm text-muted-foreground">{item.answer}</p>
+                  <h3 className="text-sm font-semibold text-foreground">{item.q}</h3>
+                  <p className="mt-3 text-sm text-muted-foreground">{item.a}</p>
                 </div>
               ))}
             </div>
