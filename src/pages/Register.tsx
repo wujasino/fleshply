@@ -1,15 +1,59 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/locale';
-import { Eye, EyeOff, ArrowRight, CheckCircle2, Circle, Mail, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, CheckCircle2, Circle, Mail, ArrowLeft, KeyRound, Loader2 } from 'lucide-react';
 import { registerUser, loginWithGoogle } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 import { FloatingPathsBackground } from '@/components/ui/floating-paths';
 import { cn } from '@/lib/utils';
+
+// 6 individual digit inputs — paste-aware, auto-advancing
+const OtpInput = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => {
+  const inputs = useRef<(HTMLInputElement | null)[]>([]);
+  const digits = value.padEnd(6, '').split('').slice(0, 6);
+  const focus = (i: number) => inputs.current[i]?.focus();
+
+  const handleKey = (i: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace') {
+      onChange(digits.map((d, idx) => idx === i ? '' : d).join(''));
+      if (i > 0) focus(i - 1);
+    }
+  };
+  const handleChange = (i: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const char = e.target.value.replace(/\D/g, '').slice(-1);
+    onChange(digits.map((d, idx) => idx === i ? char : d).join(''));
+    if (char && i < 5) focus(i + 1);
+  };
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (pasted) { onChange(pasted.padEnd(6, '').slice(0, 6)); focus(Math.min(pasted.length, 5)); }
+    e.preventDefault();
+  };
+
+  return (
+    <div className="flex gap-2 justify-center">
+      {digits.map((d, i) => (
+        <input
+          key={i}
+          ref={el => { inputs.current[i] = el; }}
+          type="text"
+          inputMode="numeric"
+          maxLength={1}
+          value={d}
+          onChange={e => handleChange(i, e)}
+          onKeyDown={e => handleKey(i, e)}
+          onPaste={handlePaste}
+          className="w-11 h-14 text-center text-xl font-bold rounded-xl border border-[hsl(var(--glass-border))] bg-background text-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors"
+        />
+      ))}
+    </div>
+  );
+};
 
 const GoogleIcon = () => (
   <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden>
@@ -41,19 +85,37 @@ const rules = [
   { label: 'Znak specjalny',          test: (p: string) => /[^A-Za-z0-9]/.test(p) },
 ];
 
-const SuccessScreen = ({ email, onLogin }: { email: string; onLogin: () => void }) => {
+const SuccessScreen = ({ email }: { email: string }) => {
+  const navigate = useNavigate();
+  const [code, setCode] = useState('');
+  const [verifying, setVerifying] = useState(false);
+  const [error, setError] = useState('');
   const [resending, setResending] = useState(false);
   const [resent, setResent] = useState(false);
 
+  const handleVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const token = code.replace(/\D/g, '');
+    if (token.length < 6) { setError('Wpisz pełny 6-cyfrowy kod.'); return; }
+    setVerifying(true);
+    setError('');
+    try {
+      // Confirms the account AND signs the user in (session is set)
+      const { error: vErr } = await supabase.auth.verifyOtp({ email, token, type: 'signup' });
+      if (vErr) throw vErr;
+      navigate('/dashboard', { replace: true });
+    } catch (err: any) {
+      setError(err.message?.includes('expired') || err.message?.includes('invalid')
+        ? 'Nieprawidłowy lub wygasły kod. Wyślij nowy.'
+        : (err.message || 'Nie udało się potwierdzić kodu.'));
+      setVerifying(false);
+    }
+  };
+
   const handleResend = async () => {
     setResending(true);
-    // Supabase re-sends confirmation if user tries to sign up again with same email
-    const { createClient } = await import('@supabase/supabase-js');
-    const sb = createClient(
-      import.meta.env.VITE_SUPABASE_URL,
-      import.meta.env.VITE_SUPABASE_ANON_KEY
-    );
-    await sb.auth.resend({ type: 'signup', email });
+    setError('');
+    await supabase.auth.resend({ type: 'signup', email });
     setResending(false);
     setResent(true);
   };
@@ -76,23 +138,36 @@ const SuccessScreen = ({ email, onLogin }: { email: string; onLogin: () => void 
         <div>
           <h2 className="text-2xl font-display text-foreground">Sprawdź skrzynkę</h2>
           <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-            Wysłaliśmy link aktywacyjny na{' '}
+            Wysłaliśmy 6-cyfrowy kod aktywacyjny na{' '}
             <span className="text-foreground font-medium">{email}</span>.<br />
-            Kliknij w link, żeby aktywować konto.
+            Wpisz go poniżej, żeby aktywować konto.
           </p>
         </div>
-        <Button className="w-full gap-2" onClick={onLogin}>
-          Przejdź do logowania <ArrowRight className="w-3.5 h-3.5" />
-        </Button>
+
+        {error && (
+          <motion.p initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
+            className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5"
+          >{error}</motion.p>
+        )}
+
+        <form onSubmit={handleVerify} className="space-y-5">
+          <OtpInput value={code} onChange={setCode} />
+          <Button type="submit" className="w-full h-10 gap-2" disabled={verifying || code.replace(/\D/g, '').length < 6}>
+            {verifying
+              ? <span className="flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" />Weryfikacja...</span>
+              : <><KeyRound className="w-3.5 h-3.5" />Aktywuj konto</>}
+          </Button>
+        </form>
+
         {resent ? (
-          <p className="text-xs text-green-400">✓ Email wysłany ponownie.</p>
+          <p className="text-xs text-green-400">✓ Nowy kod wysłany.</p>
         ) : (
           <button
             onClick={handleResend}
             disabled={resending}
             className="text-xs text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
           >
-            {resending ? 'Wysyłanie…' : 'Nie dostałem emaila — wyślij ponownie'}
+            {resending ? 'Wysyłanie…' : 'Nie dostałem kodu — wyślij ponownie'}
           </button>
         )}
       </motion.div>
@@ -102,7 +177,6 @@ const SuccessScreen = ({ email, onLogin }: { email: string; onLogin: () => void 
 
 const Register = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
 
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
@@ -152,7 +226,7 @@ const Register = () => {
     }
   };
 
-  if (success) return <SuccessScreen email={email} onLogin={() => navigate('/login')} />;
+  if (success) return <SuccessScreen email={email} />;
 
   return (
     <div className="min-h-screen flex bg-background">
