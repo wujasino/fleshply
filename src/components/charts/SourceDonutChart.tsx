@@ -50,7 +50,7 @@ export const SourceDonutChart = memo(function SourceDonutChart({ data }: SourceD
         {data.map((item) => (
           <div key={item.name} className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
-            {item.name}
+            {t(`source_${item.name.toLowerCase()}`) || item.name}
           </div>
         ))}
       </div>

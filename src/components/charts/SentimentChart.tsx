@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from '@/lib/locale';
 import {
@@ -12,6 +12,17 @@ interface SentimentChartProps {
 
 export const SentimentChart = memo(function SentimentChart({ data }: SentimentChartProps) {
   const { t } = useTranslation();
+
+  /* Auto-fit Y axis with 10pt padding so the line fills the chart */
+  const [yMin, yMax] = useMemo(() => {
+    if (!data?.length) return [0, 100];
+    const scores = data.map(d => d.score);
+    const min = Math.floor(Math.min(...scores));
+    const max = Math.ceil(Math.max(...scores));
+    const pad = Math.max(5, Math.round((max - min) * 0.2));
+    return [Math.max(0, min - pad), Math.min(100, max + pad)];
+  }, [data]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -36,7 +47,7 @@ export const SentimentChart = memo(function SentimentChart({ data }: SentimentCh
               tickLine={false}
             />
             <YAxis
-              domain={[50, 100]}
+              domain={[yMin, yMax]}
               tick={{ fill: 'hsl(240, 5%, 50%)', fontSize: 11 }}
               axisLine={false}
               tickLine={false}
