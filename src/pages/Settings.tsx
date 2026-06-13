@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   X, User, Bell, Shield, Trash2, Moon, Globe, ChevronRight, Save,
   Upload, Camera, Loader2, KeyRound, Copy, Check, Mail, ArrowRight, ArrowLeft,
+  Eye, EyeOff, CheckCircle2, Circle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,6 +50,22 @@ export default function Settings() {
   const [pwdConfirm, setPwdConfirm] = useState('');
   const [pwdError, setPwdError] = useState('');
   const [pwdLoading, setPwdLoading] = useState(false);
+  const [showPwdNew, setShowPwdNew] = useState(false);
+
+  const pwdRules = [
+    { label: 'Min. 8 znaków',   test: (p: string) => p.length >= 8 },
+    { label: 'Wielka litera',   test: (p: string) => /[A-Z]/.test(p) },
+    { label: 'Cyfra',           test: (p: string) => /[0-9]/.test(p) },
+    { label: 'Znak specjalny',  test: (p: string) => /[^A-Za-z0-9]/.test(p) },
+  ];
+
+  const pwdStrength = useMemo(() => {
+    if (!pwdNew) return 0;
+    return pwdRules.filter(r => r.test(pwdNew)).length;
+  }, [pwdNew]);
+
+  const pwdStrengthLabel = ['', 'Słabe', 'Słabe', 'Średnie', 'Silne'][pwdStrength];
+  const pwdStrengthColor = ['', 'bg-red-500', 'bg-red-500', 'bg-yellow-500', 'bg-green-500'][pwdStrength];
 
   // Security tab — change email
   const [emailStep, setEmailStep] = useState<'idle' | 'input' | 'sent'>('idle');
@@ -599,8 +616,49 @@ export default function Settings() {
 
                     {pwdStep === 'newpwd' && (
                       <form onSubmit={handleSetNewPassword} className="space-y-3">
-                        <Input type="password" value={pwdNew} onChange={e => setPwdNew(e.target.value)} placeholder="Nowe hasło (min. 8 znaków)" autoComplete="new-password" className="h-10" autoFocus />
-                        <Input type="password" value={pwdConfirm} onChange={e => setPwdConfirm(e.target.value)} placeholder="Powtórz hasło" autoComplete="new-password" className="h-10" />
+                        {/* Password input with show/hide */}
+                        <div className="relative">
+                          <Input
+                            type={showPwdNew ? 'text' : 'password'}
+                            value={pwdNew}
+                            onChange={e => setPwdNew(e.target.value)}
+                            placeholder="Nowe hasło"
+                            autoComplete="new-password"
+                            className="h-10 pr-10"
+                            autoFocus
+                          />
+                          <button type="button" onClick={() => setShowPwdNew(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" tabIndex={-1}>
+                            {showPwdNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+
+                        {/* Strength bar */}
+                        {pwdNew.length > 0 && (
+                          <div className="space-y-2">
+                            <div className="flex gap-1 h-1">
+                              {[1, 2, 3, 4].map(i => (
+                                <div key={i} className={`flex-1 rounded-full transition-colors ${i <= pwdStrength ? pwdStrengthColor : 'bg-muted/40'}`} />
+                              ))}
+                            </div>
+                            <p className="text-[11px] text-muted-foreground">{pwdStrengthLabel}</p>
+                            {/* Rules checklist */}
+                            <div className="grid grid-cols-2 gap-x-3 gap-y-1 pt-0.5">
+                              {pwdRules.map(({ label, test }) => {
+                                const ok = test(pwdNew);
+                                return (
+                                  <div key={label} className="flex items-center gap-1.5">
+                                    {ok
+                                      ? <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                                      : <Circle className="w-3 h-3 text-muted-foreground/40 shrink-0" />}
+                                    <span className={`text-[11px] ${ok ? 'text-foreground/80' : 'text-muted-foreground/60'}`}>{label}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        <Input type={showPwdNew ? 'text' : 'password'} value={pwdConfirm} onChange={e => setPwdConfirm(e.target.value)} placeholder="Powtórz hasło" autoComplete="new-password" className="h-10" />
                         {pwdConfirm.length > 0 && pwdNew !== pwdConfirm && (
                           <p className="text-[11px] text-red-400">Hasła się nie zgadzają</p>
                         )}
