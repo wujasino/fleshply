@@ -176,7 +176,7 @@ const Pricing = () => {
     },
     {
       id: 'growth',
-      name: 'Growth Roast',
+      name: 'Growth',
       description: t('tier_growth_desc'),
       priceMonthly: '249 zł',
       priceYearly: '2 350 zł',
@@ -196,7 +196,7 @@ const Pricing = () => {
     },
     {
       id: 'enterprise',
-      name: 'Enterprise Roast',
+      name: 'Enterprise Suite',
       description: t('tier_ent_desc'),
       priceMonthly: t('tier_ent_price'),
       priceYearly: t('tier_ent_price'),

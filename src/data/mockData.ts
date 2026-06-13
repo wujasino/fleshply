@@ -125,7 +125,7 @@ export const pricingTiers: PricingTier[] = [
     ],
   },
   {
-    name: 'Growth Roast',
+    name: 'Growth',
     price: '249 zł',
     monthlyPrice: '249 zł',
     yearlyPrice: '2 350 zł',
@@ -141,7 +141,7 @@ export const pricingTiers: PricingTier[] = [
     highlighted: true,
   },
   {
-    name: 'Enterprise Roast',
+    name: 'Enterprise Suite',
     price: 'Indywidualna wycena',
     monthlyPrice: 'Indywidualna wycena',
     yearlyPrice: 'Indywidualna wycena',

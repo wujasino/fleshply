@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   X, User, Bell, Shield, Trash2, Moon, Globe, ChevronRight, Save,
   Upload, Camera, Loader2, KeyRound, Copy, Check, Mail, ArrowRight, ArrowLeft,
-  Eye, EyeOff, CheckCircle2, Circle,
+  Eye, EyeOff, CheckCircle2, Circle, CreditCard, Download,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +12,7 @@ import { useTranslation } from '@/lib/locale';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 
-type Tab = 'account' | 'appearance' | 'notifications' | 'security' | 'privacy' | 'danger';
+type Tab = 'account' | 'appearance' | 'notifications' | 'security' | 'privacy' | 'billing' | 'danger';
 
 const tabs: { id: Tab; labelKey: string; icon: React.FC<{ className?: string }> }[] = [
   { id: 'account',       labelKey: 'settings_tab_account',       icon: User },
@@ -20,6 +20,7 @@ const tabs: { id: Tab; labelKey: string; icon: React.FC<{ className?: string }> 
   { id: 'notifications', labelKey: 'settings_tab_notifications', icon: Bell },
   { id: 'security',      labelKey: 'settings_tab_security',      icon: KeyRound },
   { id: 'privacy',       labelKey: 'settings_tab_privacy',       icon: Shield },
+  { id: 'billing',       labelKey: 'settings_tab_billing',       icon: CreditCard },
   { id: 'danger',        labelKey: 'settings_tab_danger',        icon: Trash2 },
 ];
 
@@ -27,6 +28,12 @@ export default function Settings() {
   const navigate = useNavigate();
   const { t, locale, setLocale } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>('account');
+
+  // Billing / subscription
+  const [subStatus, setSubStatus] = useState<'active' | 'paused' | 'cancelled'>('active');
+  const [subHistory, setSubHistory] = useState<Array<{ status: 'active' | 'paused' | 'cancelled'; label: string; timestamp: string }>>([]);
+  const [exportFormat, setExportFormat] = useState<'csv' | 'json'>('csv');
+
   const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -77,6 +84,16 @@ export default function Settings() {
   const [codeCopied, setCodeCopied] = useState(false);
 
   useEffect(() => {
+    const stored = localStorage.getItem('subscriptionStatus') as typeof subStatus | null;
+    if (stored) setSubStatus(stored);
+    const storedHist = localStorage.getItem('subscriptionHistory');
+    if (storedHist) {
+      try { setSubHistory(JSON.parse(storedHist)); } catch { /* noop */ }
+    } else {
+      const init = [{ status: 'active' as const, label: t('sub_status_active'), timestamp: new Date().toISOString() }];
+      setSubHistory(init);
+      localStorage.setItem('subscriptionHistory', JSON.stringify(init));
+    }
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) { navigate('/login'); return; }
       setUserId(user.id);
@@ -84,7 +101,40 @@ export default function Settings() {
       setDisplayName(user.user_metadata?.full_name ?? '');
       setAvatarUrl(user.user_metadata?.avatar_url ?? null);
     });
-  }, [navigate]);
+  }, [navigate]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const SUB_DOT = {
+    active: 'bg-emerald-400 ring-emerald-400/30',
+    paused: 'bg-amber-400 ring-amber-400/30',
+    cancelled: 'bg-red-500 ring-red-500/30',
+  } as const;
+  const SUB_STATUS_KEY = { active: 'sub_status_active', paused: 'sub_status_paused', cancelled: 'sub_status_cancelled' } as const;
+
+  const updateSub = (status: typeof subStatus) => {
+    if (status === subStatus) return;
+    setSubStatus(status);
+    localStorage.setItem('subscriptionStatus', status);
+    const label = t(SUB_STATUS_KEY[status]);
+    const next = [{ status, label, timestamp: new Date().toISOString() }, ...subHistory].slice(0, 20);
+    setSubHistory(next);
+    localStorage.setItem('subscriptionHistory', JSON.stringify(next));
+  };
+
+  const downloadHistory = () => {
+    if (!subHistory.length) return;
+    const isJson = exportFormat === 'json';
+    const content = isJson
+      ? JSON.stringify(subHistory, null, 2)
+      : [['Date', 'Status', 'Description'], ...subHistory.map(i => [
+          new Date(i.timestamp).toLocaleString(),
+          i.status,
+          i.label,
+        ])].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([content], { type: isJson ? 'application/json' : 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    Object.assign(document.createElement('a'), { href: url, download: `billing-history.${exportFormat}` }).click();
+    URL.revokeObjectURL(url);
+  };
 
   const initials = email ? email[0].toUpperCase() : '?';
 
@@ -767,6 +817,79 @@ export default function Settings() {
                       {t('settings_data_export_btn')}
                     </Button>
                   </div>
+                </div>
+              )}
+
+              {/* ── BILLING ── */}
+              {activeTab === 'billing' && (
+                <div className="space-y-5">
+                  {/* Status row */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-[hsl(var(--glass-border))] bg-card/40">
+                    <div className="flex items-center gap-3">
+                      <span className={`inline-flex h-2.5 w-2.5 rounded-full ring-2 ${SUB_DOT[subStatus]} animate-pulse`} />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{t(SUB_STATUS_KEY[subStatus])}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{t('settings_billing_manage_desc')}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 flex-wrap">
+                      {subStatus === 'active' && (
+                        <>
+                          <Button size="sm" variant="outline" onClick={() => updateSub('paused')}>{t('settings_billing_pause')}</Button>
+                          <Button size="sm" variant="outline" onClick={() => updateSub('cancelled')}>{t('settings_billing_cancel')}</Button>
+                        </>
+                      )}
+                      {subStatus === 'paused' && (
+                        <>
+                          <Button size="sm" onClick={() => updateSub('active')}>{t('settings_billing_resume')}</Button>
+                          <Button size="sm" variant="outline" onClick={() => updateSub('cancelled')}>{t('settings_billing_cancel')}</Button>
+                        </>
+                      )}
+                      {subStatus === 'cancelled' && (
+                        <Button size="sm" onClick={() => updateSub('active')}>{t('settings_billing_resume')}</Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* History */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground font-semibold">{t('settings_billing_history')}</p>
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={exportFormat}
+                        onChange={e => setExportFormat(e.target.value as 'csv' | 'json')}
+                        className="rounded-md border border-input bg-background px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-primary"
+                      >
+                        <option value="csv">CSV</option>
+                        <option value="json">JSON</option>
+                      </select>
+                      <Button size="sm" variant="outline" className="h-7 text-xs gap-1.5" onClick={downloadHistory}>
+                        <Download className="w-3 h-3" /> {t('settings_billing_download')}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {subHistory.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">{t('settings_billing_no_history')}</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {subHistory.map((item, i) => (
+                        <div key={item.timestamp + i}
+                          className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-[hsl(var(--glass-border))] bg-muted/20 text-sm">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <span className={`inline-flex h-2 w-2 shrink-0 rounded-full ring-2 ${SUB_DOT[item.status]}`} />
+                            <span className="font-medium text-foreground truncate">{item.label}</span>
+                          </div>
+                          <div className="flex items-center gap-3 shrink-0">
+                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{t(SUB_STATUS_KEY[item.status])}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(item.timestamp).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
