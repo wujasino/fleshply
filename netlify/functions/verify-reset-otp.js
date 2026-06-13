@@ -38,17 +38,21 @@ export const handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: corsHeaders(event) };
   if (event.httpMethod !== 'POST') return json(405, { error: 'Method not allowed' }, event);
 
-  if ((event.body?.length ?? 0) > 512) return json(400, { error: 'Payload too large' }, event);
+  if ((event.body?.length ?? 0) > 1024) return json(400, { error: 'Payload too large' }, event);
 
-  let email, code;
+  let email, code, newPassword;
   try {
-    ({ email, code } = JSON.parse(event.body ?? '{}'));
+    ({ email, code, newPassword } = JSON.parse(event.body ?? '{}'));
   } catch {
     return json(400, { error: 'Invalid JSON' }, event);
   }
 
   if (!email || !code || !/^\d{6}$/.test(code)) {
     return json(400, { error: 'Nieprawidłowe dane' }, event);
+  }
+
+  if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 8) {
+    return json(400, { error: 'Hasło musi mieć co najmniej 8 znaków.' }, event);
   }
 
   const normalizedEmail = email.trim().toLowerCase();
@@ -80,25 +84,34 @@ export const handler = async (event) => {
     return json(400, { error: 'Kod wygasł. Wyślij nowy.' }, event);
   }
 
-  // Mark as used (one-time use)
+  // Mark as used (one-time use) before mutating the account
   await supabase
     .from('password_reset_otps')
     .update({ used_at: new Date().toISOString() })
     .eq('id', record.id);
 
-  // Generate a Supabase password reset link so the frontend can complete the flow
+  // Resolve the user id for this email. generateLink returns the user object
+  // without sending any email, so it doubles as a reliable lookup.
   const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
     type: 'recovery',
     email: normalizedEmail,
   });
 
-  if (linkError || !linkData?.properties?.action_link) {
-    console.error('Generate link error:', linkError?.message);
-    return json(500, { error: 'Błąd generowania linku. Spróbuj ponownie.' }, event);
+  const userId = linkData?.user?.id;
+  if (linkError || !userId) {
+    console.error('User lookup error:', linkError?.message);
+    return json(400, { error: 'Nie znaleziono konta dla tego adresu e-mail.' }, event);
   }
 
-  return json(200, {
-    ok: true,
-    resetUrl: linkData.properties.action_link,
-  }, event);
+  // Set the new password directly — no redirect, no Supabase recovery link needed
+  const { error: updateError } = await supabase.auth.admin.updateUserById(userId, {
+    password: newPassword,
+  });
+
+  if (updateError) {
+    console.error('Password update error:', updateError.message);
+    return json(500, { error: 'Nie udało się zmienić hasła. Spróbuj ponownie.' }, event);
+  }
+
+  return json(200, { ok: true }, event);
 };

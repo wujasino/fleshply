@@ -97,6 +97,10 @@ const Login = () => {
   const [resetLoading, setResetLoading] = useState(false);
   const [otpValue, setOtpValue]     = useState('');
   const [otpLoading, setOtpLoading] = useState(false);
+  const [newPwd, setNewPwd]         = useState('');
+  const [newPwdConfirm, setNewPwdConfirm] = useState('');
+  const [showNewPwd, setShowNewPwd] = useState(false);
+  const [notice, setNotice]         = useState('');
   const [dir, setDir]               = useState(1);
 
   const switchMode = (next: typeof mode, direction = 1) => {
@@ -110,6 +114,7 @@ const Login = () => {
     if (!resetEmail.trim()) return;
     setResetLoading(true);
     setError('');
+    setNotice('');
     try {
       const res = await fetch('/.netlify/functions/send-reset-otp', {
         method: 'POST',
@@ -134,21 +139,35 @@ const Login = () => {
       setError('Wpisz pełny 6-cyfrowy kod.');
       return;
     }
+    if (newPwd.length < 8) {
+      setError('Nowe hasło musi mieć co najmniej 8 znaków.');
+      return;
+    }
+    if (newPwd !== newPwdConfirm) {
+      setError('Hasła nie są identyczne.');
+      return;
+    }
     setOtpLoading(true);
     setError('');
     try {
       const res = await fetch('/.netlify/functions/verify-reset-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: resetEmail.trim(), code: otpValue.replace(/\D/g, '') }),
+        body: JSON.stringify({ email: resetEmail.trim(), code: otpValue.replace(/\D/g, ''), newPassword: newPwd }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Nieprawidłowy kod.');
-      // Redirect to Supabase reset URL which will set session and land on /reset-password
-      window.location.href = data.resetUrl;
+      // Password changed directly — back to login with a success notice
+      setEmail(resetEmail.trim());
+      setNewPwd('');
+      setNewPwdConfirm('');
+      setOtpValue('');
+      setNotice('Hasło zostało zmienione. Zaloguj się nowym hasłem.');
+      switchMode('login', -1);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message);
+    } finally {
       setOtpLoading(false);
     }
   };
@@ -281,6 +300,12 @@ const Login = () => {
                   <p className="text-sm text-muted-foreground mt-1">{t('login_subtitle')}</p>
                 </div>
 
+                {notice && (
+                  <motion.p initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
+                    className="text-sm text-green-400 bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-2.5"
+                  >{notice}</motion.p>
+                )}
+
                 {error && (
                   <motion.p initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
                     className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5"
@@ -386,7 +411,7 @@ const Login = () => {
                   <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 mb-4">
                     <KeyRound className="w-6 h-6 text-primary" />
                   </div>
-                  <h1 className="text-2xl font-display text-foreground">Wpisz kod</h1>
+                  <h1 className="text-2xl font-display text-foreground">Wpisz kod i nowe hasło</h1>
                   <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
                     Wysłaliśmy 6-cyfrowy kod na<br/>
                     <span className="text-foreground font-medium">{resetEmail}</span>
@@ -402,10 +427,43 @@ const Login = () => {
                 <form onSubmit={handleVerifyOtp} className="space-y-5">
                   <OtpInput value={otpValue} onChange={setOtpValue} />
 
-                  <Button type="submit" className="w-full h-10 gap-2" disabled={otpLoading || otpValue.replace(/\D/g, '').length < 6}>
+                  <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Nowe hasło</Label>
+                      <div className="relative">
+                        <Input
+                          type={showNewPwd ? 'text' : 'password'}
+                          value={newPwd}
+                          onChange={e => setNewPwd(e.target.value)}
+                          placeholder="Minimum 8 znaków"
+                          autoComplete="new-password"
+                          className="h-10 pr-10"
+                        />
+                        <button type="button" onClick={() => setShowNewPwd(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" tabIndex={-1} aria-label={showNewPwd ? 'Ukryj hasło' : 'Pokaż hasło'}>
+                          {showNewPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Powtórz hasło</Label>
+                      <Input
+                        type={showNewPwd ? 'text' : 'password'}
+                        value={newPwdConfirm}
+                        onChange={e => setNewPwdConfirm(e.target.value)}
+                        placeholder="Powtórz nowe hasło"
+                        autoComplete="new-password"
+                        className="h-10"
+                      />
+                      {newPwdConfirm.length > 0 && newPwd !== newPwdConfirm && (
+                        <p className="text-[11px] text-red-400">Hasła się nie zgadzają</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <Button type="submit" className="w-full h-10 gap-2" disabled={otpLoading || otpValue.replace(/\D/g, '').length < 6 || newPwd.length < 8 || newPwd !== newPwdConfirm}>
                     {otpLoading
-                      ? <span className="flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" />Weryfikacja...</span>
-                      : <><KeyRound className="w-3.5 h-3.5" />Potwierdź kod</>}
+                      ? <span className="flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" />Zapisywanie...</span>
+                      : <><KeyRound className="w-3.5 h-3.5" />Zmień hasło</>}
                   </Button>
                 </form>
 
