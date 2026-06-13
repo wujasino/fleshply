@@ -1,4 +1,4 @@
--- OTP codes for password reset
+-- OTP codes for password reset (idempotent — safe to re-run)
 CREATE TABLE IF NOT EXISTS public.password_reset_otps (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email       TEXT NOT NULL,
@@ -15,6 +15,7 @@ CREATE INDEX IF NOT EXISTS idx_password_reset_otps_email ON public.password_rese
 ALTER TABLE public.password_reset_otps ENABLE ROW LEVEL SECURITY;
 
 -- No direct client access — all operations go through Netlify Functions
+DROP POLICY IF EXISTS "No direct access" ON public.password_reset_otps;
 CREATE POLICY "No direct access" ON public.password_reset_otps
   AS RESTRICTIVE
   FOR ALL
