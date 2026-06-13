@@ -57,6 +57,9 @@ export default defineConfig(({ mode }) => ({
     alias: { "@": path.resolve(__dirname, "./src") },
   },
   build: {
+    // Nie publikuj source map w produkcji — utrudnia czytanie kodu źródłowego.
+    // Minifikacja (oxc) działa domyślnie, więc kod jest dodatkowo nieczytelny.
+    sourcemap: false,
     rollupOptions: {
       output: {
         manualChunks(id: string) {

@@ -1,4 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
+import ws from 'ws';
+
+// Node < 22 has no native WebSocket — supabase-js inits Realtime eagerly.
+if (!globalThis.WebSocket) {
+  globalThis.WebSocket = ws;
+}
 
 const GUEST_LIMIT = 3;
 

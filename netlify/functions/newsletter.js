@@ -3,6 +3,12 @@
  * Body: { email: string }
  */
 const { createClient } = require('@supabase/supabase-js');
+const ws = require('ws');
+
+// Node < 22 has no native WebSocket — supabase-js inits Realtime eagerly.
+if (!globalThis.WebSocket) {
+  globalThis.WebSocket = ws;
+}
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
