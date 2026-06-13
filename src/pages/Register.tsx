@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 // 6 individual digit inputs — paste-aware, auto-advancing
 const OtpInput = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => {
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
-  const digits = value.padEnd(6, '').split('').slice(0, 6);
+  const digits = Array.from({ length: 6 }, (_, i) => value[i] ?? '');
   const focus = (i: number) => inputs.current[i]?.focus();
 
   const handleKey = (i: number, e: React.KeyboardEvent<HTMLInputElement>) => {

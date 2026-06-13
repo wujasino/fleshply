@@ -51,7 +51,11 @@ export const handler = async (event) => {
     return json(400, { error: 'Nieprawidłowe dane' }, event);
   }
 
-  if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 8) {
+  // Two-phase flow:
+  //  - without newPassword → just verify the code is valid (does NOT consume it)
+  //  - with newPassword     → verify, set the new password, consume the code
+  const settingPassword = newPassword !== undefined && newPassword !== null;
+  if (settingPassword && (typeof newPassword !== 'string' || newPassword.length < 8)) {
     return json(400, { error: 'Hasło musi mieć co najmniej 8 znaków.' }, event);
   }
 
@@ -82,6 +86,11 @@ export const handler = async (event) => {
   // Check expiry
   if (new Date(record.expires_at) < new Date()) {
     return json(400, { error: 'Kod wygasł. Wyślij nowy.' }, event);
+  }
+
+  // Phase 1: code-only verification — confirm it's valid without consuming it
+  if (!settingPassword) {
+    return json(200, { ok: true, verified: true }, event);
   }
 
   // Mark as used (one-time use) before mutating the account

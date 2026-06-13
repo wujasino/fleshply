@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   X, User, Bell, Shield, Trash2, Moon, Globe, ChevronRight, Save,
-  Upload, Camera, Loader2, KeyRound, Copy, Check, Mail, ExternalLink,
+  Upload, Camera, Loader2, KeyRound, Copy, Check, Mail, ArrowRight, ArrowLeft,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,9 +42,20 @@ export default function Settings() {
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Security tab
-  const [resetSent, setResetSent] = useState(false);
-  const [resetLoading, setResetLoading] = useState(false);
+  // Security tab — change password via OTP
+  const [pwdStep, setPwdStep] = useState<'idle' | 'sending' | 'otp' | 'newpwd' | 'done'>('idle');
+  const [pwdOtp, setPwdOtp] = useState('');
+  const [pwdNew, setPwdNew] = useState('');
+  const [pwdConfirm, setPwdConfirm] = useState('');
+  const [pwdError, setPwdError] = useState('');
+  const [pwdLoading, setPwdLoading] = useState(false);
+
+  // Security tab — change email
+  const [emailStep, setEmailStep] = useState<'idle' | 'input' | 'sent'>('idle');
+  const [newEmail, setNewEmail] = useState('');
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailError, setEmailError] = useState('');
+
   const [recoveryCode, setRecoveryCode] = useState<string | null>(null);
   const [codeCopied, setCodeCopied] = useState(false);
 
@@ -158,14 +169,91 @@ export default function Settings() {
     }
   };
 
-  const handleSendReset = async () => {
+  // --- Change password via OTP ---
+  const handleSendPwdOtp = async () => {
     if (!email) return;
-    setResetLoading(true);
-    await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    setResetLoading(false);
-    setResetSent(true);
+    setPwdLoading(true);
+    setPwdError('');
+    try {
+      const res = await fetch('/.netlify/functions/send-reset-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Błąd wysyłania kodu.');
+      setPwdOtp('');
+      setPwdStep('otp');
+    } catch (err: any) {
+      setPwdError(err.message);
+    } finally {
+      setPwdLoading(false);
+    }
+  };
+
+  const handleVerifyPwdOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pwdOtp.replace(/\D/g, '').length < 6) { setPwdError('Wpisz pełny 6-cyfrowy kod.'); return; }
+    setPwdLoading(true);
+    setPwdError('');
+    try {
+      const res = await fetch('/.netlify/functions/verify-reset-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code: pwdOtp.replace(/\D/g, '') }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Nieprawidłowy kod.');
+      setPwdNew('');
+      setPwdConfirm('');
+      setPwdStep('newpwd');
+    } catch (err: any) {
+      setPwdError(err.message);
+    } finally {
+      setPwdLoading(false);
+    }
+  };
+
+  const handleSetNewPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pwdNew.length < 8) { setPwdError('Hasło musi mieć co najmniej 8 znaków.'); return; }
+    if (pwdNew !== pwdConfirm) { setPwdError('Hasła nie są identyczne.'); return; }
+    setPwdLoading(true);
+    setPwdError('');
+    try {
+      const res = await fetch('/.netlify/functions/verify-reset-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code: pwdOtp.replace(/\D/g, ''), newPassword: pwdNew }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Nie udało się zmienić hasła.');
+      setPwdStep('done');
+    } catch (err: any) {
+      setPwdError(err.message);
+    } finally {
+      setPwdLoading(false);
+    }
+  };
+
+  // --- Change email ---
+  const handleChangeEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(newEmail)) {
+      setEmailError('Podaj poprawny adres e-mail.');
+      return;
+    }
+    setEmailLoading(true);
+    setEmailError('');
+    try {
+      const { error } = await supabase.auth.updateUser({ email: newEmail.trim().toLowerCase() });
+      if (error) throw error;
+      setEmailStep('sent');
+    } catch (err: any) {
+      setEmailError(err.message || 'Nie udało się zmienić adresu e-mail.');
+    } finally {
+      setEmailLoading(false);
+    }
   };
 
   const handleViewRecoveryCode = async () => {
@@ -205,8 +293,8 @@ export default function Settings() {
         onClick={close}
       />
 
-      {/* Panel — static after mount, no re-animation on tab change */}
-      <div className="relative z-10 w-full max-w-3xl max-h-[85vh] flex overflow-hidden rounded-2xl border border-[hsl(var(--glass-border))] bg-background/95 shadow-2xl">
+      {/* Panel — fixed height so switching sections never resizes/recenters it */}
+      <div className="relative z-10 w-full max-w-3xl h-[85vh] max-h-[640px] flex overflow-hidden rounded-2xl border border-[hsl(var(--glass-border))] bg-background/95 shadow-2xl">
 
           {/* Sidebar */}
           <aside className="w-52 shrink-0 border-r border-[hsl(var(--glass-border))] bg-muted/30 flex flex-col p-3 gap-0.5">
@@ -455,89 +543,140 @@ export default function Settings() {
               {activeTab === 'security' && (
                 <div className="space-y-5">
 
-                  {/* Reset password */}
+                  {/* ── Change password via OTP ── */}
                   <div className="p-4 rounded-xl border border-[hsl(var(--glass-border))] bg-muted/20 space-y-3">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                         <KeyRound className="w-4 h-4 text-primary" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-foreground">Resetuj hasło</p>
+                        <p className="text-sm font-medium text-foreground">Zmień hasło</p>
                         <p className="text-xs text-muted-foreground">
-                          Wyślemy link resetujący na adres <strong>{email}</strong>
+                          {pwdStep === 'idle' ? <>Wyślemy kod weryfikacyjny na <strong>{email}</strong></> : null}
+                          {pwdStep === 'otp' ? 'Wpisz kod z e-maila' : null}
+                          {pwdStep === 'newpwd' ? 'Kod potwierdzony — ustaw nowe hasło' : null}
+                          {pwdStep === 'done' ? 'Hasło zostało zmienione' : null}
                         </p>
                       </div>
                     </div>
 
-                    {resetSent ? (
+                    {pwdError && (
+                      <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">{pwdError}</p>
+                    )}
+
+                    {pwdStep === 'idle' && (
+                      <Button size="sm" variant="outline" className="w-full" disabled={pwdLoading} onClick={handleSendPwdOtp}>
+                        {pwdLoading ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Mail className="w-3.5 h-3.5 mr-1.5" />}
+                        Wyślij kod weryfikacyjny
+                      </Button>
+                    )}
+
+                    {pwdStep === 'otp' && (
+                      <form onSubmit={handleVerifyPwdOtp} className="space-y-3">
+                        <div className="space-y-1.5">
+                          <p className="text-xs text-muted-foreground">Kod 6-cyfrowy z e-maila</p>
+                          <Input
+                            value={pwdOtp}
+                            onChange={e => setPwdOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                            placeholder="000000"
+                            inputMode="numeric"
+                            maxLength={6}
+                            className="h-10 text-center text-xl tracking-widest font-bold"
+                            autoFocus
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <Button type="button" size="sm" variant="ghost" onClick={() => { setPwdStep('idle'); setPwdError(''); }}>
+                            <ArrowLeft className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button type="submit" size="sm" className="flex-1" disabled={pwdLoading || pwdOtp.length < 6}>
+                            {pwdLoading ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <ArrowRight className="w-3.5 h-3.5 mr-1.5" />}
+                            Dalej
+                          </Button>
+                        </div>
+                      </form>
+                    )}
+
+                    {pwdStep === 'newpwd' && (
+                      <form onSubmit={handleSetNewPassword} className="space-y-3">
+                        <Input type="password" value={pwdNew} onChange={e => setPwdNew(e.target.value)} placeholder="Nowe hasło (min. 8 znaków)" autoComplete="new-password" className="h-10" autoFocus />
+                        <Input type="password" value={pwdConfirm} onChange={e => setPwdConfirm(e.target.value)} placeholder="Powtórz hasło" autoComplete="new-password" className="h-10" />
+                        {pwdConfirm.length > 0 && pwdNew !== pwdConfirm && (
+                          <p className="text-[11px] text-red-400">Hasła się nie zgadzają</p>
+                        )}
+                        <div className="flex gap-2">
+                          <Button type="button" size="sm" variant="ghost" onClick={() => { setPwdStep('otp'); setPwdError(''); }}>
+                            <ArrowLeft className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button type="submit" size="sm" className="flex-1" disabled={pwdLoading || pwdNew.length < 8 || pwdNew !== pwdConfirm}>
+                            {pwdLoading ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <KeyRound className="w-3.5 h-3.5 mr-1.5" />}
+                            Zmień hasło
+                          </Button>
+                        </div>
+                      </form>
+                    )}
+
+                    {pwdStep === 'done' && (
                       <div className="flex items-center gap-2 text-sm text-green-500 bg-green-500/10 rounded-lg px-3 py-2">
                         <Check className="w-4 h-4 shrink-0" />
-                        Email wysłany! Sprawdź swoją skrzynkę i kliknij link.
+                        Hasło zostało zmienione pomyślnie.
                       </div>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={resetLoading}
-                        onClick={handleSendReset}
-                        className="w-full"
-                      >
-                        {resetLoading ? (
-                          <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                        ) : (
-                          <Mail className="w-3.5 h-3.5 mr-1.5" />
-                        )}
-                        Wyślij link resetujący
-                      </Button>
                     )}
                   </div>
 
-                  {/* Recovery code info */}
+                  {/* ── Change email ── */}
                   <div className="p-4 rounded-xl border border-[hsl(var(--glass-border))] bg-muted/20 space-y-3">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                        <Shield className="w-4 h-4 text-primary" />
+                        <Mail className="w-4 h-4 text-primary" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-foreground">Kod zapasowy</p>
-                        <p className="text-xs text-muted-foreground">
-                          Generowany po każdym resecie hasła. Pozwala odzyskać dostęp do konta.
-                        </p>
+                        <p className="text-sm font-medium text-foreground">Zmień adres e-mail</p>
+                        <p className="text-xs text-muted-foreground">Aktualny: <strong>{email}</strong></p>
                       </div>
                     </div>
 
-                    {recoveryCode === null && (
-                      <Button size="sm" variant="outline" className="w-full" onClick={handleViewRecoveryCode}>
-                        <Shield className="w-3.5 h-3.5 mr-1.5" />
-                        Sprawdź status kodu
+                    {emailError && (
+                      <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">{emailError}</p>
+                    )}
+
+                    {emailStep === 'idle' && (
+                      <Button size="sm" variant="outline" className="w-full" onClick={() => { setEmailStep('input'); setEmailError(''); setNewEmail(''); }}>
+                        <Mail className="w-3.5 h-3.5 mr-1.5" />
+                        Zmień e-mail
                       </Button>
                     )}
-                    {recoveryCode === 'none' && (
-                      <p className="text-xs text-muted-foreground bg-muted/40 rounded-lg px-3 py-2">
-                        Brak kodu zapasowego. Zresetuj hasło — po resecie otrzymasz nowy kod.
-                      </p>
+
+                    {emailStep === 'input' && (
+                      <form onSubmit={handleChangeEmail} className="space-y-3">
+                        <Input
+                          type="email"
+                          value={newEmail}
+                          onChange={e => setNewEmail(e.target.value)}
+                          placeholder="nowy@email.pl"
+                          autoComplete="email"
+                          className="h-10"
+                          autoFocus
+                        />
+                        <div className="flex gap-2">
+                          <Button type="button" size="sm" variant="ghost" onClick={() => { setEmailStep('idle'); setEmailError(''); }}>
+                            <ArrowLeft className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button type="submit" size="sm" className="flex-1" disabled={emailLoading || !newEmail.trim()}>
+                            {emailLoading ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <ArrowRight className="w-3.5 h-3.5 mr-1.5" />}
+                            Wyślij potwierdzenie
+                          </Button>
+                        </div>
+                      </form>
                     )}
-                    {recoveryCode && recoveryCode !== 'none' && (
-                      <div className="text-xs text-muted-foreground bg-green-500/10 border border-green-500/20 rounded-lg px-3 py-2 space-y-1">
-                        <p className="flex items-center gap-1.5 text-green-600 dark:text-green-400 font-medium">
-                          <Check className="w-3.5 h-3.5" /> Kod zapasowy aktywny
-                        </p>
-                        <p>Wygenerowany: {new Date(recoveryCode).toLocaleDateString('pl-PL', { dateStyle: 'medium' })}</p>
-                        <p>Kod jest zaszyfrowany — jego treść widzisz tylko bezpośrednio po resecie hasła.</p>
+
+                    {emailStep === 'sent' && (
+                      <div className="flex items-center gap-2 text-sm text-green-500 bg-green-500/10 rounded-lg px-3 py-2">
+                        <Check className="w-4 h-4 shrink-0" />
+                        Wysłano link potwierdzający na <strong className="ml-1">{newEmail}</strong>. Kliknij go, żeby zatwierdzić zmianę.
                       </div>
                     )}
                   </div>
-
-                  {/* Reset link shortcut */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full gap-2"
-                    onClick={() => window.open(`${window.location.origin}/reset-password`, '_blank')}
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    Przejdź do strony resetu hasła
-                  </Button>
 
                 </div>
               )}
