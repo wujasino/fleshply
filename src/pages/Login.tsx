@@ -34,7 +34,7 @@ const slideVariants = {
 // 6 individual digit inputs
 const OtpInput = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => {
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
-  const digits = value.padEnd(6, '').split('').slice(0, 6);
+  const digits = Array.from({ length: 6 }, (_, i) => value[i] ?? '');
 
   const focus = (i: number) => inputs.current[i]?.focus();
 
