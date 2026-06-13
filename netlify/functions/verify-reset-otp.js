@@ -6,13 +6,21 @@ const supabase = createClient(
   { auth: { autoRefreshToken: false, persistSession: false } }
 );
 
-const CORS = {
-  'Access-Control-Allow-Origin': 'https://bitbrew.pl',
-  'Content-Type': 'application/json',
-};
+const ALLOWED_ORIGINS = ['https://bitbrew.pl', 'https://www.bitbrew.pl'];
 
-function json(statusCode, body) {
-  return { statusCode, headers: CORS, body: JSON.stringify(body) };
+function corsHeaders(event) {
+  const origin = event.headers?.origin || event.headers?.Origin || '';
+  const allow = ALLOWED_ORIGINS.includes(origin) ? origin : 'https://bitbrew.pl';
+  return {
+    'Access-Control-Allow-Origin': allow,
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Content-Type': 'application/json',
+  };
+}
+
+function json(statusCode, body, event) {
+  return { statusCode, headers: corsHeaders(event), body: JSON.stringify(body) };
 }
 
 async function sha256(text) {
@@ -21,20 +29,20 @@ async function sha256(text) {
 }
 
 export const handler = async (event) => {
-  if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: CORS };
-  if (event.httpMethod !== 'POST') return json(405, { error: 'Method not allowed' });
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: corsHeaders(event) };
+  if (event.httpMethod !== 'POST') return json(405, { error: 'Method not allowed' }, event);
 
-  if ((event.body?.length ?? 0) > 512) return json(400, { error: 'Payload too large' });
+  if ((event.body?.length ?? 0) > 512) return json(400, { error: 'Payload too large' }, event);
 
   let email, code;
   try {
     ({ email, code } = JSON.parse(event.body ?? '{}'));
   } catch {
-    return json(400, { error: 'Invalid JSON' });
+    return json(400, { error: 'Invalid JSON' }, event);
   }
 
   if (!email || !code || !/^\d{6}$/.test(code)) {
-    return json(400, { error: 'Nieprawidłowe dane' });
+    return json(400, { error: 'Nieprawidłowe dane' }, event);
   }
 
   const normalizedEmail = email.trim().toLowerCase();
@@ -52,18 +60,18 @@ export const handler = async (event) => {
 
   if (dbError) {
     console.error('DB query error:', dbError.message);
-    return json(500, { error: 'Błąd serwera.' });
+    return json(500, { error: 'Błąd serwera.' }, event);
   }
 
   if (!rows || rows.length === 0) {
-    return json(400, { error: 'Nieprawidłowy lub wygasły kod.' });
+    return json(400, { error: 'Nieprawidłowy lub wygasły kod.' }, event);
   }
 
   const record = rows[0];
 
   // Check expiry
   if (new Date(record.expires_at) < new Date()) {
-    return json(400, { error: 'Kod wygasł. Wyślij nowy.' });
+    return json(400, { error: 'Kod wygasł. Wyślij nowy.' }, event);
   }
 
   // Mark as used (one-time use)
@@ -80,11 +88,11 @@ export const handler = async (event) => {
 
   if (linkError || !linkData?.properties?.action_link) {
     console.error('Generate link error:', linkError?.message);
-    return json(500, { error: 'Błąd generowania linku. Spróbuj ponownie.' });
+    return json(500, { error: 'Błąd generowania linku. Spróbuj ponownie.' }, event);
   }
 
   return json(200, {
     ok: true,
     resetUrl: linkData.properties.action_link,
-  });
+  }, event);
 };
