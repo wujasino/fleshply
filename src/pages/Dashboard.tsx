@@ -549,7 +549,7 @@ const Dashboard = () => {
           </motion.div>
         )}
       </div>
-      <Footer />
+      {result && <Footer />}
     </div>
   );
 };

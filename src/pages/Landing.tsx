@@ -8,7 +8,7 @@ import { useTranslation } from '@/lib/locale';
 import { PromptInputBox } from '@/components/ui/ai-prompt-box';
 import { CookiePanel } from '@/components/ui/cookie-banner-1';
 import { NewsletterSignup } from '@/components/ui/newsletter-signup';
-import { FloatingPathsBackground } from '@/components/ui/floating-paths';
+import { GradientMeshBg } from '@/components/ui/gradient-mesh-bg';
 
 /* ── Integration logos (text-based, gray) ─────────────────────────── */
 const INTEGRATIONS = [
@@ -50,7 +50,7 @@ const Landing = () => {
       </div>
 
       {/* ── Hero + Why (shared animated background) ───────────────── */}
-      <FloatingPathsBackground position={1} className="relative">
+      <GradientMeshBg className="relative">
         <section className="hero pt-28 pb-16 px-4">
           <div className="max-w-4xl mx-auto text-center">
             <motion.div
@@ -273,7 +273,7 @@ const Landing = () => {
             </div>
           </div>
         </section>
-      </FloatingPathsBackground>
+      </GradientMeshBg>
 
       {/* ── Before / After case study ─────────────────────────────── */}
       <section className="py-20 px-4 bg-card/30">
