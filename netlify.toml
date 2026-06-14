@@ -17,6 +17,13 @@
 [functions]
   node_bundler = "esbuild"
 
+# ── Google OAuth proxy — ukrywa ID projektu Supabase ─────────────────────────
+[[redirects]]
+  from   = "/auth/callback"
+  to     = "https://wxwdymchrmhxeiccnzg.supabase.co/auth/v1/callback"
+  status = 200
+  force  = true
+
 # ── SPA fallback — wszystkie trasy obsługuje React Router ────────────────────
 [[redirects]]
   from   = "/*"
