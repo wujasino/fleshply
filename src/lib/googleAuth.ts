@@ -14,7 +14,6 @@ declare global {
           }) => void;
           prompt: (cb?: (n: { isNotDisplayed(): boolean; isSkippedMoment(): boolean }) => void) => void;
           cancel: () => void;
-          renderButton: (el: HTMLElement, cfg: object) => void;
         };
       };
     };
@@ -40,12 +39,8 @@ function loadGsi(): Promise<void> {
   });
 }
 
-export async function signInWithGoogle(): Promise<void> {
+async function signInWithGis(clientId: string): Promise<void> {
   await loadGsi();
-
-  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-  if (!clientId) throw new Error('Brak VITE_GOOGLE_CLIENT_ID w zmiennych środowiskowych');
-
   return new Promise((resolve, reject) => {
     window.google!.accounts.id.initialize({
       client_id: clientId,
@@ -68,10 +63,43 @@ export async function signInWithGoogle(): Promise<void> {
 
     window.google!.accounts.id.prompt((notification) => {
       if (notification.isNotDisplayed()) {
-        reject(new Error('Google One Tap nie jest dostępny w tej przeglądarce. Spróbuj wyczyścić ciasteczka lub użyj innej przeglądarki.'));
+        reject(new Error('__ONETAP_UNAVAILABLE__'));
       }
     });
   });
+}
+
+async function signInWithRedirect(): Promise<void> {
+  const siteUrl = import.meta.env.VITE_SITE_URL ?? window.location.origin;
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${siteUrl}/dashboard`,
+    },
+  });
+  if (error) throw error;
+}
+
+export async function signInWithGoogle(): Promise<void> {
+  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
+
+  if (clientId) {
+    try {
+      await signInWithGis(clientId);
+      return;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '';
+      // One Tap unavailable — fall back to redirect flow
+      if (msg === '__ONETAP_UNAVAILABLE__') {
+        await signInWithRedirect();
+        return;
+      }
+      throw err;
+    }
+  }
+
+  // No Client ID configured — use redirect flow as fallback
+  await signInWithRedirect();
 }
 
 export default signInWithGoogle;
