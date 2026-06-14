@@ -3,6 +3,7 @@ import { Clock, TrendingUp, Search, ArrowRight, BarChart2, Zap, ChevronUp, Chevr
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from '@/lib/locale';
 import { Navbar } from '@/components/layout/Navbar';
+import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -388,6 +389,7 @@ const Profile = () => {
         </motion.div>
 
       </div>
+      <Footer />
     </div>
   );
 };

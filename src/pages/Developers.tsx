@@ -6,6 +6,7 @@ import {
   CircleCheck, CircleX, Loader2, BookOpen, Zap,
 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
+import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -517,6 +518,7 @@ const WebhooksSection = ({ userId, hooks, setHooks, deliveries, setDeliveries }:
           </ul>
         )}
       </div>
+      <Footer />
     </div>
   );
 };

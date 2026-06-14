@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Copy, Check, Terminal, Webhook, Key, Zap, ArrowRight, BookOpen } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
+import { Footer } from '@/components/layout/Footer';
 import { cn } from '@/lib/utils';
 
 const SECTIONS = [
@@ -355,6 +356,7 @@ const verify = (body, header, secret) => {
           </main>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

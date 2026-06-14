@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, AlertTriangle } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
+import { Footer } from '@/components/layout/Footer';
 import { useTranslation } from '@/lib/locale';
 import { supabase } from '@/lib/supabase';
 import { PricingCards, type PricingTierCard } from '@/components/ui/pricing-cards';
@@ -422,6 +423,7 @@ const Pricing = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };
