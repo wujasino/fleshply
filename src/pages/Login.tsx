@@ -257,6 +257,7 @@ const Login = () => {
     setGoogleLoading(true);
     try {
       await loginWithGoogle();
+      navigate(from, { replace: true });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || t('google_signin_failed'));

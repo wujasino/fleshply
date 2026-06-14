@@ -38,19 +38,8 @@ export async function logout() {
 }
 
 export async function loginWithGoogle() {
-  const siteUrl = import.meta.env.VITE_SITE_URL ?? window.location.origin;
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: `${siteUrl}/auth/callback`,
-      queryParams: {
-        access_type: 'offline',
-        prompt: 'consent',
-      },
-    },
-  });
-  if (error) throw error;
-  return data;
+  const { signInWithGoogle } = await import('./googleAuth');
+  await signInWithGoogle();
 }
 
 export default { registerUser, loginUser, getAuthUser, isAuthenticated, logout, loginWithGoogle };
