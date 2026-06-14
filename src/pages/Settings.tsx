@@ -536,19 +536,26 @@ export default function Settings() {
                       <Globe className="inline w-4 h-4 mr-1.5 text-primary" />
                       {t('settings_language')}
                     </label>
-                    <div className="flex gap-2">
-                      {(['pl', 'en'] as const).map((lang) => (
+                    <div className="flex flex-wrap gap-2">
+                      {([
+                        { code: 'pl', label: '🇵🇱 Polski'    },
+                        { code: 'en', label: '🇬🇧 English'   },
+                        { code: 'de', label: '🇩🇪 Deutsch'   },
+                        { code: 'fr', label: '🇫🇷 Français'  },
+                        { code: 'es', label: '🇪🇸 Español'   },
+                        { code: 'it', label: '🇮🇹 Italiano'  },
+                      ] as const).map(({ code, label }) => (
                         <button
-                          key={lang}
-                          onClick={() => setLocale(lang)}
+                          key={code}
+                          onClick={() => setLocale(code)}
                           className={cn(
                             'px-4 py-2 rounded-lg text-sm border transition-colors',
-                            locale === lang
+                            locale === code
                               ? 'bg-primary text-primary-foreground border-primary'
                               : 'border-input text-muted-foreground hover:text-foreground hover:bg-accent'
                           )}
                         >
-                          {lang === 'pl' ? '🇵🇱 Polski' : '🇬🇧 English'}
+                          {label}
                         </button>
                       ))}
                     </div>

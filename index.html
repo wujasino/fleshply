@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pl" class="dark">
+<html lang="pl">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/bitbrew-favicon.svg" />
@@ -11,44 +11,79 @@
     <link rel="icon" href="/favicon.ico" sizes="32x32" type="image/x-icon" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
-    <meta name="theme-color" content="#111111" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+
     <title>BitBrew — Skaner widoczności marki w AI</title>
     <meta name="description"
       content="BitBrew analizuje, jak AI (GPT-4, Claude, Gemini) postrzega Twoją markę i generuje wynik widoczności. Sprawdź swój serwis w kontekście wyszukiwania opartego na sztucznej inteligencji." />
     <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://bitbrew.pl/" />
+    <link rel="canonical" href="https://www.bitbrew.pl/" />
+
     <!-- Open Graph -->
     <meta property="og:title" content="BitBrew — Skaner widoczności marki w AI" />
     <meta property="og:description"
       content="BitBrew analizuje, jak AI widzi Twoją markę. Otrzymaj wynik widoczności i rekomendacje dla lepszej obecności w sieci." />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://bitbrew.pl/" />
-    <meta property="og:image" content="https://bitbrew.pl/og-image.png" />
+    <meta property="og:url" content="https://www.bitbrew.pl/" />
+    <meta property="og:image" content="https://www.bitbrew.pl/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="pl_PL" />
+    <meta property="og:locale:alternate" content="en_US" />
     <meta property="og:site_name" content="BitBrew" />
+
     <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@bitbrew_pl" />
     <meta name="twitter:title" content="BitBrew — Skaner widoczności marki w AI" />
     <meta name="twitter:description"
       content="Sprawdź jak GPT-4, Claude i Gemini postrzegają Twoją markę. Wynik widoczności AI w 30 sekund." />
-    <meta name="twitter:image" content="https://bitbrew.pl/og-image.png" />
+    <meta name="twitter:image" content="https://www.bitbrew.pl/og-image.png" />
+
+    <!-- Performance: preconnect to critical origins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://wxwdymchrmhxeiccnzg.supabase.co" />
+    <link rel="dns-prefetch" href="https://accounts.google.com" />
+
+    <!-- Fonts — display=swap prevents render blocking -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Theme init — runs before React to prevent flash of wrong theme -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('bb_theme');
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var isDark = stored === 'dark' || (stored === 'system' || !stored) && prefersDark;
+          if (isDark) document.documentElement.classList.add('dark');
+        } catch (e) {}
+      })();
+    </script>
+
+    <!-- Structured data -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       "name": "BitBrew",
-      "url": "https://bitbrew.pl",
+      "url": "https://www.bitbrew.pl",
       "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
       "description": "Skaner widoczności marki w AI — GPT-4, Claude, Gemini",
+      "inLanguage": ["pl", "en", "de", "fr", "es", "it"],
       "offers": [
-        { "@type": "Offer", "price": "0",   "priceCurrency": "PLN", "description": "Plan Free" },
-        { "@type": "Offer", "price": "99",  "priceCurrency": "PLN", "description": "Plan Solo Brew" },
-        { "@type": "Offer", "price": "249", "priceCurrency": "PLN", "description": "Plan Growth Roast" }
-      ]
+        { "@type": "Offer", "price": "0",   "priceCurrency": "PLN", "name": "Plan Free" },
+        { "@type": "Offer", "price": "99",  "priceCurrency": "PLN", "name": "Plan Solo" },
+        { "@type": "Offer", "price": "249", "priceCurrency": "PLN", "name": "Plan Growth" }
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "reviewCount": "127"
+      }
     }
     </script>
   </head>

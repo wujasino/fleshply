@@ -57,9 +57,9 @@ export default defineConfig(({ mode }) => ({
     alias: { "@": path.resolve(__dirname, "./src") },
   },
   build: {
-    // Nie publikuj source map w produkcji — utrudnia czytanie kodu źródłowego.
-    // Minifikacja (oxc) działa domyślnie, więc kod jest dodatkowo nieczytelny.
     sourcemap: false,
+    target: 'es2020',
+    cssCodeSplit: true,
     rollupOptions: {
       output: {
         manualChunks(id: string) {
@@ -69,7 +69,12 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('node_modules/@radix-ui')) return 'vendor-radix';
           if (id.includes('node_modules/react-dom') || id.includes('node_modules/react-router-dom')) return 'vendor-react';
           if (id.includes('node_modules/react')) return 'vendor-react';
+          if (id.includes('node_modules/lucide-react')) return 'vendor-icons';
         },
+      },
+      treeshake: {
+        moduleSideEffects: false,
+        propertyReadSideEffects: false,
       },
     },
     chunkSizeWarningLimit: 600,
