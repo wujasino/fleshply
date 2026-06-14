@@ -87,8 +87,10 @@ const Pricing = () => {
     setMessage('');
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { window.location.href = '/login'; return; }
+      // Subscriptions must be tied to an account (Stripe webhook needs the
+      // user id) — send guests to sign-up, not login.
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { window.location.href = '/register?plan=' + planId; return; }
 
       const priceId = planId === 'solo'
         ? import.meta.env.VITE_STRIPE_SOLO_PRICE_ID
@@ -98,8 +100,11 @@ const Pricing = () => {
 
       const response = await fetch('/.netlify/functions/create-checkout', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId, userId: user.id, userEmail: user.email }),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ priceId }),
       });
 
       if (!response.ok) {
@@ -130,9 +135,6 @@ const Pricing = () => {
     setLoadingCredits(packId);
     setMessage('');
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { window.location.href = '/login'; return; }
-
       const linkMap: Record<string, string> = {
         credits_20:  import.meta.env.VITE_STRIPE_CREDITS_20  ?? '',
         credits_50:  import.meta.env.VITE_STRIPE_CREDITS_50  ?? '',
@@ -142,8 +144,13 @@ const Pricing = () => {
       if (!baseUrl) { setMessage(t('pricing_error_credits_config')); return; }
 
       const url = new URL(baseUrl);
-      url.searchParams.set('client_reference_id', user.id);
-      if (user.email) url.searchParams.set('prefilled_email', user.email);
+      // Attach the account ref only when the user is logged in —
+      // guests are sent straight to the Stripe payment link.
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        url.searchParams.set('client_reference_id', user.id);
+        if (user.email) url.searchParams.set('prefilled_email', user.email);
+      }
       window.location.href = url.toString();
     } catch {
       setMessage(t('pricing_error_connection'));
