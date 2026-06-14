@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Sparkles, TrendingUp, TrendingDown, Activity, Layers, Target, RefreshCw, Search, Lock, FileDown } from 'lucide-react';
+import { ArrowLeft, Sparkles, TrendingUp, TrendingDown, Activity, Layers, Target, RefreshCw, Search, Lock, FileDown, Swords, X } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { useTranslation } from '@/lib/locale';
 import { BrewingProgress } from '@/components/BrewingState';
@@ -15,6 +15,7 @@ import { supabase } from '@/lib/supabase';
 import { FloatingPathsBackground } from '@/components/ui/floating-paths';
 import { cn } from '@/lib/utils';
 import { AnalysisResult } from '@/types/analysis';
+import { scoreBrand, type BrandScore } from '@/lib/brandScore';
 
 const PLAN_TIER: Record<string, number> = {
   free: 0,
@@ -231,6 +232,19 @@ const Dashboard = () => {
   const [inputValue, setInputValue] = useState(brandFromUrl);
   const [plan, setPlan] = useState<string>('free');
   const planTier = tierOf(plan);
+
+  // Competitor comparison (deterministic client-side score — no API/credit cost)
+  const [competitorInput, setCompetitorInput] = useState('');
+  const [competitor, setCompetitor] = useState<BrandScore | null>(null);
+  const runCompare = () => {
+    const name = competitorInput.trim();
+    if (!name) return;
+    setCompetitor(scoreBrand(name));
+  };
+  const clearCompare = () => {
+    setCompetitor(null);
+    setCompetitorInput('');
+  };
   const canSeeCharts = planTier >= 1;
   const canSeeSources = planTier >= 2;
 
@@ -395,8 +409,63 @@ const Dashboard = () => {
 
             {/* Grid */}
             <div className="grid grid-cols-12 gap-5">
-              <div className="col-span-12">
-                <RadarChartCard dimensions={result.dimensions} timestamp={result.timestamp} />
+              <div className="col-span-12 space-y-3">
+                {/* Competitor comparison bar */}
+                <div className="glass-card px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="flex items-center gap-2 text-sm font-medium text-foreground shrink-0">
+                    <Swords className="w-4 h-4 text-primary" />
+                    {t('compare_title')}
+                  </div>
+                  <div className="flex items-center gap-2 flex-1">
+                    <div className="relative flex-1 sm:max-w-xs">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                      <input
+                        value={competitorInput}
+                        onChange={e => setCompetitorInput(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') runCompare(); }}
+                        placeholder={t('compare_placeholder')}
+                        className="w-full pl-8 h-9 text-sm rounded-lg border border-input bg-background text-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors"
+                      />
+                    </div>
+                    <button
+                      onClick={runCompare}
+                      disabled={!competitorInput.trim()}
+                      className="h-9 px-4 text-sm font-medium rounded-lg bg-primary text-primary-foreground disabled:opacity-50 hover:opacity-90 transition-opacity"
+                    >
+                      {t('compare_action')}
+                    </button>
+                    {competitor && (
+                      <button
+                        onClick={clearCompare}
+                        aria-label={t('compare_clear')}
+                        className="h-9 w-9 flex items-center justify-center rounded-lg border border-input text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                  {competitor && (
+                    <div className="text-sm shrink-0">
+                      {(() => {
+                        const diff = result.trustScore - competitor.trustScore;
+                        const winning = diff >= 0;
+                        return (
+                          <span className={cn('font-medium', winning ? 'text-emerald-400' : 'text-red-400')}>
+                            {winning ? '▲' : '▼'} {Math.abs(diff)} {t('compare_points')}
+                            <span className="text-muted-foreground font-normal"> {winning ? t('compare_ahead') : t('compare_behind')} {competitor.brandName}</span>
+                          </span>
+                        );
+                      })()}
+                    </div>
+                  )}
+                </div>
+                <RadarChartCard
+                  dimensions={result.dimensions}
+                  timestamp={result.timestamp}
+                  brandName={result.brandName}
+                  competitorDimensions={competitor?.dimensions}
+                  competitorName={competitor?.brandName}
+                />
               </div>
               <div className="col-span-12 lg:col-span-7 relative">
                 <div className={canSeeCharts ? '' : 'pointer-events-none blur-sm select-none'} aria-hidden={!canSeeCharts}>

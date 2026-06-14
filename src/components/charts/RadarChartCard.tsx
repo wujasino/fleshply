@@ -10,9 +10,18 @@ import { AnalysisResult } from '@/types/analysis';
 interface RadarChartCardProps {
   dimensions: AnalysisResult['dimensions'];
   timestamp?: string;
+  brandName?: string;
+  competitorDimensions?: AnalysisResult['dimensions'];
+  competitorName?: string;
 }
 
-export const RadarChartCard = memo(function RadarChartCard({ dimensions, timestamp }: RadarChartCardProps) {
+export const RadarChartCard = memo(function RadarChartCard({
+  dimensions,
+  timestamp,
+  brandName,
+  competitorDimensions,
+  competitorName,
+}: RadarChartCardProps) {
   // Normalize values to 0-100 and round. Accept either 0-1 or 0-100 inputs.
   const normalize = (v: number) => {
     if (typeof v !== 'number' || isNaN(v)) return 50;
@@ -21,13 +30,14 @@ export const RadarChartCard = memo(function RadarChartCard({ dimensions, timesta
   };
 
   const { t } = useTranslation();
+  const hasCompetitor = !!competitorDimensions;
 
   const data = [
-    { key: 'authority', subject: t('dim_authority'), value: normalize(dimensions.authority) },
-    { key: 'sentiment', subject: t('dim_sentiment'), value: normalize(dimensions.sentiment) },
-    { key: 'accuracy', subject: t('dim_accuracy'), value: normalize(dimensions.accuracy) },
-    { key: 'mentions', subject: t('dim_mentions'), value: normalize(dimensions.mentions) },
-    { key: 'recency', subject: t('dim_recency'), value: normalize(dimensions.recency) },
+    { key: 'authority', subject: t('dim_authority'), value: normalize(dimensions.authority), competitor: competitorDimensions ? normalize(competitorDimensions.authority) : undefined },
+    { key: 'sentiment', subject: t('dim_sentiment'), value: normalize(dimensions.sentiment), competitor: competitorDimensions ? normalize(competitorDimensions.sentiment) : undefined },
+    { key: 'accuracy', subject: t('dim_accuracy'), value: normalize(dimensions.accuracy), competitor: competitorDimensions ? normalize(competitorDimensions.accuracy) : undefined },
+    { key: 'mentions', subject: t('dim_mentions'), value: normalize(dimensions.mentions), competitor: competitorDimensions ? normalize(competitorDimensions.mentions) : undefined },
+    { key: 'recency', subject: t('dim_recency'), value: normalize(dimensions.recency), competitor: competitorDimensions ? normalize(competitorDimensions.recency) : undefined },
   ];
 
   const metaBySubject: Record<string, { key: string; value: number }> = data.reduce((acc, d) => {
@@ -90,7 +100,18 @@ export const RadarChartCard = memo(function RadarChartCard({ dimensions, timesta
           <h3 className="text-sm font-medium text-muted-foreground">{t('aiPerceptionDimensions')}</h3>
           <p className="text-xs text-muted-foreground mt-1">{t('radar_chart_description')}</p>
         </div>
-        {formattedDate && (
+        {hasCompetitor ? (
+          <div className="flex items-center gap-4 text-xs">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#FFBF00' }} />
+              <span className="text-foreground font-medium">{brandName || t('radar_you')}</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#60A5FA' }} />
+              <span className="text-muted-foreground">{competitorName}</span>
+            </span>
+          </div>
+        ) : formattedDate && (
           <span className="text-xs text-muted-foreground">{t('analysis_date_collected')} {formattedDate}</span>
         )}
       </div>
@@ -114,16 +135,28 @@ export const RadarChartCard = memo(function RadarChartCard({ dimensions, timesta
               stroke="transparent"
             />
             <Radar
-              name="Score"
+              name={brandName || 'Score'}
               dataKey="value"
               stroke="#FFBF00"
               fill="#FFBF00"
-              fillOpacity={0.34}
+              fillOpacity={hasCompetitor ? 0.28 : 0.34}
               strokeWidth={3}
               strokeOpacity={1}
               dot={{ r: 4, fill: '#FFBF00' }}
               style={{ filter: 'drop-shadow(0 8px 20px rgba(255,191,0,0.18))' }}
             />
+            {hasCompetitor && (
+              <Radar
+                name={competitorName || 'Competitor'}
+                dataKey="competitor"
+                stroke="#60A5FA"
+                fill="#60A5FA"
+                fillOpacity={0.18}
+                strokeWidth={2.5}
+                strokeOpacity={1}
+                dot={{ r: 3, fill: '#60A5FA' }}
+              />
+            )}
           </RadarChart>
         </ResponsiveContainer>
       </div>
