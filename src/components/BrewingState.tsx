@@ -185,17 +185,12 @@ export const BrewingProgress = ({ progress, brandName }: BrewingProgressProps) =
             }}
             transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
           />
-          <text
-            x={center} y={center}
-            textAnchor="middle"
-            dominantBaseline="central"
-            fill="#FFBF00"
-            fontSize="11"
-            fontWeight="600"
-            style={{ letterSpacing: '0.05em', textTransform: 'uppercase' }}
-          >
-            {brandName.length > 8 ? brandName.slice(0, 8) : brandName}
-          </text>
+          <image
+            href="/bitbrew-favicon.svg"
+            x={center - 22} y={center - 22}
+            width={44} height={44}
+            style={{ pointerEvents: 'none' }}
+          />
 
           {/* Model nodes */}
           {modelPositions.map((m, i) => {
