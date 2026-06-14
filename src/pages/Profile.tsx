@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { Clock, TrendingUp, Search, ArrowRight, BarChart2, Zap, ChevronUp, ChevronDown, Plus, Download, Sparkles, AlertTriangle } from 'lucide-react';
+import { Clock, TrendingUp, Search, ArrowRight, BarChart2, Zap, ChevronUp, ChevronDown, Plus, Download, Sparkles, AlertTriangle, ExternalLink } from 'lucide-react';
+import { PricingModal } from '@/components/ui/pricing-modal';
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from '@/lib/locale';
 import { Navbar } from '@/components/layout/Navbar';
@@ -62,6 +63,8 @@ const Profile = () => {
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
   const [prevScores, setPrevScores] = useState<Record<string, number>>({});
   const [subStatus] = useState<'active' | 'paused' | 'cancelled'>('active');
+
+  const [showPricing, setShowPricing] = useState(false);
 
   const [query, setQuery] = useState('');
   const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
@@ -161,6 +164,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <PricingModal open={showPricing} onClose={() => setShowPricing(false)} currentPlan={plan} />
       <Navbar />
       <div className="pt-24 pb-20 px-4 max-w-5xl mx-auto space-y-6">
 
@@ -198,16 +202,20 @@ const Profile = () => {
         {/* ── STATS ROW ────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: t('total_brews'), value: analyses.length, icon: BarChart2, accent: false },
-            { label: t('avg_score'), value: avgScore || '—', icon: TrendingUp, accent: true },
-            { label: t('profile_best_score'), value: bestBrand ? bestBrand.trust_score : '—', icon: Zap, accent: true },
-            { label: t('plan_label'), value: PLAN_LABELS[plan] ?? 'Free', icon: ArrowRight, accent: false },
+            { label: t('total_brews'), value: analyses.length, icon: BarChart2, accent: false, onClick: undefined },
+            { label: t('avg_score'), value: avgScore || '—', icon: TrendingUp, accent: true, onClick: undefined },
+            { label: t('profile_best_score'), value: bestBrand ? bestBrand.trust_score : '—', icon: Zap, accent: true, onClick: undefined },
+            { label: t('plan_label'), value: PLAN_LABELS[plan] ?? 'Free', icon: ExternalLink, accent: false, onClick: () => setShowPricing(true) },
           ].map((stat, i) => (
             <motion.div key={stat.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}
-              className="glass-card p-5 flex flex-col gap-3">
+              onClick={stat.onClick}
+              className={cn(
+                'glass-card p-5 flex flex-col gap-3',
+                stat.onClick && 'cursor-pointer hover:border-primary/40 hover:bg-card/60 transition-colors group'
+              )}>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">{stat.label}</span>
-                <stat.icon className="w-4 h-4 text-muted-foreground/50" />
+                <stat.icon className={cn('w-4 h-4 text-muted-foreground/50', stat.onClick && 'group-hover:text-primary transition-colors')} />
               </div>
               <span className={cn('text-2xl font-display', stat.accent ? 'text-primary' : 'text-foreground')}>
                 {stat.value}
