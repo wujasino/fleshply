@@ -1,6 +1,7 @@
 import { useNavigate, Link } from 'react-router-dom';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Zap, Eye, BarChart3, Shield, ChevronDown, HelpCircle, Mail, TrendingUp, ArrowRight } from 'lucide-react';
+import { Zap, Eye, BarChart3, Shield, ChevronDown, HelpCircle, Mail, TrendingUp, ArrowRight, Check, X } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -24,9 +25,45 @@ const INTEGRATIONS = [
 const BEFORE = { mentions: '1 / 10', sentiment: '34', recommend: '8%' };
 const AFTER  = { mentions: '7 / 10', sentiment: '81', recommend: '63%' };
 
+const PLANS = (t: (k: string) => string, cycle: 'monthly' | 'yearly', locale: string) => {
+  const pln = locale === 'pl';
+  const prices = {
+    solo:   cycle === 'monthly' ? (pln ? '99 zł' : '$29')  : (pln ? '950 zł'   : '$279'),
+    growth: cycle === 'monthly' ? (pln ? '249 zł' : '$79') : (pln ? '2 350 zł' : '$749'),
+  };
+  const per = cycle === 'monthly' ? (pln ? t('tier_period_month') : '/mo') : (pln ? t('tier_period_year') : '/yr');
+  return [
+    {
+      id: 'free', name: 'Free', price: 'Free', per: '', popular: false,
+      cta: t('start_for_free'), href: '/register',
+      features: [t('tier_free_feat_1'), t('tier_free_feat_2'), t('tier_free_feat_3'), t('tier_free_feat_4')],
+      missing: [t('tier_solo_feat_3'), t('tier_growth_feat_4')],
+    },
+    {
+      id: 'solo', name: 'Solo', price: prices.solo, per, popular: false,
+      cta: t('get_started'), href: '/pricing',
+      features: [t('tier_solo_feat_1'), t('tier_solo_feat_2'), t('tier_solo_feat_3'), t('tier_solo_feat_4'), t('tier_solo_feat_5'), t('tier_solo_feat_6')],
+      missing: [t('tier_growth_feat_4')],
+    },
+    {
+      id: 'growth', name: 'Growth', price: prices.growth, per, popular: true,
+      cta: t('get_started'), href: '/pricing',
+      features: [t('tier_growth_feat_1'), t('tier_growth_feat_2'), t('tier_growth_feat_3'), t('tier_growth_feat_4'), t('tier_growth_feat_5'), t('tier_growth_feat_6'), t('tier_growth_feat_7')],
+      missing: [],
+    },
+    {
+      id: 'enterprise', name: 'Enterprise', price: t('tier_ent_price'), per: '', popular: false,
+      cta: t('contact_sales'), href: 'mailto:kontakt@bitbrew.pl?subject=Enterprise Plan',
+      features: [t('tier_ent_feat_1'), t('tier_ent_feat_2'), t('tier_ent_feat_3'), t('tier_ent_feat_4'), t('tier_ent_feat_5')],
+      missing: [],
+    },
+  ];
+};
+
 const Landing = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
+  const [pricingCycle, setPricingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
   return (
     <div className="min-h-screen bg-background">
@@ -381,6 +418,101 @@ const Landing = () => {
               + more via API
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      {/* ── Pricing ───────────────────────────────────────────────── */}
+      <section id="pricing" className="py-24 px-4 border-t border-[hsl(var(--glass-border))]">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-10"
+          >
+            <span className="inline-block px-3 py-1 text-xs badge rounded-lg mb-4 font-data uppercase tracking-wider">
+              {t('nav_pricing')}
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-display text-foreground mb-3">
+              {t('pricing_headline') || 'Prosty cennik'}
+            </h2>
+            <p className="text-sm text-muted-foreground max-w-lg mx-auto">
+              {t('pricing_subheadline') || 'Zacznij za darmo, skaluj gdy potrzebujesz.'}
+            </p>
+
+            {/* Billing toggle */}
+            <div className="flex items-center justify-center mt-6">
+              <div className="flex items-center gap-1 bg-muted/50 rounded-xl p-1">
+                {(['monthly', 'yearly'] as const).map(c => (
+                  <button key={c} onClick={() => setPricingCycle(c)}
+                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                      pricingCycle === c ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                    }`}>
+                    {c === 'monthly' ? t('billing_cycle_monthly') : t('billing_cycle_yearly')}
+                    {c === 'yearly' && (
+                      <span className="ml-2 text-[10px] font-semibold text-emerald-400 uppercase">-20%</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
+            {PLANS(t, pricingCycle, locale).map((plan, i) => (
+              <motion.div
+                key={plan.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+                className={`relative glass-card p-6 flex flex-col gap-4 ${
+                  plan.popular ? 'ring-2 ring-primary/50 bg-primary/5' : ''
+                }`}
+              >
+                {plan.popular && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">
+                    {t('most_popular')}
+                  </span>
+                )}
+
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/60 mb-1">{plan.name}</p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-display text-foreground">{plan.price}</span>
+                    {plan.per && <span className="text-sm text-muted-foreground">{plan.per}</span>}
+                  </div>
+                </div>
+
+                <ul className="flex flex-col gap-2 flex-1">
+                  {plan.features.map(f => (
+                    <li key={f} className="flex items-start gap-2 text-sm text-foreground">
+                      <Check className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
+                      {f}
+                    </li>
+                  ))}
+                  {plan.missing.map(f => (
+                    <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground/40 line-through">
+                      <X className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+
+                <a
+                  href={plan.href}
+                  onClick={plan.href.startsWith('/') ? (e) => { e.preventDefault(); navigate(plan.href); } : undefined}
+                  className={`w-full text-center py-2.5 rounded-xl text-sm font-medium transition-opacity ${
+                    plan.popular
+                      ? 'bg-primary text-primary-foreground hover:opacity-90'
+                      : 'border border-[hsl(var(--glass-border))] text-foreground hover:border-primary/40 hover:bg-card/60'
+                  }`}
+                >
+                  {plan.cta}
+                </a>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
