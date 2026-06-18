@@ -10,6 +10,7 @@ import { PromptInputBox } from '@/components/ui/ai-prompt-box';
 import { CookiePanel } from '@/components/ui/cookie-banner-1';
 import { NewsletterSignup } from '@/components/ui/newsletter-signup';
 import { GradientMeshBg } from '@/components/ui/gradient-mesh-bg';
+import { ContactForm } from '@/components/ui/contact-form';
 
 /* ── Integration logos (text-based, gray) ─────────────────────────── */
 const INTEGRATIONS = [
@@ -537,6 +538,33 @@ const Landing = () => {
             </button>
           </div>
           <p className="text-xs text-muted-foreground/50 mt-4">{t('noCard')}</p>
+        </div>
+      </section>
+
+      {/* ── Contact ───────────────────────────────────────────────── */}
+      <section id="contact" className="py-24 px-4 border-t border-[hsl(var(--glass-border))]">
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <span className="inline-block px-3 py-1 text-xs badge rounded-lg mb-4 font-data uppercase tracking-wider">
+              {t('footer_contact')}
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-display text-foreground">
+              {t('contact_heading') || 'Napisz do nas'}
+            </h2>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+          >
+            <ContactForm />
+          </motion.div>
         </div>
       </section>
 
