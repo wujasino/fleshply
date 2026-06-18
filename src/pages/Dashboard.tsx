@@ -231,6 +231,7 @@ const Dashboard = () => {
   const { progress, status, result, startBrewing, reset, loadStoredAnalysis, guestLimitReached } = useBrewing();
   const displayBrand = result?.brandName || brandFromUrl;
   const [inputValue, setInputValue] = useState(brandFromUrl);
+  const [moderationError, setModerationError] = useState('');
   const [plan, setPlan] = useState<string>('free');
   const planTier = tierOf(plan);
 
@@ -285,10 +286,25 @@ const Dashboard = () => {
     return () => reset();
   }, [analysisId, brandFromUrl, reset, startBrewing, loadStoredAnalysis]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const val = inputValue?.trim();
     if (!val) return;
+    setModerationError('');
+    try {
+      const res = await fetch('/.netlify/functions/moderate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: val }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.flagged) {
+          setModerationError(data.reason || 'Niedozwolona treść.');
+          return;
+        }
+      }
+    } catch { /* network error — allow through */ }
     setSearchParams({ brand: val });
     startBrewing(val);
   };
@@ -330,7 +346,7 @@ const Dashboard = () => {
                 <input
                   type="text"
                   value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
+                  onChange={(e) => { setInputValue(e.target.value); setModerationError(''); }}
                   placeholder={t('placeholderExample')}
                   className="w-full bg-card/40 backdrop-blur-xl border border-[hsl(var(--glass-border))] text-foreground placeholder:text-muted-foreground text-sm rounded-xl py-2.5 pl-10 pr-3 focus:outline-none focus:border-primary/40 transition-colors"
                 />
@@ -368,6 +384,10 @@ const Dashboard = () => {
               )}
             </form>
           </div>
+
+          {moderationError && (
+            <p className="text-xs text-destructive mt-1">{moderationError}</p>
+          )}
 
           {/* Brand knowledge */}
           {inputValue.trim().length > 1 && (

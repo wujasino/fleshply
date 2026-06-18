@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import ws from "ws";
+import { moderate } from "./_lib/moderation.js";
 
 if (!globalThis.WebSocket) {
   globalThis.WebSocket = ws;
@@ -72,6 +73,12 @@ export async function handler(event) {
       auth: { autoRefreshToken: false, persistSession: false },
       realtime: { transport: ws, params: { eventsPerSecond: 0 } },
     });
+
+    // Moderation check
+    const modResult = await moderate(`${brandName} ${text}`);
+    if (modResult.flagged) {
+      return { statusCode: 422, body: JSON.stringify({ error: modResult.reason || 'Content not allowed' }) };
+    }
 
     const chunks = chunkText(text);
     if (chunks.length === 0)
