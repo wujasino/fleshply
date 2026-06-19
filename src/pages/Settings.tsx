@@ -5,7 +5,7 @@ import { useTheme } from 'next-themes';
 import {
   X, User, Bell, Shield, Trash2, Moon, Globe, ChevronRight, Save,
   Upload, Camera, Loader2, KeyRound, Copy, Check, Mail, ArrowRight, ArrowLeft,
-  Eye, EyeOff, CheckCircle2, Circle, CreditCard, Download, Sun, Monitor,
+  Eye, EyeOff, CheckCircle2, Circle, CreditCard, Download, Sun, Monitor, FileText,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,6 +46,36 @@ export default function Settings() {
   const [notifBrewComplete, setNotifBrewComplete] = useState(true);
   const [notifNewsletter, setNotifNewsletter] = useState(false);
   const [notifMarketing, setNotifMarketing] = useState(false);
+
+  // Withdrawal form
+  const [showWithdrawal, setShowWithdrawal] = useState(false);
+  const [withdrawalService, setWithdrawalService] = useState('');
+  const [withdrawalDate, setWithdrawalDate] = useState('');
+  const [withdrawalStatus, setWithdrawalStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+
+  const handleWithdrawal = async () => {
+    if (!withdrawalService.trim() || !withdrawalDate) return;
+    setWithdrawalStatus('sending');
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const userEmail = user?.email ?? email;
+      const body = `FORMULARZ ODSTĄPIENIA OD UMOWY\n\nAdresat: Patryk Rybacki, działalność nierejestrowana, Biskupia 7/2\nE-mail: kontakt@bitbrew.pl\n\nJa, niniejszym informuję o moim odstąpieniu od umowy o świadczenie następującej usługi:\n${withdrawalService}\n\nData zawarcia umowy: ${withdrawalDate}\n\nImię i nazwisko / e-mail konsumenta: ${userEmail}\n\nData złożenia oświadczenia: ${new Date().toLocaleDateString('pl-PL')}`;
+      const res = await fetch('/.netlify/functions/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: userEmail,
+          email: userEmail,
+          subject: 'Odstąpienie od umowy',
+          message: body,
+        }),
+      });
+      if (!res.ok) throw new Error('send failed');
+      setWithdrawalStatus('sent');
+    } catch {
+      setWithdrawalStatus('error');
+    }
+  };
 
   const [userId, setUserId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -925,6 +955,78 @@ export default function Settings() {
                       ))}
                     </div>
                   )}
+
+                  {/* ── Withdrawal from contract ── */}
+                  <div className="border-t border-[hsl(var(--glass-border))] pt-5 space-y-3">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start gap-2.5">
+                        <FileText className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium text-foreground">Odstąpienie od umowy</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            Jako konsument masz prawo odstąpić od umowy w terminie 14 dni od jej zawarcia, bez podawania przyczyny.
+                          </p>
+                        </div>
+                      </div>
+                      {withdrawalStatus !== 'sent' && (
+                        <Button size="sm" variant="outline" className="shrink-0" onClick={() => setShowWithdrawal(v => !v)}>
+                          {showWithdrawal ? 'Anuluj' : 'Złóż oświadczenie'}
+                        </Button>
+                      )}
+                    </div>
+
+                    {showWithdrawal && withdrawalStatus !== 'sent' && (
+                      <div className="space-y-3 p-4 rounded-xl border border-[hsl(var(--glass-border))] bg-muted/20">
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          Wypełnij poniższy formularz. Oświadczenie zostanie przesłane na adres <strong>kontakt@bitbrew.pl</strong> oraz na Twój adres e-mail w celach potwierdzenia.
+                        </p>
+                        <div className="space-y-1.5">
+                          <label className="text-xs text-muted-foreground">Nazwa usługi, od której odstępujesz *</label>
+                          <Input
+                            value={withdrawalService}
+                            onChange={e => setWithdrawalService(e.target.value)}
+                            placeholder="np. Subskrypcja Solo / Growth / Enterprise"
+                            className="text-sm"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs text-muted-foreground">Data zawarcia umowy *</label>
+                          <Input
+                            type="date"
+                            value={withdrawalDate}
+                            onChange={e => setWithdrawalDate(e.target.value)}
+                            className="text-sm"
+                          />
+                        </div>
+                        <p className="text-[11px] text-muted-foreground/60 leading-relaxed">
+                          Składając oświadczenie potwierdzasz, że działasz jako konsument i jesteś świadomy/a, że prawo odstąpienia przysługuje w terminie 14 dni od zawarcia umowy (art. 27 Ustawy o prawach konsumenta).
+                        </p>
+                        {withdrawalStatus === 'error' && (
+                          <p className="text-xs text-destructive">Wystąpił błąd podczas wysyłania. Spróbuj ponownie lub napisz bezpośrednio na <strong>kontakt@bitbrew.pl</strong>.</p>
+                        )}
+                        <Button
+                          size="sm"
+                          onClick={handleWithdrawal}
+                          disabled={!withdrawalService.trim() || !withdrawalDate || withdrawalStatus === 'sending'}
+                          className="w-full gap-1.5"
+                        >
+                          {withdrawalStatus === 'sending'
+                            ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Wysyłanie…</>
+                            : <><Mail className="w-3.5 h-3.5" /> Wyślij oświadczenie o odstąpieniu</>}
+                        </Button>
+                      </div>
+                    )}
+
+                    {withdrawalStatus === 'sent' && (
+                      <div className="flex flex-col items-center gap-2 py-5 text-center p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
+                        <CheckCircle2 className="w-8 h-8 text-emerald-400" />
+                        <p className="text-sm font-medium text-foreground">Oświadczenie zostało wysłane</p>
+                        <p className="text-xs text-muted-foreground max-w-xs">
+                          Potwierdzenie zostało przesłane na Twój adres e-mail. Odpowiemy w ciągu 14 dni.
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
