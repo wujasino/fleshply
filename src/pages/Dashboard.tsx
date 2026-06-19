@@ -227,13 +227,14 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const t = useTranslation().t;
   const analysisId = searchParams.get('id');
-  const brandFromUrl = searchParams.get('brand') || 'Tesla';
+  const brandFromUrl = searchParams.get('brand') || '';
   const { progress, status, result, startBrewing, reset, loadStoredAnalysis, guestLimitReached } = useBrewing();
   const displayBrand = result?.brandName || brandFromUrl;
   const [inputValue, setInputValue] = useState(brandFromUrl);
   const [moderationError, setModerationError] = useState('');
   const [plan, setPlan] = useState<string>('free');
   const planTier = tierOf(plan);
+  const isIdle = !brandFromUrl && !analysisId;
 
   // Competitor comparison (deterministic client-side score — no API/credit cost)
   const [competitorInput, setCompetitorInput] = useState('');
@@ -280,7 +281,7 @@ const Dashboard = () => {
   useEffect(() => {
     if (analysisId) {
       loadStoredAnalysis(analysisId);
-    } else {
+    } else if (brandFromUrl) {
       startBrewing(brandFromUrl);
     }
     return () => reset();
@@ -308,6 +309,63 @@ const Dashboard = () => {
     setSearchParams({ brand: val });
     startBrewing(val);
   };
+
+  if (isIdle) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full max-w-xl text-center"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-6">
+              <Search className="w-6 h-6 text-primary" />
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-display text-foreground mb-2">
+              Analiza marki
+            </h1>
+            <p className="text-muted-foreground text-sm mb-8">
+              Wpisz nazwę marki, którą chcesz przeanalizować
+            </p>
+            <form
+              onSubmit={handleSubmit}
+              className="flex items-center gap-2"
+            >
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  autoFocus
+                  value={inputValue}
+                  onChange={(e) => { setInputValue(e.target.value); setModerationError(''); }}
+                  placeholder="np. Apple, Tesla, Nike…"
+                  className="w-full bg-card/40 backdrop-blur-xl border border-[hsl(var(--glass-border))] text-foreground placeholder:text-muted-foreground text-base rounded-xl py-3.5 pl-11 pr-4 focus:outline-none focus:border-primary/40 transition-colors"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={!inputValue.trim()}
+                className="bg-primary text-primary-foreground px-5 py-3.5 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity whitespace-nowrap disabled:opacity-40"
+              >
+                {t('analyze')}
+              </button>
+            </form>
+            {moderationError && (
+              <p className="text-xs text-destructive mt-2 text-left">{moderationError}</p>
+            )}
+            {inputValue.trim().length > 1 && (
+              <div className="mt-6 text-left">
+                <BrandKnowledgeForm brandName={inputValue} />
+              </div>
+            )}
+          </motion.div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background relative">
