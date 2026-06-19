@@ -588,10 +588,10 @@ const Landing = () => {
               {t('nav_pricing')}
             </span>
             <h2 className="text-3xl sm:text-4xl font-display text-foreground mb-3">
-              {t('pricing_headline') || 'Prosty cennik'}
+              Prosty cennik
             </h2>
             <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-              {t('pricing_subheadline') || 'Zacznij za darmo, skaluj gdy potrzebujesz.'}
+              Zacznij za darmo, skaluj gdy potrzebujesz. Bez ukrytych opłat.
             </p>
 
             {/* Billing toggle */}
