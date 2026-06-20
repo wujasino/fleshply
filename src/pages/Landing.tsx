@@ -93,6 +93,9 @@ const Landing = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
+              <div className="flex justify-center mb-6">
+                <img src="/bitbrew-favicon.svg" alt="BitBrew" className="w-16 h-16" />
+              </div>
               <span className="inline-block px-3 py-1 text-xs badge rounded-lg mb-6 font-data uppercase tracking-wider">
                 {t('hero_tag')}
               </span>
