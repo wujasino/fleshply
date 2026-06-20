@@ -162,7 +162,8 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="py-8 pb-20 px-4 max-w-5xl mx-auto space-y-6">
+      <PricingModal open={showPricing} onClose={() => setShowPricing(false)} currentPlan={plan} />
+      <div className="pt-6 pb-20 px-4 max-w-5xl mx-auto space-y-6">
 
         {/* ── USER HEADER ─────────────────────────────────────────── */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}

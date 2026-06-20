@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Sparkles, TrendingUp, TrendingDown, Activity, Layers, Target, RefreshCw, Search, Lock, FileDown } from 'lucide-react';
+import { ArrowLeft, Sparkles, TrendingUp, TrendingDown, Activity, Layers, Target, RefreshCw, Search, Lock, FileDown, Swords, X, Volume2, Square, Loader2 } from 'lucide-react';
 import { useTranslation } from '@/lib/locale';
 import { BrewingProgress } from '@/components/BrewingState';
 import { RadarChartCard } from '@/components/charts/RadarChartCard';
@@ -450,7 +450,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background relative">
-      <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <div className="pt-6 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         {/* Top bar */}
         <header className="flex flex-col gap-4 mb-6">
           <button
