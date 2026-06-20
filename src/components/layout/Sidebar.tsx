@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Home, BarChart2, CreditCard, Sparkles, BookOpen, Code2, Settings, LogOut, Users, Zap } from 'lucide-react';
+import { Home, CreditCard, Sparkles, Code2, Settings, LogOut, Users, Zap } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { logout } from '@/lib/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -94,20 +94,20 @@ export const Sidebar = () => {
 
       {/* Main nav */}
       <nav className="flex-1 overflow-y-auto px-2 pt-2 space-y-0.5">
-        <NavItem to="/" icon={Home} label="Strona główna" active={pathname === '/'} />
+        <NavItem to="/" icon={Home} label="Strona glowna" active={pathname === '/'} />
 
         <div className="h-px bg-gray-100 my-1" />
-        <SectionLabel label="Narzędzia" />
+        <SectionLabel label="Narzedzia" />
 
-        <NavItem to="/dashboard"  icon={Sparkles}   label="Analiza AI"       active={pathname === '/dashboard'} />
-        <NavItem to="/pricing"    icon={CreditCard}  label="Cennik"           active={pathname === '/pricing'} />
-        <NavItem to="/developers" icon={Code2}       label="API / Developers" badge="Dev" active={pathname === '/developers'} />
+        <NavItem to="/dashboard" icon={Sparkles} label="Analiza AI" active={pathname === '/dashboard'} />
+        <NavItem to="/pricing" icon={CreditCard} label="Cennik" active={pathname === '/pricing'} />
+        <NavItem to="/developers" icon={Code2} label="API / Developers" badge="Dev" active={pathname === '/developers'} />
 
         <div className="h-px bg-gray-100 my-1" />
         <SectionLabel label="Konto" />
 
         <NavItem to="/settings" icon={Settings} label="Ustawienia" active={pathname === '/settings'} />
-        <NavItem to="/profile"  icon={Users}    label="Profil"     active={pathname === '/profile'} />
+        <NavItem to="/profile" icon={Users} label="Profil" active={pathname === '/profile'} />
       </nav>
 
       {/* Bottom */}
@@ -116,14 +116,14 @@ export const Sidebar = () => {
         <div className="p-3 rounded-xl bg-gray-50 border border-gray-100 mb-2">
           <div className="flex items-center gap-2 mb-0.5">
             <Users className="w-3.5 h-3.5 text-gray-400" />
-            <span className="text-xs font-medium text-gray-700">Zaproś znajomych</span>
+            <span className="text-xs font-medium text-gray-700">Zaprос znajomych</span>
           </div>
-          <p className="text-[11px] text-gray-400 mb-2">Podziel się BitBrew ze swoim zespołem</p>
+          <p className="text-[11px] text-gray-400 mb-2">Podziel sie BitBrew ze swoim zespolem</p>
           <Link
             to="/pricing"
             className="block w-full text-center text-xs py-1.5 px-3 rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
           >
-            Wyślij zaproszenie
+            Wyslij zaproszenie
           </Link>
         </div>
 

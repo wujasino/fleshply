@@ -2,8 +2,8 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { TotpSetup } from '@/components/ui/totp-setup';
 import { useNavigate } from 'react-router-dom';
 import {
-  X, User, Bell, Shield, Trash2, Moon, Globe, ChevronRight, Save,
-  Upload, Camera, Loader2, KeyRound, Copy, Check, Mail, ArrowRight, ArrowLeft,
+  User, Bell, Shield, Trash2, Moon, Globe, Save,
+  Upload, Camera, Loader2, KeyRound, Check, Mail, ArrowRight, ArrowLeft,
   Eye, EyeOff, CheckCircle2, Circle, CreditCard, Download, FileText, Volume2,
 } from 'lucide-react';
 import { loadVoicePrefs, saveVoicePrefs, VoicePrefs, AVAILABLE_VOICES } from '@/hooks/useTTS';
@@ -47,6 +47,11 @@ export default function Settings() {
   const [notifMarketing, setNotifMarketing] = useState(false);
 
   // Withdrawal form
+  const [showWithdrawal, setShowWithdrawal] = useState(false);
+  const [withdrawalService, setWithdrawalService] = useState('');
+  const [withdrawalDate, setWithdrawalDate] = useState('');
+  const [withdrawalStatus, setWithdrawalStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+
   // Delete account
   const [showDeleteForm, setShowDeleteForm] = useState(false);
   const [deleteMethod, setDeleteMethod] = useState<'password' | '2fa'>('password');
@@ -55,25 +60,20 @@ export default function Settings() {
   const [deleteStatus, setDeleteStatus] = useState<'idle' | 'deleting' | 'done'>('idle');
   const [deleteError, setDeleteError] = useState('');
 
-  const [showWithdrawal, setShowWithdrawal] = useState(false);
-  const [withdrawalService, setWithdrawalService] = useState('');
-  const [withdrawalDate, setWithdrawalDate] = useState('');
-  const [withdrawalStatus, setWithdrawalStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
-
   const handleWithdrawal = async () => {
     if (!withdrawalService.trim() || !withdrawalDate) return;
     setWithdrawalStatus('sending');
     try {
       const { data: { user } } = await supabase.auth.getUser();
       const userEmail = user?.email ?? email;
-      const body = `FORMULARZ ODSTĄPIENIA OD UMOWY\n\nAdresat: Patryk Rybacki, działalność nierejestrowana, Biskupia 7/2\nE-mail: kontakt@bitbrew.pl\n\nJa, niniejszym informuję o moim odstąpieniu od umowy o świadczenie następującej usługi:\n${withdrawalService}\n\nData zawarcia umowy: ${withdrawalDate}\n\nImię i nazwisko / e-mail konsumenta: ${userEmail}\n\nData złożenia oświadczenia: ${new Date().toLocaleDateString('pl-PL')}`;
+      const body = `FORMULARZ ODSTAPIENIA OD UMOWY\n\nAdresat: Patryk Rybacki\nE-mail: kontakt@bitbrew.pl\n\nJa, niniejszym informuje o moim odstąpieniu od umowy o swiadczenie nastepujacej uslugi:\n${withdrawalService}\n\nData zawarcia umowy: ${withdrawalDate}\n\nImię i nazwisko / e-mail konsumenta: ${userEmail}\n\nData złożenia oswiadczenia: ${new Date().toLocaleDateString('pl-PL')}`;
       const res = await fetch('/.netlify/functions/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: userEmail,
           email: userEmail,
-          subject: 'Odstąpienie od umowy',
+          subject: 'Odstapienie od umowy',
           message: body,
         }),
       });
@@ -100,7 +100,7 @@ export default function Settings() {
   const [showPwdNew, setShowPwdNew] = useState(false);
 
   const pwdRules = [
-    { label: 'Min. 8 znaków',   test: (p: string) => p.length >= 8 },
+    { label: 'Min. 8 znakow',   test: (p: string) => p.length >= 8 },
     { label: 'Wielka litera',   test: (p: string) => /[A-Z]/.test(p) },
     { label: 'Cyfra',           test: (p: string) => /[0-9]/.test(p) },
     { label: 'Znak specjalny',  test: (p: string) => /[^A-Za-z0-9]/.test(p) },
@@ -109,9 +109,10 @@ export default function Settings() {
   const pwdStrength = useMemo(() => {
     if (!pwdNew) return 0;
     return pwdRules.filter(r => r.test(pwdNew)).length;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pwdNew]);
 
-  const pwdStrengthLabel = ['', 'Słabe', 'Słabe', 'Średnie', 'Silne'][pwdStrength];
+  const pwdStrengthLabel = ['', 'Slabe', 'Slabe', 'Srednie', 'Silne'][pwdStrength];
   const pwdStrengthColor = ['', 'bg-red-500', 'bg-red-500', 'bg-yellow-500', 'bg-green-500'][pwdStrength];
 
   // Security tab — change email
@@ -119,9 +120,6 @@ export default function Settings() {
   const [newEmail, setNewEmail] = useState('');
   const [emailLoading, setEmailLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
-
-  const [recoveryCode, setRecoveryCode] = useState<string | null>(null);
-  const [codeCopied, setCodeCopied] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem('subscriptionStatus') as typeof subStatus | null;
@@ -192,8 +190,6 @@ export default function Settings() {
     }
 
     setUploading(true);
-
-    // Show instant local preview while uploading
     const blobUrl = URL.createObjectURL(file);
     setAvatarUrl(blobUrl);
 
@@ -203,7 +199,6 @@ export default function Settings() {
       if (!ALLOWED_EXTS.includes(ext)) {
         throw new Error(t('settings_avatar_invalid_type'));
       }
-      // Always overwrite the same path — avoids orphaned files in storage
       const storagePath = `${userId}/avatar.${ext}`;
 
       const { error: storageError } = await supabase.storage
@@ -211,20 +206,15 @@ export default function Settings() {
         .upload(storagePath, file, { upsert: true, contentType: file.type });
       if (storageError) throw storageError;
 
-      // Add cache-busting so the browser doesn't show stale image
       const { data } = supabase.storage.from('avatars').getPublicUrl(storagePath);
       const publicUrl = `${data.publicUrl}?t=${Date.now()}`;
 
-      // Update auth user_metadata
       const { error: authError } = await supabase.auth.updateUser({
         data: { avatar_url: publicUrl },
       });
       if (authError) throw authError;
 
-      // Refresh session so the updated JWT / metadata is returned by getUser()
       await supabase.auth.refreshSession();
-
-      // Mirror to profiles table (best-effort)
       await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', userId);
 
       URL.revokeObjectURL(blobUrl);
@@ -235,9 +225,9 @@ export default function Settings() {
       setAvatarUrl(null);
       setUploadError(
         err?.message?.includes('Bucket not found')
-          ? 'Bucket "avatars" nie istnieje w Supabase Storage. Uruchom migrację SQL.'
+          ? 'Bucket "avatars" nie istnieje w Supabase Storage. Uruchom migracjê SQL.'
           : err?.message?.includes('row-level security')
-          ? 'Brak uprawnień do zapisu. Sprawdź polityki RLS bucketa "avatars".'
+          ? 'Brak uprawnien do zapisu. Sprawdz polityki RLS bucketa "avatars".'
           : t('settings_avatar_upload_error')
       );
     } finally {
@@ -276,7 +266,6 @@ export default function Settings() {
     }
   };
 
-  // --- Change password via OTP ---
   const handleSendPwdOtp = async () => {
     if (!email) return;
     setPwdLoading(true);
@@ -288,7 +277,7 @@ export default function Settings() {
         body: JSON.stringify({ email }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Błąd wysyłania kodu.');
+      if (!res.ok) throw new Error(data.error || 'Blad wysylania kodu.');
       setPwdOtp('');
       setPwdStep('otp');
     } catch (err: any) {
@@ -300,7 +289,7 @@ export default function Settings() {
 
   const handleVerifyPwdOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (pwdOtp.replace(/\D/g, '').length < 6) { setPwdError('Wpisz pełny 6-cyfrowy kod.'); return; }
+    if (pwdOtp.replace(/\D/g, '').length < 6) { setPwdError('Wpisz pelny 6-cyfrowy kod.'); return; }
     setPwdLoading(true);
     setPwdError('');
     try {
@@ -310,7 +299,7 @@ export default function Settings() {
         body: JSON.stringify({ email, code: pwdOtp.replace(/\D/g, '') }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Nieprawidłowy kod.');
+      if (!res.ok) throw new Error(data.error || 'Nieprawidlowy kod.');
       setPwdNew('');
       setPwdConfirm('');
       setPwdStep('newpwd');
@@ -323,8 +312,8 @@ export default function Settings() {
 
   const handleSetNewPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (pwdNew.length < 8) { setPwdError('Hasło musi mieć co najmniej 8 znaków.'); return; }
-    if (pwdNew !== pwdConfirm) { setPwdError('Hasła nie są identyczne.'); return; }
+    if (pwdNew.length < 8) { setPwdError('Haslo musi miec co najmniej 8 znakow.'); return; }
+    if (pwdNew !== pwdConfirm) { setPwdError('Hasla nie sa identyczne.'); return; }
     setPwdLoading(true);
     setPwdError('');
     try {
@@ -334,7 +323,7 @@ export default function Settings() {
         body: JSON.stringify({ email, code: pwdOtp.replace(/\D/g, ''), newPassword: pwdNew }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Nie udało się zmienić hasła.');
+      if (!res.ok) throw new Error(data.error || 'Nie udalo sie zmienic hasla.');
       setPwdStep('done');
     } catch (err: any) {
       setPwdError(err.message);
@@ -343,7 +332,6 @@ export default function Settings() {
     }
   };
 
-  // --- Change email ---
   const handleChangeEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(newEmail)) {
@@ -357,31 +345,10 @@ export default function Settings() {
       if (error) throw error;
       setEmailStep('sent');
     } catch (err: any) {
-      setEmailError(err.message || 'Nie udało się zmienić adresu e-mail.');
+      setEmailError(err.message || 'Nie udalo sie zmienic adresu e-mail.');
     } finally {
       setEmailLoading(false);
     }
-  };
-
-  const handleViewRecoveryCode = async () => {
-    if (!userId) return;
-    const { data } = await supabase
-      .from('recovery_codes')
-      .select('code_hash, created_at')
-      .eq('user_id', userId)
-      .single();
-    if (data) {
-      // We only show that a code exists + when it was generated (not the plain code — it's hashed)
-      setRecoveryCode(data.created_at);
-    } else {
-      setRecoveryCode('none');
-    }
-  };
-
-  const copyResetLink = async () => {
-    await navigator.clipboard.writeText(`${window.location.origin}/reset-password`);
-    setCodeCopied(true);
-    setTimeout(() => setCodeCopied(false), 2000);
   };
 
   const handleDeleteAccount = async () => {
@@ -392,13 +359,13 @@ export default function Settings() {
       if (!user) throw new Error('Nie zalogowano');
 
       if (deleteMethod === 'password') {
-        if (!deletePassword) { setDeleteError('Wpisz hasło'); setDeleteStatus('idle'); return; }
+        if (!deletePassword) { setDeleteError('Wpisz haslo'); setDeleteStatus('idle'); return; }
         const { error } = await supabase.auth.signInWithPassword({ email: user.email!, password: deletePassword });
-        if (error) { setDeleteError('Nieprawidłowe hasło'); setDeleteStatus('idle'); return; }
+        if (error) { setDeleteError('Nieprawidlowe haslo'); setDeleteStatus('idle'); return; }
       } else {
         if (deleteTotpCode.length !== 6) { setDeleteError('Wpisz 6-cyfrowy kod 2FA'); setDeleteStatus('idle'); return; }
         const { error } = await supabase.auth.verifyOtp({ email: user.email!, token: deleteTotpCode, type: 'totp' });
-        if (error) { setDeleteError('Nieprawidłowy kod 2FA'); setDeleteStatus('idle'); return; }
+        if (error) { setDeleteError('Nieprawidlowy kod 2FA'); setDeleteStatus('idle'); return; }
       }
 
       await supabase.from('profiles').delete().eq('id', user.id);
@@ -407,7 +374,7 @@ export default function Settings() {
       setDeleteStatus('done');
       setTimeout(() => navigate('/'), 1500);
     } catch (e: unknown) {
-      setDeleteError(e instanceof Error ? e.message : 'Wystąpił błąd');
+      setDeleteError(e instanceof Error ? e.message : 'Wystapil blad');
       setDeleteStatus('idle');
     }
   };
@@ -417,8 +384,7 @@ export default function Settings() {
       <div className="max-w-4xl mx-auto px-6 py-8">
         <h1 className="text-2xl font-semibold text-foreground mb-6">{t('settings')}</h1>
         <div className="flex gap-6">
-
-          {/* Left tab nav */}
+          {/* Left tab sidebar */}
           <aside className="w-48 shrink-0">
             <nav className="space-y-0.5">
               {tabs.map((tab) => (
@@ -443,7 +409,7 @@ export default function Settings() {
           <div className="flex-1 min-w-0">
             <div className="rounded-xl border border-[hsl(var(--glass-border))] bg-card p-6 space-y-6">
 
-              {/* ── ACCOUNT ── */}
+              {/* ACCOUNT */}
               {activeTab === 'account' && (
                 <>
                   {/* Avatar uploader */}
@@ -458,9 +424,7 @@ export default function Settings() {
                     }}
                     className={cn(
                       'flex items-center gap-5 p-4 rounded-xl border border-dashed transition-colors',
-                      dragOver
-                        ? 'border-primary bg-primary/5'
-                        : 'border-[hsl(var(--glass-border))] bg-muted/20'
+                      dragOver ? 'border-primary bg-primary/5' : 'border-[hsl(var(--glass-border))] bg-muted/20'
                     )}
                   >
                     <div className="relative group">
@@ -478,9 +442,7 @@ export default function Settings() {
                           </AvatarFallback>
                         </Avatar>
                         <div className="absolute inset-0 rounded-full bg-black/55 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          {uploading
-                            ? <Loader2 className="w-5 h-5 text-white animate-spin" />
-                            : <Camera className="w-5 h-5 text-white" />}
+                          {uploading ? <Loader2 className="w-5 h-5 text-white animate-spin" /> : <Camera className="w-5 h-5 text-white" />}
                         </div>
                       </button>
                     </div>
@@ -491,33 +453,18 @@ export default function Settings() {
                         {dragOver ? t('settings_avatar_drop') : t('settings_avatar_hint')}
                       </p>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          disabled={uploading}
-                          onClick={() => fileInputRef.current?.click()}
-                        >
+                        <Button type="button" size="sm" variant="outline" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
                           <Upload className="w-3.5 h-3.5 mr-1.5" />
                           {avatarUrl ? t('settings_avatar_change') : t('settings_avatar_upload')}
                         </Button>
                         {avatarUrl && (
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="ghost"
-                            disabled={uploading}
-                            onClick={handleAvatarRemove}
-                            className="text-muted-foreground hover:text-destructive"
-                          >
+                          <Button type="button" size="sm" variant="ghost" disabled={uploading} onClick={handleAvatarRemove} className="text-muted-foreground hover:text-destructive">
                             <Trash2 className="w-3.5 h-3.5 mr-1.5" />
                             {t('settings_avatar_remove')}
                           </Button>
                         )}
                       </div>
-                      {uploadError && (
-                        <p className="text-xs text-destructive mt-2">{uploadError}</p>
-                      )}
+                      {uploadError && <p className="text-xs text-destructive mt-2">{uploadError}</p>}
                     </div>
 
                     <input
@@ -535,22 +482,13 @@ export default function Settings() {
 
                   <div className="h-px bg-border" />
 
-                  {/* Fields */}
                   <div className="space-y-4">
                     <div>
-                      <label className="text-sm font-medium text-foreground block mb-1.5">
-                        {t('settings_display_name')}
-                      </label>
-                      <Input
-                        value={displayName}
-                        onChange={(e) => setDisplayName(e.target.value)}
-                        placeholder={t('settings_display_name_placeholder')}
-                      />
+                      <label className="text-sm font-medium text-foreground block mb-1.5">{t('settings_display_name')}</label>
+                      <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder={t('settings_display_name_placeholder')} />
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-foreground block mb-1.5">
-                        {t('email')}
-                      </label>
+                      <label className="text-sm font-medium text-foreground block mb-1.5">{t('email')}</label>
                       <Input value={email} disabled className="opacity-60" />
                       <p className="text-xs text-muted-foreground mt-1">{t('settings_email_hint')}</p>
                     </div>
@@ -561,69 +499,71 @@ export default function Settings() {
                       <><Save className="w-3.5 h-3.5 mr-1.5" />{t('settings_save')}</>
                     )}
                   </Button>
+
+                  {/* Delete account */}
+                  <div className="pt-4 border-t border-border">
+                    <p className="text-sm font-medium text-foreground mb-1">Usun konto</p>
+                    <p className="text-xs text-muted-foreground mb-3">Ta operacja jest nieodwracalna. Wszystkie dane zostana trwale usuniete.</p>
+
+                    {!showDeleteForm ? (
+                      <button
+                        onClick={() => setShowDeleteForm(true)}
+                        className="px-4 py-2 rounded-lg text-sm font-medium bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/20 transition-colors"
+                      >
+                        <Trash2 className="inline w-3.5 h-3.5 mr-1.5" />
+                        Usun konto
+                      </button>
+                    ) : deleteStatus === 'done' ? (
+                      <p className="text-sm text-muted-foreground">Konto zostalo usuniete.</p>
+                    ) : (
+                      <div className="space-y-3 p-4 rounded-xl border border-destructive/20 bg-destructive/5">
+                        <p className="text-xs font-medium text-destructive">Potwierdz usuniecie konta</p>
+
+                        <div className="flex gap-2 text-xs">
+                          <button
+                            onClick={() => setDeleteMethod('password')}
+                            className={cn('px-2 py-1 rounded border transition-colors', deleteMethod === 'password' ? 'bg-destructive/10 border-destructive/30 text-destructive' : 'border-border text-muted-foreground hover:bg-accent')}
+                          >
+                            Haslo
+                          </button>
+                          <button
+                            onClick={() => setDeleteMethod('2fa')}
+                            className={cn('px-2 py-1 rounded border transition-colors', deleteMethod === '2fa' ? 'bg-destructive/10 border-destructive/30 text-destructive' : 'border-border text-muted-foreground hover:bg-accent')}
+                          >
+                            Kod 2FA (jesli nie pamietam hasla)
+                          </button>
+                        </div>
+
+                        {deleteMethod === 'password' ? (
+                          <Input type="password" placeholder="Wpisz haslo" value={deletePassword} onChange={e => setDeletePassword(e.target.value)} />
+                        ) : (
+                          <Input type="text" placeholder="Kod z aplikacji 2FA (6 cyfr)" maxLength={6} value={deleteTotpCode} onChange={e => setDeleteTotpCode(e.target.value.replace(/\D/g, ''))} />
+                        )}
+
+                        {deleteError && <p className="text-xs text-destructive">{deleteError}</p>}
+
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => { setShowDeleteForm(false); setDeletePassword(''); setDeleteTotpCode(''); setDeleteError(''); }}
+                            className="px-3 py-1.5 rounded text-xs border border-border text-muted-foreground hover:bg-accent transition-colors"
+                          >
+                            Anuluj
+                          </button>
+                          <button
+                            disabled={deleteStatus === 'deleting'}
+                            onClick={handleDeleteAccount}
+                            className="px-3 py-1.5 rounded text-xs font-medium bg-destructive text-white hover:bg-destructive/90 transition-colors disabled:opacity-50"
+                          >
+                            {deleteStatus === 'deleting' ? 'Usuwanie...' : 'Potwierdz i usun konto'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </>
               )}
 
-              {/* ── DELETE ACCOUNT (inside account tab) ── */}
-              {activeTab === 'account' && (
-                <div className="pt-4 border-t border-border">
-                  <p className="text-sm font-medium text-foreground mb-1">Usuń konto</p>
-                  <p className="text-xs text-muted-foreground mb-3">Ta operacja jest nieodwracalna. Wszystkie dane zostaną trwale usunięte.</p>
-
-                  {deleteStatus === 'done' ? (
-                    <p className="text-sm text-muted-foreground">Konto zostało usunięte. Trwa wylogowanie…</p>
-                  ) : !showDeleteForm ? (
-                    <button
-                      onClick={() => setShowDeleteForm(true)}
-                      className="px-4 py-2 rounded-lg text-sm font-medium bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/20 transition-colors"
-                    >
-                      <Trash2 className="inline w-3.5 h-3.5 mr-1.5" />
-                      Usuń konto
-                    </button>
-                  ) : (
-                    <div className="space-y-3 p-4 rounded-xl border border-destructive/20 bg-destructive/5">
-                      <p className="text-xs font-medium text-destructive">Potwierdź usunięcie konta</p>
-                      <div className="flex gap-2 text-xs">
-                        <button
-                          onClick={() => setDeleteMethod('password')}
-                          className={cn('px-2 py-1 rounded border transition-colors', deleteMethod === 'password' ? 'bg-destructive/10 border-destructive/30 text-destructive' : 'border-border text-muted-foreground hover:bg-accent')}
-                        >
-                          Hasło
-                        </button>
-                        <button
-                          onClick={() => setDeleteMethod('2fa')}
-                          className={cn('px-2 py-1 rounded border transition-colors', deleteMethod === '2fa' ? 'bg-destructive/10 border-destructive/30 text-destructive' : 'border-border text-muted-foreground hover:bg-accent')}
-                        >
-                          Kod 2FA (jeśli nie pamiętam hasła)
-                        </button>
-                      </div>
-                      {deleteMethod === 'password' ? (
-                        <Input type="password" placeholder="Wpisz hasło" value={deletePassword} onChange={e => setDeletePassword(e.target.value)} />
-                      ) : (
-                        <Input type="text" placeholder="Kod z aplikacji 2FA (6 cyfr)" maxLength={6} value={deleteTotpCode} onChange={e => setDeleteTotpCode(e.target.value.replace(/\D/g, ''))} />
-                      )}
-                      {deleteError && <p className="text-xs text-destructive">{deleteError}</p>}
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => { setShowDeleteForm(false); setDeletePassword(''); setDeleteTotpCode(''); setDeleteError(''); }}
-                          className="px-3 py-1.5 rounded text-xs border border-border text-muted-foreground hover:bg-accent transition-colors"
-                        >
-                          Anuluj
-                        </button>
-                        <button
-                          disabled={deleteStatus === 'deleting'}
-                          onClick={handleDeleteAccount}
-                          className="px-3 py-1.5 rounded text-xs font-medium bg-destructive text-white hover:bg-destructive/90 transition-colors disabled:opacity-50"
-                        >
-                          {deleteStatus === 'deleting' ? 'Usuwanie…' : 'Potwierdź i usuń konto'}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* ── APPEARANCE ── */}
+              {/* APPEARANCE */}
               {activeTab === 'appearance' && (
                 <div className="space-y-5">
                   <div>
@@ -633,12 +573,12 @@ export default function Settings() {
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {([
-                        { code: 'pl', label: '🇵🇱 Polski'    },
-                        { code: 'en', label: '🇬🇧 English'   },
-                        { code: 'de', label: '🇩🇪 Deutsch'   },
-                        { code: 'fr', label: '🇫🇷 Français'  },
-                        { code: 'es', label: '🇪🇸 Español'   },
-                        { code: 'it', label: '🇮🇹 Italiano'  },
+                        { code: 'pl', label: 'Polski'    },
+                        { code: 'en', label: 'English'   },
+                        { code: 'de', label: 'Deutsch'   },
+                        { code: 'fr', label: 'Francais'  },
+                        { code: 'es', label: 'Espanol'   },
+                        { code: 'it', label: 'Italiano'  },
                       ] as const).map(({ code, label }) => (
                         <button
                           key={code}
@@ -661,16 +601,16 @@ export default function Settings() {
                   <div>
                     <label className="text-sm font-medium text-foreground block mb-1">
                       <Volume2 className="inline w-4 h-4 mr-1.5 text-primary" />
-                      Głos AI (czytanie raportów)
+                      Glos AI (czytanie raportow)
                     </label>
                     <p className="text-xs text-muted-foreground mb-4">
-                      Odtwarzaj raport na głos po zakończeniu analizy. Wymaga klucza ElevenLabs w panelu Netlify.
+                      Odtwarzaj raport na glos po zakonczeniu analizy. Wymaga klucza ElevenLabs w panelu Netlify.
                     </p>
 
                     <div className="flex items-center justify-between p-3 rounded-xl border border-[hsl(var(--glass-border))] bg-muted/20 mb-3">
                       <div>
-                        <p className="text-sm font-medium text-foreground">Włącz czytanie na głos</p>
-                        <p className="text-xs text-muted-foreground">Przycisk ▶ pojawi się w raporcie analizy</p>
+                        <p className="text-sm font-medium text-foreground">Wlacz czytanie na glos</p>
+                        <p className="text-xs text-muted-foreground">Przycisk pojawi sie w raporcie analizy</p>
                       </div>
                       <button
                         onClick={() => {
@@ -683,7 +623,6 @@ export default function Settings() {
                         <span className={cn('absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all duration-200', voicePrefs.enabled ? 'left-5' : 'left-1')} />
                       </button>
                     </div>
-
 
                     {voicePrefs.enabled && (
                       <div className="grid grid-cols-2 gap-2">
@@ -712,7 +651,7 @@ export default function Settings() {
                 </div>
               )}
 
-              {/* ── NOTIFICATIONS ── */}
+              {/* NOTIFICATIONS */}
               {activeTab === 'notifications' && (
                 <div className="space-y-4">
                   {[
@@ -727,54 +666,43 @@ export default function Settings() {
                       </div>
                       <button
                         onClick={() => item.set(!item.value)}
-                        className={cn(
-                          'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors',
-                          item.value ? 'bg-primary' : 'bg-muted'
-                        )}
+                        className={cn('relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors', item.value ? 'bg-primary' : 'bg-muted')}
                       >
-                        <span
-                          className={cn(
-                            'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform',
-                            item.value ? 'translate-x-4' : 'translate-x-0'
-                          )}
-                        />
+                        <span className={cn('pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform', item.value ? 'translate-x-4' : 'translate-x-0')} />
                       </button>
                     </div>
                   ))}
                 </div>
               )}
 
-              {/* ── SECURITY ── */}
+              {/* SECURITY */}
               {activeTab === 'security' && (
                 <div className="space-y-5">
-
-                  {/* ── Two-Factor Authentication ── */}
                   <div className="p-4 rounded-xl border border-[hsl(var(--glass-border))] bg-muted/20 space-y-3">
                     <div className="flex items-center gap-2.5 mb-1">
                       <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                         <Shield className="w-4 h-4 text-primary" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-foreground">Uwierzytelnianie dwuskładnikowe (2FA)</p>
+                        <p className="text-sm font-medium text-foreground">Uwierzytelnianie dwuskladnikowe (2FA)</p>
                         <p className="text-xs text-muted-foreground">Google Authenticator, Authy i inne</p>
                       </div>
                     </div>
                     <TotpSetup />
                   </div>
 
-                  {/* ── Change password via OTP ── */}
                   <div className="p-4 rounded-xl border border-[hsl(var(--glass-border))] bg-muted/20 space-y-3">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                         <KeyRound className="w-4 h-4 text-primary" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-foreground">Zmień hasło</p>
+                        <p className="text-sm font-medium text-foreground">Zmien haslo</p>
                         <p className="text-xs text-muted-foreground">
-                          {pwdStep === 'idle' ? <>Wyślemy kod weryfikacyjny na <strong>{email}</strong></> : null}
+                          {pwdStep === 'idle' ? <>Wyslemy kod weryfikacyjny na <strong>{email}</strong></> : null}
                           {pwdStep === 'otp' ? 'Wpisz kod z e-maila' : null}
-                          {pwdStep === 'newpwd' ? 'Kod potwierdzony — ustaw nowe hasło' : null}
-                          {pwdStep === 'done' ? 'Hasło zostało zmienione' : null}
+                          {pwdStep === 'newpwd' ? 'Kod potwierdzony — ustaw nowe haslo' : null}
+                          {pwdStep === 'done' ? 'Haslo zostalo zmienione' : null}
                         </p>
                       </div>
                     </div>
@@ -786,7 +714,7 @@ export default function Settings() {
                     {pwdStep === 'idle' && (
                       <Button size="sm" variant="outline" className="w-full" disabled={pwdLoading} onClick={handleSendPwdOtp}>
                         {pwdLoading ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Mail className="w-3.5 h-3.5 mr-1.5" />}
-                        Wyślij kod weryfikacyjny
+                        Wyslij kod weryfikacyjny
                       </Button>
                     )}
 
@@ -818,13 +746,12 @@ export default function Settings() {
 
                     {pwdStep === 'newpwd' && (
                       <form onSubmit={handleSetNewPassword} className="space-y-3">
-                        {/* Password input with show/hide */}
                         <div className="relative">
                           <Input
                             type={showPwdNew ? 'text' : 'password'}
                             value={pwdNew}
                             onChange={e => setPwdNew(e.target.value)}
-                            placeholder="Nowe hasło"
+                            placeholder="Nowe haslo"
                             autoComplete="new-password"
                             className="h-10 pr-10"
                             autoFocus
@@ -834,7 +761,6 @@ export default function Settings() {
                           </button>
                         </div>
 
-                        {/* Strength bar */}
                         {pwdNew.length > 0 && (
                           <div className="space-y-2">
                             <div className="flex gap-1 h-1">
@@ -843,15 +769,12 @@ export default function Settings() {
                               ))}
                             </div>
                             <p className="text-[11px] text-muted-foreground">{pwdStrengthLabel}</p>
-                            {/* Rules checklist */}
                             <div className="grid grid-cols-2 gap-x-3 gap-y-1 pt-0.5">
                               {pwdRules.map(({ label, test }) => {
                                 const ok = test(pwdNew);
                                 return (
                                   <div key={label} className="flex items-center gap-1.5">
-                                    {ok
-                                      ? <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
-                                      : <Circle className="w-3 h-3 text-muted-foreground/40 shrink-0" />}
+                                    {ok ? <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" /> : <Circle className="w-3 h-3 text-muted-foreground/40 shrink-0" />}
                                     <span className={`text-[11px] ${ok ? 'text-foreground/80' : 'text-muted-foreground/60'}`}>{label}</span>
                                   </div>
                                 );
@@ -860,9 +783,9 @@ export default function Settings() {
                           </div>
                         )}
 
-                        <Input type={showPwdNew ? 'text' : 'password'} value={pwdConfirm} onChange={e => setPwdConfirm(e.target.value)} placeholder="Powtórz hasło" autoComplete="new-password" className="h-10" />
+                        <Input type={showPwdNew ? 'text' : 'password'} value={pwdConfirm} onChange={e => setPwdConfirm(e.target.value)} placeholder="Powtorz haslo" autoComplete="new-password" className="h-10" />
                         {pwdConfirm.length > 0 && pwdNew !== pwdConfirm && (
-                          <p className="text-[11px] text-red-400">Hasła się nie zgadzają</p>
+                          <p className="text-[11px] text-red-400">Hasla sie nie zgadzaja</p>
                         )}
                         <div className="flex gap-2">
                           <Button type="button" size="sm" variant="ghost" onClick={() => { setPwdStep('otp'); setPwdError(''); }}>
@@ -870,7 +793,7 @@ export default function Settings() {
                           </Button>
                           <Button type="submit" size="sm" className="flex-1" disabled={pwdLoading || pwdNew.length < 8 || pwdNew !== pwdConfirm}>
                             {pwdLoading ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <KeyRound className="w-3.5 h-3.5 mr-1.5" />}
-                            Zmień hasło
+                            Zmien haslo
                           </Button>
                         </div>
                       </form>
@@ -879,19 +802,18 @@ export default function Settings() {
                     {pwdStep === 'done' && (
                       <div className="flex items-center gap-2 text-sm text-green-500 bg-green-500/10 rounded-lg px-3 py-2">
                         <Check className="w-4 h-4 shrink-0" />
-                        Hasło zostało zmienione pomyślnie.
+                        Haslo zostalo zmienione pomyslnie.
                       </div>
                     )}
                   </div>
 
-                  {/* ── Change email ── */}
                   <div className="p-4 rounded-xl border border-[hsl(var(--glass-border))] bg-muted/20 space-y-3">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                         <Mail className="w-4 h-4 text-primary" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-foreground">Zmień adres e-mail</p>
+                        <p className="text-sm font-medium text-foreground">Zmien adres e-mail</p>
                         <p className="text-xs text-muted-foreground">Aktualny: <strong>{email}</strong></p>
                       </div>
                     </div>
@@ -903,28 +825,20 @@ export default function Settings() {
                     {emailStep === 'idle' && (
                       <Button size="sm" variant="outline" className="w-full" onClick={() => { setEmailStep('input'); setEmailError(''); setNewEmail(''); }}>
                         <Mail className="w-3.5 h-3.5 mr-1.5" />
-                        Zmień e-mail
+                        Zmien e-mail
                       </Button>
                     )}
 
                     {emailStep === 'input' && (
                       <form onSubmit={handleChangeEmail} className="space-y-3">
-                        <Input
-                          type="email"
-                          value={newEmail}
-                          onChange={e => setNewEmail(e.target.value)}
-                          placeholder="nowy@email.pl"
-                          autoComplete="email"
-                          className="h-10"
-                          autoFocus
-                        />
+                        <Input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="nowy@email.pl" autoComplete="email" className="h-10" autoFocus />
                         <div className="flex gap-2">
                           <Button type="button" size="sm" variant="ghost" onClick={() => { setEmailStep('idle'); setEmailError(''); }}>
                             <ArrowLeft className="w-3.5 h-3.5" />
                           </Button>
                           <Button type="submit" size="sm" className="flex-1" disabled={emailLoading || !newEmail.trim()}>
                             {emailLoading ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <ArrowRight className="w-3.5 h-3.5 mr-1.5" />}
-                            Wyślij potwierdzenie
+                            Wyslij potwierdzenie
                           </Button>
                         </div>
                       </form>
@@ -933,31 +847,22 @@ export default function Settings() {
                     {emailStep === 'sent' && (
                       <div className="flex items-center gap-2 text-sm text-green-500 bg-green-500/10 rounded-lg px-3 py-2">
                         <Check className="w-4 h-4 shrink-0" />
-                        Wysłano link potwierdzający na <strong className="ml-1">{newEmail}</strong>. Kliknij go, żeby zatwierdzić zmianę.
+                        Wyslano link potwierdzajacy na <strong className="ml-1">{newEmail}</strong>. Kliknij go, zeby zatwierdzic zmiane.
                       </div>
                     )}
                   </div>
-
                 </div>
               )}
 
-              {/* ── PRIVACY ── */}
+              {/* PRIVACY */}
               {activeTab === 'privacy' && (
                 <div className="space-y-4">
                   <p className="text-sm text-muted-foreground leading-relaxed">{t('settings_privacy_desc')}</p>
                   <div className="flex flex-col gap-2">
-                    <a
-                      href="/polityka-prywatnosci"
-                      target="_blank"
-                      className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
-                    >
+                    <a href="/polityka-prywatnosci" target="_blank" className="inline-flex items-center gap-2 text-sm text-primary hover:underline">
                       <Shield className="w-4 h-4" /> {t('privacy')}
                     </a>
-                    <a
-                      href="/regulamin"
-                      target="_blank"
-                      className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
-                    >
+                    <a href="/regulamin" target="_blank" className="inline-flex items-center gap-2 text-sm text-primary hover:underline">
                       <Shield className="w-4 h-4" /> {t('terms')}
                     </a>
                   </div>
@@ -965,17 +870,14 @@ export default function Settings() {
                   <div className="p-4 rounded-xl border border-[hsl(var(--glass-border))] bg-muted/20">
                     <p className="text-sm font-medium text-foreground mb-1">{t('settings_data_export')}</p>
                     <p className="text-xs text-muted-foreground mb-3">{t('settings_data_export_desc')}</p>
-                    <Button variant="outline" size="sm">
-                      {t('settings_data_export_btn')}
-                    </Button>
+                    <Button variant="outline" size="sm">{t('settings_data_export_btn')}</Button>
                   </div>
                 </div>
               )}
 
-              {/* ── BILLING ── */}
+              {/* BILLING */}
               {activeTab === 'billing' && (
                 <div className="space-y-5">
-                  {/* Status row */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-[hsl(var(--glass-border))] bg-card/40">
                     <div className="flex items-center gap-3">
                       <span className={`inline-flex h-2.5 w-2.5 rounded-full ring-2 ${SUB_DOT[subStatus]} animate-pulse`} />
@@ -1003,7 +905,6 @@ export default function Settings() {
                     </div>
                   </div>
 
-                  {/* History */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground font-semibold">{t('settings_billing_history')}</p>
                     <div className="flex items-center gap-2">
@@ -1026,8 +927,7 @@ export default function Settings() {
                   ) : (
                     <div className="space-y-2">
                       {subHistory.map((item, i) => (
-                        <div key={item.timestamp + i}
-                          className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-[hsl(var(--glass-border))] bg-muted/20 text-sm">
+                        <div key={item.timestamp + i} className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-[hsl(var(--glass-border))] bg-muted/20 text-sm">
                           <div className="flex items-center gap-3 min-w-0">
                             <span className={`inline-flex h-2 w-2 shrink-0 rounded-full ring-2 ${SUB_DOT[item.status]}`} />
                             <span className="font-medium text-foreground truncate">{item.label}</span>
@@ -1043,21 +943,20 @@ export default function Settings() {
                     </div>
                   )}
 
-                  {/* ── Withdrawal from contract ── */}
                   <div className="border-t border-[hsl(var(--glass-border))] pt-5 space-y-3">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-start gap-2.5">
                         <FileText className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
                         <div>
-                          <p className="text-sm font-medium text-foreground">Odstąpienie od umowy</p>
+                          <p className="text-sm font-medium text-foreground">Odstapienie od umowy</p>
                           <p className="text-xs text-muted-foreground mt-0.5">
-                            Jako konsument masz prawo odstąpić od umowy w terminie 14 dni od jej zawarcia, bez podawania przyczyny.
+                            Jako konsument masz prawo odstapic od umowy w terminie 14 dni od jej zawarcia, bez podawania przyczyny.
                           </p>
                         </div>
                       </div>
                       {withdrawalStatus !== 'sent' && (
                         <Button size="sm" variant="outline" className="shrink-0" onClick={() => setShowWithdrawal(v => !v)}>
-                          {showWithdrawal ? 'Anuluj' : 'Złóż oświadczenie'}
+                          {showWithdrawal ? 'Anuluj' : 'Zloz oswiadczenie'}
                         </Button>
                       )}
                     </div>
@@ -1065,41 +964,23 @@ export default function Settings() {
                     {showWithdrawal && withdrawalStatus !== 'sent' && (
                       <div className="space-y-3 p-4 rounded-xl border border-[hsl(var(--glass-border))] bg-muted/20">
                         <p className="text-xs text-muted-foreground leading-relaxed">
-                          Wypełnij poniższy formularz. Oświadczenie zostanie przesłane na adres <strong>kontakt@bitbrew.pl</strong> oraz na Twój adres e-mail w celach potwierdzenia.
+                          Wypelnij ponizszy formularz. Oswiadczenie zostanie przyslane na adres <strong>kontakt@bitbrew.pl</strong>.
                         </p>
                         <div className="space-y-1.5">
-                          <label className="text-xs text-muted-foreground">Nazwa usługi, od której odstępujesz *</label>
-                          <Input
-                            value={withdrawalService}
-                            onChange={e => setWithdrawalService(e.target.value)}
-                            placeholder="np. Subskrypcja Solo / Growth / Enterprise"
-                            className="text-sm"
-                          />
+                          <label className="text-xs text-muted-foreground">Nazwa uslugi, od ktorej odstepujesz *</label>
+                          <Input value={withdrawalService} onChange={e => setWithdrawalService(e.target.value)} placeholder="np. Subskrypcja Solo / Growth / Enterprise" className="text-sm" />
                         </div>
                         <div className="space-y-1.5">
                           <label className="text-xs text-muted-foreground">Data zawarcia umowy *</label>
-                          <Input
-                            type="date"
-                            value={withdrawalDate}
-                            onChange={e => setWithdrawalDate(e.target.value)}
-                            className="text-sm"
-                          />
+                          <Input type="date" value={withdrawalDate} onChange={e => setWithdrawalDate(e.target.value)} className="text-sm" />
                         </div>
-                        <p className="text-[11px] text-muted-foreground/60 leading-relaxed">
-                          Składając oświadczenie potwierdzasz, że działasz jako konsument i jesteś świadomy/a, że prawo odstąpienia przysługuje w terminie 14 dni od zawarcia umowy (art. 27 Ustawy o prawach konsumenta).
-                        </p>
                         {withdrawalStatus === 'error' && (
-                          <p className="text-xs text-destructive">Wystąpił błąd podczas wysyłania. Spróbuj ponownie lub napisz bezpośrednio na <strong>kontakt@bitbrew.pl</strong>.</p>
+                          <p className="text-xs text-destructive">Wystapil blad podczas wysylania. Sprobuj ponownie lub napisz bezposrednio na <strong>kontakt@bitbrew.pl</strong>.</p>
                         )}
-                        <Button
-                          size="sm"
-                          onClick={handleWithdrawal}
-                          disabled={!withdrawalService.trim() || !withdrawalDate || withdrawalStatus === 'sending'}
-                          className="w-full gap-1.5"
-                        >
+                        <Button size="sm" onClick={handleWithdrawal} disabled={!withdrawalService.trim() || !withdrawalDate || withdrawalStatus === 'sending'} className="w-full gap-1.5">
                           {withdrawalStatus === 'sending'
-                            ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Wysyłanie…</>
-                            : <><Mail className="w-3.5 h-3.5" /> Wyślij oświadczenie o odstąpieniu</>}
+                            ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Wysylanie...</>
+                            : <><Mail className="w-3.5 h-3.5" /> Wyslij oswiadczenie o odstapieniu</>}
                         </Button>
                       </div>
                     )}
@@ -1107,17 +988,14 @@ export default function Settings() {
                     {withdrawalStatus === 'sent' && (
                       <div className="flex flex-col items-center gap-2 py-5 text-center p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
                         <CheckCircle2 className="w-8 h-8 text-emerald-400" />
-                        <p className="text-sm font-medium text-foreground">Oświadczenie zostało wysłane</p>
-                        <p className="text-xs text-muted-foreground max-w-xs">
-                          Potwierdzenie zostało przesłane na Twój adres e-mail. Odpowiemy w ciągu 14 dni.
-                        </p>
+                        <p className="text-sm font-medium text-foreground">Oswiadczenie zostalo wyslane</p>
+                        <p className="text-xs text-muted-foreground max-w-xs">Potwierdzenie zostalo przyslane na Twoj adres e-mail. Odpowiemy w ciagu 14 dni.</p>
                       </div>
                     )}
                   </div>
                 </div>
               )}
 
-              {/* ── DANGER ── */}
             </div>
           </div>
         </div>

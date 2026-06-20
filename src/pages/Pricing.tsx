@@ -14,7 +14,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 
-/* ── USD prices ─────────────────────────────────────────────────── */
+/* USD prices */
 const USD = {
   solo_monthly: '$29',
   solo_yearly: '$279',
@@ -26,13 +26,13 @@ const USD = {
 };
 
 const PLN = {
-  solo_monthly: '99 zł',
-  solo_yearly: '950 zł',
-  growth_monthly: '249 zł',
-  growth_yearly: '2 350 zł',
-  credits_20: '39 zł',
-  credits_50: '79 zł',
-  credits_120: '169 zł',
+  solo_monthly: '99 zl',
+  solo_yearly: '950 zl',
+  growth_monthly: '249 zl',
+  growth_yearly: '2 350 zl',
+  credits_20: '39 zl',
+  credits_50: '79 zl',
+  credits_120: '169 zl',
 };
 
 const SOCIAL_PROOF_BRANDS = ['Shopify Plus', 'Brainly', 'Booksy', 'inPost', 'Tidio', 'Packhelp'];
@@ -61,7 +61,6 @@ const Pricing = () => {
     if (params.get('canceled')) setMessage(t('pricing_payment_cancelled'));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  /* Sync currency with locale changes */
   useEffect(() => {
     setCurrency(locale === 'pl' ? 'pln' : 'usd');
   }, [locale]);
@@ -86,8 +85,6 @@ const Pricing = () => {
     setMessage('');
 
     try {
-      // Subscriptions must be tied to an account (Stripe webhook needs the
-      // user id) — send guests to sign-up, not login.
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { window.location.href = '/register?plan=' + planId; return; }
 
@@ -143,8 +140,6 @@ const Pricing = () => {
       if (!baseUrl) { setMessage(t('pricing_error_credits_config')); return; }
 
       const url = new URL(baseUrl);
-      // Attach the account ref only when the user is logged in —
-      // guests are sent straight to the Stripe payment link.
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         url.searchParams.set('client_reference_id', user.id);
@@ -254,7 +249,7 @@ const Pricing = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* ── Downgrade dialog ─────────────────────────────────────── */}
+      {/* Downgrade dialog */}
       <Dialog open={showDowngradeDialog} onOpenChange={setShowDowngradeDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -269,7 +264,7 @@ const Pricing = () => {
               <ul className="mt-3 space-y-1.5 text-sm">
                 {['pricing_downgrade_bullet1', 'pricing_downgrade_bullet2', 'pricing_downgrade_bullet3'].map(k => (
                   <li key={k} className="flex items-start gap-2">
-                    <span className="text-yellow-500 mt-0.5">•</span> {t(k)}
+                    <span className="text-yellow-500 mt-0.5">*</span> {t(k)}
                   </li>
                 ))}
               </ul>
@@ -287,10 +282,10 @@ const Pricing = () => {
         </DialogContent>
       </Dialog>
 
-      <div className="pt-28 pb-20 px-4 max-w-6xl mx-auto">
+      <div className="pb-20 px-4 max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
-          className="text-center mb-10"
+          className="text-center mb-10 pt-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
@@ -391,7 +386,6 @@ const Pricing = () => {
             <p className="mt-4 text-sm text-muted-foreground max-w-2xl mx-auto">
               {t('pricing_social_proof_subtitle')}
             </p>
-            {/* Logo chips */}
             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-6">
               {SOCIAL_PROOF_BRANDS.map((name) => (
                 <span key={name} className="text-sm font-medium text-muted-foreground/40 select-none">
