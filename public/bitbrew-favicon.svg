@@ -2,8 +2,8 @@
   <!-- Dark rounded square background -->
   <rect width="512" height="512" rx="110" fill="#1c1c1e"/>
   <!-- White coffee bean (full oval) -->
-  <ellipse cx="256" cy="258" rx="146" ry="190" fill="white"/>
-  <!-- Dark S-curve crease through the bean -->
-  <path d="M 226 78 C 160 140 340 190 300 258 C 260 326 140 370 190 440"
-        stroke="#1c1c1e" stroke-width="42" stroke-linecap="round" fill="none"/>
+  <ellipse cx="256" cy="258" rx="148" ry="192" fill="white"/>
+  <!-- Dark S-curve crease — thick, smooth, bulbous ends like a real coffee bean -->
+  <path d="M 272 85 C 310 110 330 160 290 210 C 250 260 210 300 220 360 C 228 400 250 420 240 435"
+        stroke="#1c1c1e" stroke-width="64" stroke-linecap="round" fill="none"/>
 </svg>
