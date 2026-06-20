@@ -2,7 +2,6 @@ import { motion } from 'framer-motion';
 import { Clock, TrendingUp, Search, ArrowRight, BarChart2, Zap, ChevronUp, ChevronDown, Plus } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from '@/lib/locale';
-import { Navbar } from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -124,8 +123,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="pt-24 pb-20 px-4 max-w-5xl mx-auto space-y-6">
+      <div className="py-8 pb-20 px-4 max-w-5xl mx-auto space-y-6">
 
         {/* ── USER HEADER ─────────────────────────────────────────── */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}

@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Sparkles, TrendingUp, TrendingDown, Activity, Layers, Target, RefreshCw, Search, Lock, FileDown } from 'lucide-react';
-import { Navbar } from '@/components/layout/Navbar';
 import { useTranslation } from '@/lib/locale';
 import { BrewingProgress } from '@/components/BrewingState';
 import { RadarChartCard } from '@/components/charts/RadarChartCard';
@@ -267,8 +266,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background relative">
-      <Navbar />
-      <div className="pt-20 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         {/* Top bar */}
         <header className="flex flex-col gap-4 mb-6">
           <button

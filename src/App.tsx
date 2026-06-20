@@ -5,6 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { AppShell } from "@/components/layout/AppShell";
 
 // Route-level code splitting — each page loads only when navigated to
 const Landing        = lazy(() => import("./pages/Landing"));
@@ -47,13 +48,13 @@ const App = () => (
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Landing />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard" element={<AppShell><Dashboard /></AppShell>} />
             <Route path="/pricing" element={<Pricing />} />
             <Route
               path="/profile"
               element={
                 <ProtectedRoute>
-                  <Profile />
+                  <AppShell><Profile /></AppShell>
                 </ProtectedRoute>
               }
             />
@@ -66,7 +67,7 @@ const App = () => (
               path="/settings"
               element={
                 <ProtectedRoute>
-                  <Settings />
+                  <AppShell><Settings /></AppShell>
                 </ProtectedRoute>
               }
             />
@@ -74,7 +75,7 @@ const App = () => (
               path="/developers"
               element={
                 <ProtectedRoute>
-                  <Developers />
+                  <AppShell><Developers /></AppShell>
                 </ProtectedRoute>
               }
             />
