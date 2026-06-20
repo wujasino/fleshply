@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { TotpSetup } from '@/components/ui/totp-setup';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from 'next-themes';
 import {
   X, User, Bell, Shield, Trash2, Moon, Globe, ChevronRight, Save,
   Upload, Camera, Loader2, KeyRound, Copy, Check, Mail, ArrowRight, ArrowLeft,
-  Eye, EyeOff, CheckCircle2, Circle, CreditCard, Download, Sun, Monitor, FileText,
+  Eye, EyeOff, CheckCircle2, Circle, CreditCard, Download, FileText, Volume2,
 } from 'lucide-react';
+import { loadVoicePrefs, saveVoicePrefs, VoicePrefs, AVAILABLE_VOICES } from '@/hooks/useTTS';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -29,8 +29,8 @@ const tabs: { id: Tab; labelKey: string; icon: React.FC<{ className?: string }> 
 export default function Settings() {
   const navigate = useNavigate();
   const { t, locale, setLocale } = useTranslation();
-  const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState<Tab>('account');
+  const [voicePrefs, setVoicePrefs] = useState<VoicePrefs>(loadVoicePrefs);
 
   // Billing / subscription
   const [subStatus, setSubStatus] = useState<'active' | 'paused' | 'cancelled'>('active');
@@ -596,31 +596,54 @@ export default function Settings() {
 
                   <div>
                     <label className="text-sm font-medium text-foreground block mb-1">
-                      <Moon className="inline w-4 h-4 mr-1.5 text-primary" />
-                      {t('settings_theme')}
+                      <Volume2 className="inline w-4 h-4 mr-1.5 text-primary" />
+                      Głos AI (czytanie raportów)
                     </label>
-                    <p className="text-xs text-muted-foreground mb-3">{t('settings_theme_hint')}</p>
-                    <div className="flex gap-2">
-                      {([
-                        { value: 'dark',   labelKey: 'settings_theme_dark',   Icon: Moon   },
-                        { value: 'light',  labelKey: 'settings_theme_light',  Icon: Sun    },
-                        { value: 'system', labelKey: 'settings_theme_system', Icon: Monitor },
-                      ] as const).map(({ value, labelKey, Icon }) => (
-                        <button
-                          key={value}
-                          onClick={() => setTheme(value)}
-                          className={cn(
-                            'flex items-center gap-2 px-4 py-2 rounded-lg text-sm border transition-colors',
-                            theme === value
-                              ? 'bg-primary text-primary-foreground border-primary'
-                              : 'border-input text-muted-foreground hover:text-foreground hover:bg-accent'
-                          )}
-                        >
-                          <Icon className="w-3.5 h-3.5" />
-                          {t(labelKey)}
-                        </button>
-                      ))}
+                    <p className="text-xs text-muted-foreground mb-4">
+                      Odtwarzaj raport na głos po zakończeniu analizy. Wymaga klucza ElevenLabs w panelu Netlify.
+                    </p>
+
+                    <div className="flex items-center justify-between p-3 rounded-xl border border-[hsl(var(--glass-border))] bg-muted/20 mb-3">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Włącz czytanie na głos</p>
+                        <p className="text-xs text-muted-foreground">Przycisk ▶ pojawi się w raporcie analizy</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          const p = { ...voicePrefs, enabled: !voicePrefs.enabled };
+                          setVoicePrefs(p);
+                          saveVoicePrefs(p);
+                        }}
+                        className={cn('relative w-10 h-6 rounded-full transition-colors', voicePrefs.enabled ? 'bg-primary' : 'bg-muted')}
+                      >
+                        <span className={cn('absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all duration-200', voicePrefs.enabled ? 'left-5' : 'left-1')} />
+                      </button>
                     </div>
+
+
+                    {voicePrefs.enabled && (
+                      <div className="grid grid-cols-2 gap-2">
+                        {AVAILABLE_VOICES.map(v => (
+                          <button
+                            key={v.id}
+                            onClick={() => {
+                              const p = { ...voicePrefs, voiceId: v.id };
+                              setVoicePrefs(p);
+                              saveVoicePrefs(p);
+                            }}
+                            className={cn(
+                              'flex flex-col items-start p-3 rounded-xl border text-left transition-colors',
+                              voicePrefs.voiceId === v.id
+                                ? 'bg-primary/10 border-primary text-primary'
+                                : 'border-input text-muted-foreground hover:text-foreground hover:bg-accent'
+                            )}
+                          >
+                            <span className="text-sm font-medium">{v.name}</span>
+                            <span className="text-[11px] opacity-70">{v.description}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

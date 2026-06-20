@@ -29,8 +29,8 @@ const AFTER  = { mentions: '7 / 10', sentiment: '81', recommend: '63%' };
 const PLANS = (t: (k: string) => string, cycle: 'monthly' | 'yearly', locale: string) => {
   const pln = locale === 'pl';
   const prices = {
-    solo:   cycle === 'monthly' ? (pln ? '99 zł' : '$29')  : (pln ? '950 zł'   : '$279'),
-    growth: cycle === 'monthly' ? (pln ? '249 zł' : '$79') : (pln ? '2 350 zł' : '$749'),
+    solo:   cycle === 'monthly' ? (pln ? '199 zł' : '$49')  : (pln ? '1 790 zł'  : '$470'),
+    growth: cycle === 'monthly' ? (pln ? '499 zł' : '$149') : (pln ? '4 490 zł' : '$1 390'),
   };
   const per = cycle === 'monthly' ? (pln ? t('tier_period_month') : '/mo') : (pln ? t('tier_period_year') : '/yr');
   return [
@@ -575,6 +575,67 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* ── Why subscribe ─────────────────────────────────────────── */}
+      <section className="py-20 px-4">
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <span className="inline-block px-3 py-1 text-xs badge rounded-lg mb-4 font-data uppercase tracking-wider">
+              Dlaczego subskrypcja?
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-display text-foreground mb-3">
+              Jednorazowy skan to ciekawostka.<br />
+              <span className="text-primary">Monitoring to przewaga.</span>
+            </h2>
+            <p className="text-sm text-muted-foreground max-w-xl mx-auto">
+              AI modele aktualizują swoją wiedzę. Twoja marka może być dziś widoczna, a jutro zastąpiona przez konkurenta. Płacisz za to, żeby wiedzieć pierwszy.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              {
+                icon: '📡',
+                title: 'Monitoring w czasie',
+                desc: 'Automatyczne skany co tydzień. Dowiesz się, gdy AI zmieni zdanie o Twojej marce — zanim zrobi to Twój klient.',
+              },
+              {
+                icon: '⚔️',
+                title: 'Śledzenie konkurencji',
+                desc: 'Porównaj jak ChatGPT, Claude i Gemini polecają Ciebie vs konkurentów. Zobaczysz dokładnie gdzie przegrywasz.',
+              },
+              {
+                icon: '🚨',
+                title: 'Alerty o zmianach',
+                desc: 'Natychmiastowe powiadomienie, gdy AI zacznie błędnie opisywać Twoją markę lub przestanie Cię polecać.',
+              },
+              {
+                icon: '📋',
+                title: 'Konkretne rekomendacje',
+                desc: 'Nie tylko wynik — dostaniesz listę działań: co zmienić w treściach, żeby AI częściej Cię rekomendował.',
+              },
+            ].map((item, i) => (
+              <motion.div
+                key={item.title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+                className="glass-card p-6 flex flex-col gap-3"
+              >
+                <span className="text-2xl">{item.icon}</span>
+                <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── Pricing ───────────────────────────────────────────────── */}
       <section id="pricing" className="py-24 px-4 border-t border-[hsl(var(--glass-border))]">
         <div className="max-w-6xl mx-auto">
@@ -588,10 +649,10 @@ const Landing = () => {
               {t('nav_pricing')}
             </span>
             <h2 className="text-3xl sm:text-4xl font-display text-foreground mb-3">
-              Prosty cennik
+              Cennik dla profesjonalistów
             </h2>
             <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-              Zacznij za darmo, skaluj gdy potrzebujesz. Bez ukrytych opłat.
+              Free dla pierwszego skanu. Płatne plany dla tych, którzy chcą wiedzieć co robi AI z ich marką <em>na co dzień</em>.
             </p>
 
             {/* Billing toggle */}

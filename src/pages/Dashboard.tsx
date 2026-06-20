@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Sparkles, TrendingUp, TrendingDown, Activity, Layers, Target, RefreshCw, Search, Lock, FileDown, Swords, X } from 'lucide-react';
-import { Navbar } from '@/components/layout/Navbar';
-import { Footer } from '@/components/layout/Footer';
+import { ArrowLeft, Sparkles, TrendingUp, TrendingDown, Activity, Layers, Target, RefreshCw, Search, Lock, FileDown, Swords, X, Volume2, Square, Loader2 } from 'lucide-react';
 import { useTranslation } from '@/lib/locale';
 import { BrewingProgress } from '@/components/BrewingState';
 import { RadarChartCard } from '@/components/charts/RadarChartCard';
@@ -12,6 +10,7 @@ import { SourceDonutChart } from '@/components/charts/SourceDonutChart';
 import { SourceTable } from '@/components/SourceTable';
 import BrandKnowledgeForm from '@/components/BrandKnowledgeForm';
 import { useBrewing } from '@/hooks/useBrewing';
+import { useTTS, loadVoicePrefs } from '@/hooks/useTTS';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 import { AnalysisResult } from '@/types/analysis';
@@ -121,6 +120,22 @@ const ScoreHero = ({ result, t }: { result: AnalysisResult; t: (k: string) => st
     return Math.round((pos / result.sources.length) * 100);
   }, [result.sources]);
 
+  const { speak, stop, playing, loading: ttsLoading } = useTTS();
+  const voiceEnabled = loadVoicePrefs().enabled;
+
+  const buildReportText = () => {
+    const lines = [
+      `Raport dla marki ${result.brandName}.`,
+      `Wynik zaufania AI: ${score} procent.`,
+      `Najsilniejszy wymiar: ${strongest[0]}, ${Math.round(strongest[1])} procent.`,
+      `Najsłabszy wymiar: ${weakest[0]}, ${Math.round(weakest[1])} procent.`,
+      `Średnia pewność modeli: ${avgConfidence} procent.`,
+      `Pozytywny sentyment: ${positiveRatio} procent.`,
+    ];
+    if (score < 60) lines.push('Uwaga: AI poleca Twoich konkurentów zamiast Ciebie. Twoja marka jest niewidoczna w wynikach modeli językowych.');
+    return lines.join(' ');
+  };
+
   return (
     <div className="relative rounded-2xl border border-[hsl(var(--glass-border))] bg-card/40 backdrop-blur-xl overflow-hidden mb-6">
       {/* Gradient mesh background */}
@@ -160,6 +175,25 @@ const ScoreHero = ({ result, t }: { result: AnalysisResult; t: (k: string) => st
                 </span>
               )}
             </div>
+            {voiceEnabled && (
+              <button
+                onClick={() => playing ? stop() : speak(buildReportText())}
+                disabled={ttsLoading}
+                className={cn(
+                  'mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all',
+                  playing
+                    ? 'bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20'
+                    : 'bg-primary/10 border-primary/20 text-primary hover:bg-primary/20'
+                )}
+              >
+                {ttsLoading
+                  ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  : playing
+                  ? <Square className="w-3.5 h-3.5" />
+                  : <Volume2 className="w-3.5 h-3.5" />}
+                {ttsLoading ? 'Ładowanie...' : playing ? 'Zatrzymaj' : 'Czytaj raport'}
+              </button>
+            )}
           </div>
 
           {/* Verdict */}
@@ -206,6 +240,46 @@ const ScoreHero = ({ result, t }: { result: AnalysisResult; t: (k: string) => st
             <InsightRow label={t('dashboard_insight_3')} value={`${positiveRatio}%`} accent={positiveRatio >= 50} />
           </div>
         </div>
+
+        {/* "o k***wa moment" — competitor urgency banner for low-scoring brands */}
+        {score < 60 && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.2, duration: 0.4 }}
+            className="mt-6 rounded-xl border border-red-500/30 bg-red-500/5 p-4"
+          >
+            <div className="flex items-start gap-3">
+              <div className="shrink-0 w-8 h-8 rounded-lg bg-red-500/15 border border-red-500/30 flex items-center justify-center mt-0.5">
+                <Swords className="w-4 h-4 text-red-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-red-300 mb-1">
+                  {t('dashboard_low_score_alert_title') !== 'dashboard_low_score_alert_title'
+                    ? t('dashboard_low_score_alert_title')
+                    : 'AI poleca Twoich konkurentów — nie Ciebie'}
+                </p>
+                <p className="text-xs text-red-300/70 leading-relaxed">
+                  {t('dashboard_low_score_alert_body') !== 'dashboard_low_score_alert_body'
+                    ? t('dashboard_low_score_alert_body')
+                    : `Wynik ${score}% oznacza, że gdy ktoś pyta ChatGPT lub Gemini o rozwiązanie w Twojej kategorii, modele rekomendują konkurencję. Twoja marka jest niewidoczna w AI — to bezpośrednia utrata klientów.`}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {result.sources?.slice(0, 3).map((s, i) => (
+                    <span key={i} className={cn(
+                      'inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium',
+                      s.sentiment === 'Negative' ? 'bg-red-500/15 text-red-300' :
+                      s.sentiment === 'Neutral' ? 'bg-amber-500/10 text-amber-300' :
+                      'bg-emerald-500/10 text-emerald-300'
+                    )}>
+                      {s.model}: {s.sentiment === 'Negative' ? '✗ nie poleca' : s.sentiment === 'Neutral' ? '~ neutralny' : '✓ poleca'}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
       </div>
     </div>
   );
@@ -322,7 +396,6 @@ const Dashboard = () => {
   if (isIdle) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
-        <Navbar />
         <div className="flex-1 flex items-center justify-center px-4">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -371,15 +444,13 @@ const Dashboard = () => {
             )}
           </motion.div>
         </div>
-        <Footer />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-background relative">
-      <Navbar />
-      <div className="pt-20 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <div className="pt-6 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         {/* Top bar */}
         <header className="flex flex-col gap-4 mb-6">
           <button
@@ -636,7 +707,6 @@ const Dashboard = () => {
           </motion.div>
         )}
       </div>
-      {result && <Footer />}
     </div>
   );
 };

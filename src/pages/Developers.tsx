@@ -5,8 +5,6 @@ import {
   Key, Webhook, Copy, Trash2, Plus, Check, ExternalLink, Eye, EyeOff,
   CircleCheck, CircleX, Loader2, BookOpen, Zap,
 } from 'lucide-react';
-import { Navbar } from '@/components/layout/Navbar';
-import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -85,8 +83,7 @@ const Developers = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
+      <div className="pt-6 pb-12 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
           <div>
@@ -518,7 +515,6 @@ const WebhooksSection = ({ userId, hooks, setHooks, deliveries, setDeliveries }:
           </ul>
         )}
       </div>
-      <Footer />
     </div>
   );
 };
