@@ -94,15 +94,14 @@ export const Sidebar = () => {
 
       {/* Main nav */}
       <nav className="flex-1 overflow-y-auto px-2 pt-2 space-y-0.5">
-        <NavItem to="/"          icon={Home}     label="Strona główna" active={pathname === '/'} />
-        <NavItem to="/dashboard" icon={BarChart2} label="Dashboard"    active={pathname === '/dashboard'} />
-        <NavItem to="/pricing"   icon={CreditCard} label="Cennik"      active={pathname === '/pricing'} />
+        <NavItem to="/" icon={Home} label="Strona główna" active={pathname === '/'} />
 
         <div className="h-px bg-gray-100 my-1" />
         <SectionLabel label="Narzędzia" />
 
-        <NavItem to="/dashboard"  icon={Sparkles}  label="Analiza AI"      active={false} />
-        <NavItem to="/developers" icon={Code2}      label="API / Developers" badge="Dev" active={pathname === '/developers'} />
+        <NavItem to="/dashboard"  icon={Sparkles}   label="Analiza AI"       active={pathname === '/dashboard'} />
+        <NavItem to="/pricing"    icon={CreditCard}  label="Cennik"           active={pathname === '/pricing'} />
+        <NavItem to="/developers" icon={Code2}       label="API / Developers" badge="Dev" active={pathname === '/developers'} />
 
         <div className="h-px bg-gray-100 my-1" />
         <SectionLabel label="Konto" />

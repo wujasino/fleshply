@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, AlertTriangle } from 'lucide-react';
-import { Navbar } from '@/components/layout/Navbar';
-import { Footer } from '@/components/layout/Footer';
 import { useTranslation } from '@/lib/locale';
 import { supabase } from '@/lib/supabase';
 import { PricingCards, type PricingTierCard } from '@/components/ui/pricing-cards';
@@ -256,8 +254,6 @@ const Pricing = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-
       {/* ── Downgrade dialog ─────────────────────────────────────── */}
       <Dialog open={showDowngradeDialog} onOpenChange={setShowDowngradeDialog}>
         <DialogContent className="max-w-md">
@@ -423,7 +419,6 @@ const Pricing = () => {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 };

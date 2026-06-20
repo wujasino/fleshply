@@ -50,7 +50,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/dashboard" element={<AppShell><Dashboard /></AppShell>} />
-            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/pricing" element={<AppShell><Pricing /></AppShell>} />
             <Route
               path="/profile"
               element={
