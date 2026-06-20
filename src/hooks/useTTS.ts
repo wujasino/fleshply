@@ -9,20 +9,22 @@ export interface VoicePrefs {
 
 export const DEFAULT_VOICE_PREFS: VoicePrefs = {
   enabled: false,
-  voiceId: 'EXAVITQu4vr4xnSDxMaL', // Sarah — multilingual
+  voiceId: 'EXAVITQu4vr4xnSDxMaL',
 };
 
 export const AVAILABLE_VOICES = [
-  { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Sarah', description: 'Wyraźna, profesjonalna' },
-  { id: 'onwK4e9ZLuTAKqWW03F9', name: 'Daniel', description: 'Głęboki, spokojny' },
-  { id: 'XB0fDUnXU5powFXDhCwa', name: 'Charlotte', description: 'Ciepła, naturalna' },
-  { id: 'N2lVS1w4EtoT3dr4eOWO', name: 'Callum', description: 'Dynamiczny, energiczny' },
+  { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Sarah',    description: 'Wyraźna, profesjonalna' },
+  { id: 'onwK4e9ZLuTAKqWW03F9', name: 'Daniel',   description: 'Głęboki, spokojny'     },
+  { id: 'XB0fDUnXU5powFXDhCwa', name: 'Charlotte', description: 'Ciepła, naturalna'     },
+  { id: 'N2lVS1w4EtoT3dr4eOWO', name: 'Callum',   description: 'Dynamiczny, energiczny' },
 ];
 
 export function loadVoicePrefs(): VoicePrefs {
   try {
     return { ...DEFAULT_VOICE_PREFS, ...JSON.parse(localStorage.getItem(VOICE_PREFS_KEY) || '{}') };
-  } catch { return DEFAULT_VOICE_PREFS; }
+  } catch {
+    return DEFAULT_VOICE_PREFS;
+  }
 }
 
 export function saveVoicePrefs(prefs: VoicePrefs) {
@@ -65,8 +67,8 @@ export function useTTS() {
       audio.onerror = () => { setPlaying(false); setError('Błąd odtwarzania'); };
       await audio.play();
       setPlaying(true);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e));
     } finally {
       setLoading(false);
     }

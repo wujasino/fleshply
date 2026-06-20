@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Sparkles, TrendingUp, TrendingDown, Activity, Layers, Target, RefreshCw, Search, Lock, FileDown, Swords, X, Volume2, Square, Loader2 } from 'lucide-react';
-import { useTTS, loadVoicePrefs } from '@/hooks/useTTS';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { useTranslation } from '@/lib/locale';
@@ -13,6 +12,7 @@ import { SourceDonutChart } from '@/components/charts/SourceDonutChart';
 import { SourceTable } from '@/components/SourceTable';
 import BrandKnowledgeForm from '@/components/BrandKnowledgeForm';
 import { useBrewing } from '@/hooks/useBrewing';
+import { useTTS, loadVoicePrefs } from '@/hooks/useTTS';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 import { AnalysisResult } from '@/types/analysis';
@@ -122,19 +122,19 @@ const ScoreHero = ({ result, t }: { result: AnalysisResult; t: (k: string) => st
     return Math.round((pos / result.sources.length) * 100);
   }, [result.sources]);
 
-  const { speak, stop, playing, loading } = useTTS();
+  const { speak, stop, playing, loading: ttsLoading } = useTTS();
+  const voiceEnabled = loadVoicePrefs().enabled;
 
   const buildReportText = () => {
     const lines = [
       `Raport dla marki ${result.brandName}.`,
-      `Wynik zaufania: ${score} procent.`,
-      `Ocena: ${getVerdictKey(score).replace('dashboard_verdict_', '')}.`,
+      `Wynik zaufania AI: ${score} procent.`,
       `Najsilniejszy wymiar: ${strongest[0]}, ${Math.round(strongest[1])} procent.`,
       `Najsłabszy wymiar: ${weakest[0]}, ${Math.round(weakest[1])} procent.`,
-      `Pewność modeli: ${avgConfidence} procent.`,
+      `Średnia pewność modeli: ${avgConfidence} procent.`,
       `Pozytywny sentyment: ${positiveRatio} procent.`,
     ];
-    if (score < 60) lines.push('Uwaga: AI poleca Twoich konkurentów zamiast Ciebie. Twoja marka jest niewidoczna w wynikach modeli.');
+    if (score < 60) lines.push('Uwaga: AI poleca Twoich konkurentów zamiast Ciebie. Twoja marka jest niewidoczna w wynikach modeli językowych.');
     return lines.join(' ');
   };
 
@@ -177,12 +177,10 @@ const ScoreHero = ({ result, t }: { result: AnalysisResult; t: (k: string) => st
                 </span>
               )}
             </div>
-
-            {/* TTS button — only shown when voice is enabled in settings */}
-            {loadVoicePrefs().enabled && (
+            {voiceEnabled && (
               <button
                 onClick={() => playing ? stop() : speak(buildReportText())}
-                disabled={loading}
+                disabled={ttsLoading}
                 className={cn(
                   'mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all',
                   playing
@@ -190,8 +188,12 @@ const ScoreHero = ({ result, t }: { result: AnalysisResult; t: (k: string) => st
                     : 'bg-primary/10 border-primary/20 text-primary hover:bg-primary/20'
                 )}
               >
-                {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : playing ? <Square className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-                {loading ? 'Ładowanie...' : playing ? 'Zatrzymaj' : 'Czytaj raport'}
+                {ttsLoading
+                  ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  : playing
+                  ? <Square className="w-3.5 h-3.5" />
+                  : <Volume2 className="w-3.5 h-3.5" />}
+                {ttsLoading ? 'Ładowanie...' : playing ? 'Zatrzymaj' : 'Czytaj raport'}
               </button>
             )}
           </div>

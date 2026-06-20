@@ -633,30 +633,37 @@ export default function Settings() {
                       Głos AI (czytanie raportów)
                     </label>
                     <p className="text-xs text-muted-foreground mb-4">
-                      Odtwarzaj raport na głos po zakończeniu analizy. Wymaga klucza ElevenLabs.
+                      Odtwarzaj raport na głos po zakończeniu analizy. Wymaga klucza ElevenLabs w panelu Netlify.
                     </p>
 
-                    {/* Enable/disable toggle */}
                     <div className="flex items-center justify-between p-3 rounded-xl border border-[hsl(var(--glass-border))] bg-muted/20 mb-3">
                       <div>
                         <p className="text-sm font-medium text-foreground">Włącz czytanie na głos</p>
-                        <p className="text-xs text-muted-foreground">Przycisk ▶ pojawi się w raporcie</p>
+                        <p className="text-xs text-muted-foreground">Przycisk ▶ pojawi się w raporcie analizy</p>
                       </div>
                       <button
-                        onClick={() => { const p = { ...voicePrefs, enabled: !voicePrefs.enabled }; setVoicePrefs(p); saveVoicePrefs(p); }}
+                        onClick={() => {
+                          const p = { ...voicePrefs, enabled: !voicePrefs.enabled };
+                          setVoicePrefs(p);
+                          saveVoicePrefs(p);
+                        }}
                         className={cn('relative w-10 h-6 rounded-full transition-colors', voicePrefs.enabled ? 'bg-primary' : 'bg-muted')}
                       >
-                        <span className={cn('absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform', voicePrefs.enabled ? 'left-5' : 'left-1')} />
+                        <span className={cn('absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all duration-200', voicePrefs.enabled ? 'left-5' : 'left-1')} />
                       </button>
                     </div>
 
-                    {/* Voice selector */}
+
                     {voicePrefs.enabled && (
                       <div className="grid grid-cols-2 gap-2">
                         {AVAILABLE_VOICES.map(v => (
                           <button
                             key={v.id}
-                            onClick={() => { const p = { ...voicePrefs, voiceId: v.id }; setVoicePrefs(p); saveVoicePrefs(p); }}
+                            onClick={() => {
+                              const p = { ...voicePrefs, voiceId: v.id };
+                              setVoicePrefs(p);
+                              saveVoicePrefs(p);
+                            }}
                             className={cn(
                               'flex flex-col items-start p-3 rounded-xl border text-left transition-colors',
                               voicePrefs.voiceId === v.id
