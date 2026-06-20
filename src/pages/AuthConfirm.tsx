@@ -56,7 +56,7 @@ export default function AuthConfirm() {
 
           {/* Logo */}
           <Link to="/" className="inline-block">
-            <img src="/bitbrew-logo-ink.svg" alt="BitBrew" className="h-7 mx-auto" />
+            <img src="/landing-page-logo.png" alt="BitBrew" className="h-7 mx-auto" />
           </Link>
 
           {status === 'loading' && (

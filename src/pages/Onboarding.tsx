@@ -73,7 +73,7 @@ export default function Onboarding() {
 
         {/* Logo */}
         <div className="flex justify-center mb-10">
-          <img src="/bitbrew-logo-ink.svg" alt="BitBrew" className="h-8" />
+          <img src="/landing-page-logo.png" alt="BitBrew" className="h-8" />
         </div>
 
         {/* Progress bar */}

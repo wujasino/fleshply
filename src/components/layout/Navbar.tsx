@@ -168,7 +168,7 @@ export const Navbar = () => {
 
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2 shrink-0">
-              <img src="/bitbrew-logo-ink.svg" alt="BitBrew" className="h-7 w-auto" />
+              <img src="/landing-page-logo.png" alt="BitBrew" className="h-7 w-auto" />
             </Link>
 
             {/* Desktop navigation */}

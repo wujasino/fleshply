@@ -217,7 +217,7 @@ const Register = () => {
         className="hidden lg:flex lg:w-[46%] xl:w-[42%] flex-col justify-between p-10 border-r border-[hsl(var(--glass-border))] bg-card/30"
       >
         <Link to="/" className="flex items-center w-fit">
-          <img src="/bitbrew-logo-ink.svg" alt="BitBrew" className="h-7" />
+          <img src="/landing-page-logo.png" alt="BitBrew" className="h-7" />
         </Link>
 
         <div className="space-y-8">
@@ -266,7 +266,7 @@ const Register = () => {
           {/* Top bar: mobile logo + back button */}
           <div className="flex items-center justify-between mb-2">
             <Link to="/" className="lg:hidden flex items-center">
-              <img src="/bitbrew-logo-ink.svg" alt="BitBrew" className="h-6" />
+              <img src="/landing-page-logo.png" alt="BitBrew" className="h-6" />
             </Link>
             <Link
               to="/"
