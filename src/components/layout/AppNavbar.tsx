@@ -1,11 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Zap, LogOut, Bell, Sun, Moon } from 'lucide-react';
+import { Zap, LogOut, Sun, Moon } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { supabase } from '@/lib/supabase';
 import { logout } from '@/lib/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch-theme';
+import AvatarNotifications from '@/components/ui/avatar-notifications';
 import { Link } from 'react-router-dom';
 
 export const AppNavbar = () => {
@@ -58,9 +59,7 @@ export const AppNavbar = () => {
         iconOff={<Sun className="w-3.5 h-3.5 text-amber-500" />}
       />
 
-      <button className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
-        <Bell className="w-4 h-4" />
-      </button>
+      <AvatarNotifications />
 
       {userEmail && (
         <div className="flex items-center gap-2 pl-2 border-l border-border">
