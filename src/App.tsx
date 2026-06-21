@@ -1,6 +1,6 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -34,6 +34,26 @@ const queryClient = new QueryClient({
   },
 });
 
+const PAGE_TITLES: Record<string, string> = {
+  '/':           'BitBrew — AI Brand Visibility Scanner',
+  '/dashboard':  'Dashboard | BitBrew',
+  '/pricing':    'Pricing | BitBrew',
+  '/profile':    'Profile | BitBrew',
+  '/settings':   'Settings | BitBrew',
+  '/developers': 'Developers | BitBrew',
+  '/login':      'Sign In | BitBrew',
+  '/register':   'Sign Up | BitBrew',
+  '/docs/api':   'API Docs | BitBrew',
+};
+
+const PageTitle = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    document.title = PAGE_TITLES[pathname] ?? 'BitBrew';
+  }, [pathname]);
+  return null;
+};
+
 const PageLoader = () => (
   <div className="min-h-screen bg-background flex items-center justify-center">
     <div className="w-6 h-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
@@ -46,6 +66,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <PageTitle />
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Landing />} />

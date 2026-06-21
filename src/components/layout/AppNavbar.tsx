@@ -7,7 +7,6 @@ import { logout } from '@/lib/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch-theme';
 import AvatarNotifications from '@/components/ui/avatar-notifications';
-import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
@@ -92,8 +91,6 @@ export const AppNavbar = () => {
           Ulepsz plan
         </Link>
       )}
-
-      <LanguageSwitcher />
 
       <Switch
         value={isDark}

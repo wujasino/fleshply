@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { LogOut, User, Settings, Code2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useTranslation } from '../../lib/locale';
-import { LanguageSwitcher } from '../ui/LanguageSwitcher';
+
 import { Button } from '@/components/ui/button';
 import {
   NavigationMenu,
@@ -200,8 +200,6 @@ export const Navbar = () => {
 
           {/* Right: language + auth */}
           <div className="flex items-center gap-2">
-            <LanguageSwitcher />
-
             {authLoading ? (
               <div className="hidden md:flex items-center gap-2">
                 <div className="w-16 h-8 rounded-lg bg-muted animate-pulse" />

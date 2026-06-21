@@ -2059,12 +2059,7 @@ const LocaleContext = createContext<LocaleContextValue | undefined>(undefined);
 
 const SUPPORTED: Locale[] = ['en', 'pl', 'de', 'fr', 'es', 'it'];
 const detectInitialLocale = (): Locale => {
-  try {
-    const stored = localStorage.getItem('bb_locale') as Locale | null;
-    if (stored && SUPPORTED.includes(stored)) return stored;
-  } catch { /* ignore */ }
-  const code = (navigator.language || 'en').slice(0, 2).toLowerCase() as Locale;
-  return SUPPORTED.includes(code) ? code : 'en';
+  return 'en';
 };
 
 export const LocaleProvider = ({ children }: { children: ReactNode }) => {
