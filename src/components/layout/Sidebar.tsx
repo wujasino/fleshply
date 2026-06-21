@@ -1,11 +1,9 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Home, CreditCard, Sparkles, Code2, LogOut, Zap, Sun, Moon, Users } from 'lucide-react';
-import { useTheme } from 'next-themes';
+import { Home, CreditCard, Sparkles, Code2, LogOut, Zap, Users } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { logout } from '@/lib/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Switch } from '@/components/ui/switch-theme';
 import { cn } from '@/lib/utils';
 
 const NavItem = ({
@@ -35,8 +33,6 @@ const SectionLabel = ({ label }: { label: string }) => (
 export const Sidebar = () => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme();
-  const isDark = theme === 'dark';
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
@@ -124,17 +120,6 @@ export const Sidebar = () => {
           >
             Wyslij zaproszenie
           </Link>
-        </div>
-
-        {/* Theme toggle */}
-        <div className="flex items-center justify-between px-3 py-2">
-          <span className="text-xs text-gray-400">{isDark ? 'Ciemny motyw' : 'Jasny motyw'}</span>
-          <Switch
-            value={isDark}
-            onToggle={() => setTheme(isDark ? 'light' : 'dark')}
-            iconOn={<Moon className="w-3 h-3 text-primary" />}
-            iconOff={<Sun className="w-3 h-3 text-amber-500" />}
-          />
         </div>
 
         {/* Avatar row */}
