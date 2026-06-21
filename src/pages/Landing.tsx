@@ -93,9 +93,6 @@ const Landing = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <div className="flex justify-center mb-6">
-                <img src="/bitbrew-favicon-512.png" alt="BitBrew" className="w-16 h-16" />
-              </div>
               <span className="inline-block px-3 py-1 text-xs badge rounded-lg mb-6 font-data uppercase tracking-wider">
                 {t('hero_tag')}
               </span>
@@ -171,7 +168,7 @@ const Landing = () => {
               onClick={() => document.getElementById('why-section')?.scrollIntoView({ behavior: 'smooth' })}
               className="mt-12 mx-auto flex flex-col items-center gap-1.5 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
             >
-              <span className="text-[10px] uppercase tracking-[0.25em]">{t('whyTitle')}</span>
+              <span className="text-[10px] uppercase tracking-[0.25em]">Dowiedz się więcej</span>
               <motion.div animate={{ y: [0, 4, 0] }} transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}>
                 <ChevronDown className="w-4 h-4" />
               </motion.div>
@@ -392,13 +389,13 @@ const Landing = () => {
         <div className="max-w-5xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
             <span className="inline-block px-3 py-1 text-xs badge rounded-lg mb-4 font-data uppercase tracking-wider">
-              Dla kogo
+              Dla kogo?
             </span>
             <h2 className="text-3xl sm:text-4xl font-display text-foreground mb-3">
               Kto korzysta z BitBrew?
             </h2>
             <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-              Niezależnie od wielkości firmy — jeśli zależy Ci na tym jak AI postrzega Twoją markę, BitBrew jest dla Ciebie.
+              Od startupów po duże marki — jeśli zależy Ci na tym, jak AI opisuje Twoją firmę, BitBrew daje Ci pełny obraz.
             </p>
           </motion.div>
 
@@ -492,9 +489,12 @@ const Landing = () => {
                 {intg.name}
               </div>
             ))}
-            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-[hsl(var(--glass-border))] text-sm text-muted-foreground/50">
-              + more via API
-            </div>
+            <Link
+              to="/developers"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-primary/30 text-sm text-primary/60 hover:text-primary hover:border-primary/60 transition-colors"
+            >
+              + więcej przez API →
+            </Link>
           </motion.div>
         </div>
       </section>
@@ -507,7 +507,7 @@ const Landing = () => {
               Porównanie
             </span>
             <h2 className="text-3xl sm:text-4xl font-display text-foreground mb-3">
-              BitBrew vs inne narzędzia
+              BitBrew vs. inne narzędzia
             </h2>
             <p className="text-sm text-muted-foreground max-w-lg mx-auto">
               Tradycyjne narzędzia monitorują media społecznościowe i wyszukiwarki. BitBrew monitoruje co AI mówi o Twojej marce.
@@ -588,14 +588,14 @@ const Landing = () => {
             className="text-center mb-12"
           >
             <span className="inline-block px-3 py-1 text-xs badge rounded-lg mb-4 font-data uppercase tracking-wider">
-              Dlaczego subskrypcja?
+              Dlaczego monitoring?
             </span>
             <h2 className="text-3xl sm:text-4xl font-display text-foreground mb-3">
               Jednorazowy skan to ciekawostka.<br />
               <span className="text-primary">Monitoring to przewaga.</span>
             </h2>
             <p className="text-sm text-muted-foreground max-w-xl mx-auto">
-              AI modele aktualizują swoją wiedzę. Twoja marka może być dziś widoczna, a jutro zastąpiona przez konkurenta. Płacisz za to, żeby wiedzieć pierwszy.
+              Modele AI aktualizują swoją wiedzę regularnie. Twoja marka może być dziś widoczna, a jutro wyprzedzi ją konkurent. Subskrypcja daje Ci pewność, że dowiesz się pierwszy.
             </p>
           </motion.div>
 
@@ -652,10 +652,10 @@ const Landing = () => {
               {t('nav_pricing')}
             </span>
             <h2 className="text-3xl sm:text-4xl font-display text-foreground mb-3">
-              Cennik dla profesjonalistów
+              Prosty cennik, bez niespodzianek
             </h2>
             <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-              Free dla pierwszego skanu. Płatne plany dla tych, którzy chcą wiedzieć co robi AI z ich marką <em>na co dzień</em>.
+              Zacznij za darmo — pierwsza analiza jest zawsze bezpłatna. Płatne plany dla tych, którzy chcą wiedzieć co AI mówi o ich marce <em>każdego tygodnia</em>.
             </p>
 
             {/* Billing toggle */}

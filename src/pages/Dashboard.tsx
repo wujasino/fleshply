@@ -120,8 +120,14 @@ const ScoreHero = ({ result, t }: { result: AnalysisResult; t: (k: string) => st
     return Math.round((pos / result.sources.length) * 100);
   }, [result.sources]);
 
-  const { speak, stop, playing, loading: ttsLoading } = useTTS();
-  const voiceEnabled = loadVoicePrefs().enabled;
+  const { speak, stop, playing, loading: ttsLoading, error: ttsError } = useTTS();
+  const [voiceEnabled, setVoiceEnabled] = useState(() => loadVoicePrefs().enabled);
+  useEffect(() => {
+    const sync = () => setVoiceEnabled(loadVoicePrefs().enabled);
+    window.addEventListener('storage', sync);
+    window.addEventListener('focus', sync);
+    return () => { window.removeEventListener('storage', sync); window.removeEventListener('focus', sync); };
+  }, []);
 
   const buildReportText = () => {
     const lines = [

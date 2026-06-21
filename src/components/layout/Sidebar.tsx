@@ -75,22 +75,22 @@ export const Sidebar = () => {
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-60 flex flex-col bg-white border-r border-gray-100 z-40">
       {/* Logo */}
-      <div className="p-4 pb-3">
+      <div className="p-4 pb-4">
         <Link to="/" className="flex items-center gap-2">
           <img src="/landing-page-logo.png" alt="BitBrew" className="h-6 w-auto" />
         </Link>
       </div>
 
+      <div className="h-px bg-gray-100 mx-4" />
+
       {/* Plan badge */}
-      <div className="px-4 pb-3">
+      <div className="px-4 pt-3 pb-2">
         <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 border border-gray-100">
           <div className="w-2 h-2 rounded-full bg-primary" />
           <span className="text-xs font-medium text-gray-700 flex-1">BitBrew</span>
           <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-semibold">{plan}</span>
         </div>
       </div>
-
-      <div className="h-px bg-gray-100 mx-4" />
 
       {/* Main nav */}
       <nav className="flex-1 overflow-y-auto px-2 pt-2 space-y-0.5">

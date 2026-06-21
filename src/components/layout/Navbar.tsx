@@ -78,9 +78,9 @@ export const Navbar = () => {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-[hsl(var(--glass-border))] bg-background/80 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between gap-4">
+        <div className="relative flex h-16 items-center justify-between gap-4">
 
-          {/* Left: hamburger + logo + desktop nav */}
+          {/* Left: hamburger + logo */}
           <div className="flex items-center gap-4">
             {/* Mobile hamburger */}
             <Popover open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -170,39 +170,43 @@ export const Navbar = () => {
             <Link to="/" className="flex items-center gap-2 shrink-0">
               <img src="/landing-page-logo.png" alt="BitBrew" className="h-7 w-auto" />
             </Link>
+          </div>
 
-            {/* Desktop navigation */}
-            <div className="hidden md:block">
-              <NavigationMenu>
-                <NavigationMenuList>
-                  {navLinks.map((link) => (
-                    <NavigationMenuItem key={link.to}>
-                      <NavigationMenuLink asChild>
-                        <Link
-                          to={link.to}
-                          className={`px-3 py-1.5 rounded-lg text-sm transition-colors inline-flex items-center ${
-                            location.pathname === link.to
-                              ? 'text-primary bg-primary/10 font-medium'
-                              : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-                          }`}
-                        >
-                          {t(link.key)}
-                        </Link>
-                      </NavigationMenuLink>
-                    </NavigationMenuItem>
-                  ))}
-                </NavigationMenuList>
-                <NavigationMenuViewport />
-              </NavigationMenu>
-            </div>
+          {/* Center: desktop navigation */}
+          <div className="hidden md:flex absolute left-1/2 -translate-x-1/2">
+            <NavigationMenu>
+              <NavigationMenuList>
+                {navLinks.map((link) => (
+                  <NavigationMenuItem key={link.to}>
+                    <NavigationMenuLink asChild>
+                      <Link
+                        to={link.to}
+                        className={`px-3 py-1.5 rounded-lg text-sm transition-colors inline-flex items-center ${
+                          location.pathname === link.to
+                            ? 'text-primary bg-primary/10 font-medium'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                        }`}
+                      >
+                        {t(link.key)}
+                      </Link>
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                ))}
+              </NavigationMenuList>
+              <NavigationMenuViewport />
+            </NavigationMenu>
           </div>
 
           {/* Right: language + auth */}
           <div className="flex items-center gap-2">
             <LanguageSwitcher />
 
-            {!authLoading && (
-              isAuthed ? (
+            {authLoading ? (
+              <div className="hidden md:flex items-center gap-2">
+                <div className="w-16 h-8 rounded-lg bg-muted animate-pulse" />
+                <div className="w-20 h-8 rounded-lg bg-muted animate-pulse" />
+              </div>
+            ) : isAuthed ? (
                 /* Avatar dropdown */
                 <Popover open={avatarOpen} onOpenChange={setAvatarOpen}>
                   <PopoverTrigger asChild>
@@ -261,15 +265,14 @@ export const Navbar = () => {
                 </Popover>
               ) : (
                 <div className="hidden md:flex items-center gap-2">
-                  <Button variant="ghost" size="sm" asChild>
+                  <Button variant="outline" size="sm" asChild>
                     <Link to="/login">{t('login')}</Link>
                   </Button>
                   <Button size="sm" asChild>
                     <Link to="/register">{t('register')}</Link>
                   </Button>
                 </div>
-              )
-            )}
+              )}
           </div>
 
         </div>

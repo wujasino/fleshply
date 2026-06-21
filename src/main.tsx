@@ -21,7 +21,7 @@ if (typeof console !== 'undefined') {
 }
 
 createRoot(document.getElementById("root")!).render(
-  <ThemeProvider attribute="class" forcedTheme="light" storageKey="bb_theme">
+  <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} storageKey="bb_theme">
     <LocaleProvider>
       <App />
     </LocaleProvider>
