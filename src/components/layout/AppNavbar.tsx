@@ -1,6 +1,6 @@
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { Zap, LogOut, Sun, Moon, Settings, User, Code2, CreditCard, MessageSquare, Send, X, Bot } from 'lucide-react';
+import { Zap, LogOut, Sun, Moon, Settings, User, Code2, CreditCard, MessageSquare, Send, X, Bot, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { supabase } from '@/lib/supabase';
 import { logout } from '@/lib/auth';
@@ -29,8 +29,18 @@ const DropdownLink = ({ to, icon: Icon, label, onClick }: { to: string; icon: Re
   </Link>
 );
 
-export const AppNavbar = () => {
+const SECTION_TITLES: Record<string, string> = {
+  '/dashboard':  'Strona główna',
+  '/pricing':    'Cennik',
+  '/profile':    'Profil',
+  '/settings':   'Ustawienia',
+  '/developers': 'Developers',
+};
+
+export const AppNavbar = ({ collapsed = false, onToggle }: { collapsed?: boolean; onToggle?: () => void }) => {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const sectionTitle = SECTION_TITLES[pathname] ?? 'BitBrew';
   const { theme, setTheme } = useTheme();
   const isDark = theme === 'dark';
   const [open, setOpen] = useState(false);
@@ -114,7 +124,19 @@ export const AppNavbar = () => {
   }, [chatMessages]);
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center justify-end gap-2 border-b border-border bg-background/90 backdrop-blur px-6">
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-background/90 backdrop-blur px-6">
+      {/* Collapse/expand toggle + section name */}
+      <button
+        onClick={onToggle}
+        className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+        aria-label={collapsed ? 'Rozwiń panel' : 'Zwiń panel'}
+      >
+        {collapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+      </button>
+      <span className="text-sm font-semibold text-foreground">{sectionTitle}</span>
+
+      <div className="flex-1" />
+
       {plan === 'Free' && (
         <Link
           to="/pricing"
