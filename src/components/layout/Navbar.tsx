@@ -7,22 +7,22 @@ import { useTranslation } from '../../lib/locale';
 import { Button } from '@/components/ui/button';
 import {
   NavigationMenu,
+  NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
+  NavigationMenuTrigger,
   NavigationMenuViewport,
 } from '@/components/ui/navigation-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { supabase } from '@/lib/supabase';
 import { logout } from '@/lib/auth';
 
-const publicLinks = [
-  { to: '/', key: 'home' },
+const authedLinks = [
   { to: '/dashboard', key: 'dashboard' },
 ];
 
-const authedLinks = [
-  { to: '/', key: 'home' },
+const publicLinks = [
   { to: '/dashboard', key: 'dashboard' },
 ];
 
@@ -119,6 +119,32 @@ export const Navbar = () => {
               </PopoverTrigger>
               <PopoverContent align="start" className="w-56 p-2 md:hidden">
                 <nav className="flex flex-col gap-1">
+                  {/* Home with sub-links on mobile */}
+                  <Link
+                    to="/"
+                    onClick={() => setMobileOpen(false)}
+                    className={`px-3 py-2 rounded-md text-sm transition-colors ${
+                      location.pathname === '/'
+                        ? 'text-primary bg-primary/10 font-medium'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                    }`}
+                  >
+                    Home
+                  </Link>
+                  <a
+                    href="/#faq"
+                    onClick={() => setMobileOpen(false)}
+                    className="px-3 py-2 pl-6 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                  >
+                    FAQ
+                  </a>
+                  <a
+                    href="/#contact"
+                    onClick={() => setMobileOpen(false)}
+                    className="px-3 py-2 pl-6 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                  >
+                    Contact
+                  </a>
                   {navLinks.map((link) => (
                     <Link
                       key={link.to}
@@ -176,6 +202,40 @@ export const Navbar = () => {
           <div className="hidden md:flex absolute left-1/2 -translate-x-1/2">
             <NavigationMenu>
               <NavigationMenuList>
+                {/* Home with dropdown */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger
+                    className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                      location.pathname === '/'
+                        ? 'text-primary bg-primary/10 font-medium'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                    }`}
+                  >
+                    Home
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="w-40 p-2 space-y-1">
+                      <li>
+                        <a
+                          href="/#faq"
+                          className="block px-3 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                        >
+                          FAQ
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          href="/#contact"
+                          className="block px-3 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                        >
+                          Contact
+                        </a>
+                      </li>
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+
+                {/* Other nav links */}
                 {navLinks.map((link) => (
                   <NavigationMenuItem key={link.to}>
                     <NavigationMenuLink asChild>
