@@ -200,7 +200,7 @@ const Register = () => {
       await registerUser(email, password);
       setSuccess(true);
     } catch (err: any) {
-      setError(err.message || 'Błąd rejestracji');
+      setError(err.message || 'Registration error');
     } finally {
       setLoading(false);
     }
@@ -223,23 +223,23 @@ const Register = () => {
         <div className="space-y-8">
           <div>
             <span className="inline-block px-3 py-1 text-[10px] uppercase tracking-[0.2em] bg-primary/10 text-primary rounded-lg border border-primary/20 mb-4">
-              Bezpłatny start
+              Free start
             </span>
             <h2 className="text-3xl font-display leading-snug text-foreground">
               3 analizy gratis —<br />
               <span className="text-primary">bez karty kredytowej</span>
             </h2>
             <p className="mt-3 text-sm text-muted-foreground leading-relaxed max-w-xs">
-              Dołącz do setek marek, które już wiedzą jak modele AI je opisują i rekomendują.
+              Join hundreds of brands that already know how AI models describe and recommend them.
             </p>
           </div>
 
           {/* Steps */}
           <ol className="space-y-5">
             {[
-              { n: '01', title: 'Załóż konto',        desc: 'Email lub Google — w 30 sekund' },
-              { n: '02', title: 'Podaj nazwę marki',   desc: 'Lub URL strony' },
-              { n: '03', title: 'Odbierz raport',      desc: 'Wynik widoczności AI + rekomendacje' },
+              { n: '01', title: 'Create account',    desc: 'Email or Google — in 30 seconds' },
+              { n: '02', title: 'Enter brand name',  desc: 'Or website URL' },
+              { n: '03', title: 'Get your report',   desc: 'AI visibility score + recommendations' },
             ].map(({ n, title, desc }) => (
               <li key={n} className="flex items-start gap-4">
                 <span className="text-xs font-data text-primary/60 mt-0.5 w-6 shrink-0">{n}</span>

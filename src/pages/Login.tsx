@@ -13,9 +13,9 @@ import { FloatingPathsBackground } from '@/components/ui/floating-paths';
 
 
 const FEATURES = [
-  { icon: Zap,       text: 'Audyt widoczności w GPT-4, Claude, Gemini' },
-  { icon: BarChart3, text: 'Śledzenie trendu sentymentu w czasie'       },
-  { icon: Shield,    text: 'Wiarygodność źródeł z wynikiem pewności'   },
+  { icon: Zap,       text: 'Visibility audit in GPT-4, Claude, Gemini' },
+  { icon: BarChart3, text: 'Sentiment trend tracking over time'         },
+  { icon: Shield,    text: 'Source credibility with confidence score'   },
 ];
 
 const pwdRules = [
@@ -256,7 +256,7 @@ const Login = () => {
       if (err.message?.includes('Invalid login credentials')) {
         setError(t('invalid_credentials') || 'Nieprawidłowe dane logowania');
       } else {
-        setError(err.message || 'Błąd logowania');
+        setError(err.message || 'Login error');
       }
     } finally {
       setLoading(false);
@@ -296,11 +296,11 @@ const Login = () => {
         <div className="space-y-8">
           <div>
             <h2 className="text-3xl font-display leading-snug text-foreground">
-              Poznaj jak AI<br />
-              <span className="text-primary">widzi Twoją markę</span>
+              Discover how AI<br />
+              <span className="text-primary">sees your brand</span>
             </h2>
             <p className="mt-3 text-sm text-muted-foreground leading-relaxed max-w-xs">
-              Setki marek używa BitBrew, żeby monitorować i poprawiać swoją widoczność w modelach AI.
+              Hundreds of brands use BitBrew to monitor and improve their visibility in AI models.
             </p>
           </div>
 
@@ -324,7 +324,7 @@ const Login = () => {
               ))}
             </div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-foreground font-medium">200+</span> marek już monitoruje AI
+              <span className="text-foreground font-medium">200+</span> brands already monitoring AI
             </p>
           </div>
         </div>
