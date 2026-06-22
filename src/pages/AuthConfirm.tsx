@@ -36,7 +36,7 @@ export default function AuthConfirm() {
           setStatus('success');
           setTimeout(() => navigate('/dashboard'), 3000);
         } else {
-          setErrorMsg('Brak tokenu potwierdzającego w URL. Link mógł wygasnąć.');
+          setErrorMsg('No confirmation token in URL. The link may have expired.');
           setStatus('error');
         }
       }
@@ -65,8 +65,8 @@ export default function AuthConfirm() {
                 <Loader2 className="w-7 h-7 text-primary animate-spin" />
               </div>
               <div>
-                <h1 className="text-xl font-display text-foreground">Weryfikacja konta…</h1>
-                <p className="text-sm text-muted-foreground mt-1">Chwileczkę, sprawdzamy Twój link.</p>
+                <h1 className="text-xl font-display text-foreground">Verifying account…</h1>
+                <p className="text-sm text-muted-foreground mt-1">Just a moment, verifying your link.</p>
               </div>
             </>
           )}
@@ -82,13 +82,13 @@ export default function AuthConfirm() {
                 <CheckCircle2 className="w-7 h-7 text-green-500" />
               </motion.div>
               <div>
-                <h1 className="text-xl font-display text-foreground">Konto aktywowane!</h1>
+                <h1 className="text-xl font-display text-foreground">Account activated!</h1>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Za chwilę zostaniesz przekierowany do panelu…
+                  You will be redirected to the dashboard shortly…
                 </p>
               </div>
               <Button asChild className="w-full">
-                <Link to="/dashboard">Przejdź do panelu →</Link>
+                <Link to="/dashboard">Go to dashboard →</Link>
               </Button>
             </>
           )}
@@ -99,17 +99,17 @@ export default function AuthConfirm() {
                 <XCircle className="w-7 h-7 text-destructive" />
               </div>
               <div>
-                <h1 className="text-xl font-display text-foreground">Link nieważny</h1>
+                <h1 className="text-xl font-display text-foreground">Invalid link</h1>
                 <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                  {errorMsg || 'Ten link wygasł lub był już użyty. Zarejestruj się ponownie lub skontaktuj z pomocą.'}
+                  {errorMsg || 'This link has expired or was already used. Register again or contact support.'}
                 </p>
               </div>
               <div className="flex flex-col gap-2">
                 <Button asChild className="w-full">
-                  <Link to="/register">Zarejestruj się ponownie</Link>
+                  <Link to="/register">Register again</Link>
                 </Button>
                 <Button asChild variant="outline" className="w-full">
-                  <Link to="/login">Wróć do logowania</Link>
+                  <Link to="/login">Back to login</Link>
                 </Button>
               </div>
             </>

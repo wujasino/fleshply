@@ -32,7 +32,7 @@ export function ContactForm() {
       setStatus('success');
       setName(''); setEmail(''); setSubject(''); setMessage('');
     } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : 'Błąd wysyłki. Spróbuj ponownie.');
+      setErrorMsg(err instanceof Error ? err.message : 'Failed to send. Please try again.');
       setStatus('error');
     }
   };
@@ -97,7 +97,7 @@ export function ContactForm() {
                 </p>
               </div>
               <Button variant="outline" size="sm" onClick={() => setStatus('idle')}>
-                {t('contact_send_another') || 'Wyślij kolejną'}
+                {t('contact_send_another') || 'Send another'}
               </Button>
             </motion.div>
           ) : (
@@ -191,7 +191,7 @@ export function ContactForm() {
                 ) : (
                   <>
                     <Send className="w-4 h-4" />
-                    {t('contact_send') || 'Wyślij wiadomość'}
+                    {t('contact_send') || 'Send message'}
                   </>
                 )}
               </Button>

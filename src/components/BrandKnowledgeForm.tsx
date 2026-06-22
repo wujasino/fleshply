@@ -224,7 +224,7 @@ export default function BrandKnowledgeForm({ brandName }: BrandKnowledgeFormProp
                                 onClick={() => setExpandedFragment(expandedFragment === fragment.id ? null : fragment.id)}
                                 className="text-[10px] text-primary hover:underline mt-1"
                               >
-                                {expandedFragment === fragment.id ? 'Zwiń' : 'Rozwiń'}
+                                {expandedFragment === fragment.id ? 'Collapse' : 'Expand'}
                               </button>
                             )}
                             <p className="text-[10px] text-muted-foreground/40 mt-1.5 font-data">

@@ -101,10 +101,10 @@ export default function Settings() {
   const [showPwdNew, setShowPwdNew] = useState(false);
 
   const pwdRules = [
-    { label: 'Min. 8 znakow',   test: (p: string) => p.length >= 8 },
-    { label: 'Wielka litera',   test: (p: string) => /[A-Z]/.test(p) },
-    { label: 'Cyfra',           test: (p: string) => /[0-9]/.test(p) },
-    { label: 'Znak specjalny',  test: (p: string) => /[^A-Za-z0-9]/.test(p) },
+    { label: 'Min. 8 chars',    test: (p: string) => p.length >= 8 },
+    { label: 'Uppercase letter', test: (p: string) => /[A-Z]/.test(p) },
+    { label: 'Number',          test: (p: string) => /[0-9]/.test(p) },
+    { label: 'Special char',    test: (p: string) => /[^A-Za-z0-9]/.test(p) },
   ];
 
   const pwdStrength = useMemo(() => {
@@ -113,7 +113,7 @@ export default function Settings() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pwdNew]);
 
-  const pwdStrengthLabel = ['', 'Slabe', 'Slabe', 'Srednie', 'Silne'][pwdStrength];
+  const pwdStrengthLabel = ['', 'Weak', 'Weak', 'Medium', 'Strong'][pwdStrength];
   const pwdStrengthColor = ['', 'bg-red-500', 'bg-red-500', 'bg-yellow-500', 'bg-green-500'][pwdStrength];
 
   // Security tab — change email
@@ -226,9 +226,9 @@ export default function Settings() {
       setAvatarUrl(null);
       setUploadError(
         err?.message?.includes('Bucket not found')
-          ? 'Bucket "avatars" nie istnieje w Supabase Storage. Uruchom migracjê SQL.'
+          ? 'Bucket "avatars" does not exist in Supabase Storage. Run the SQL migration.'
           : err?.message?.includes('row-level security')
-          ? 'Brak uprawnien do zapisu. Sprawdz polityki RLS bucketa "avatars".'
+          ? 'No write permission. Check the RLS policies for the "avatars" bucket.'
           : t('settings_avatar_upload_error')
       );
     } finally {
@@ -278,7 +278,7 @@ export default function Settings() {
         body: JSON.stringify({ email }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Blad wysylania kodu.');
+      if (!res.ok) throw new Error(data.error || 'Error sending code.');
       setPwdOtp('');
       setPwdStep('otp');
     } catch (err: any) {
@@ -290,7 +290,7 @@ export default function Settings() {
 
   const handleVerifyPwdOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (pwdOtp.replace(/\D/g, '').length < 6) { setPwdError('Wpisz pelny 6-cyfrowy kod.'); return; }
+    if (pwdOtp.replace(/\D/g, '').length < 6) { setPwdError('Please enter the full 6-digit code.'); return; }
     setPwdLoading(true);
     setPwdError('');
     try {
@@ -300,7 +300,7 @@ export default function Settings() {
         body: JSON.stringify({ email, code: pwdOtp.replace(/\D/g, '') }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Nieprawidlowy kod.');
+      if (!res.ok) throw new Error(data.error || 'Invalid code.');
       setPwdNew('');
       setPwdConfirm('');
       setPwdStep('newpwd');
@@ -313,8 +313,8 @@ export default function Settings() {
 
   const handleSetNewPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (pwdNew.length < 8) { setPwdError('Haslo musi miec co najmniej 8 znakow.'); return; }
-    if (pwdNew !== pwdConfirm) { setPwdError('Hasla nie sa identyczne.'); return; }
+    if (pwdNew.length < 8) { setPwdError('Password must be at least 8 characters.'); return; }
+    if (pwdNew !== pwdConfirm) { setPwdError('Passwords do not match.'); return; }
     setPwdLoading(true);
     setPwdError('');
     try {
@@ -324,7 +324,7 @@ export default function Settings() {
         body: JSON.stringify({ email, code: pwdOtp.replace(/\D/g, ''), newPassword: pwdNew }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Nie udalo sie zmienic hasla.');
+      if (!res.ok) throw new Error(data.error || 'Failed to change password.');
       setPwdStep('done');
     } catch (err: any) {
       setPwdError(err.message);
@@ -336,7 +336,7 @@ export default function Settings() {
   const handleChangeEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(newEmail)) {
-      setEmailError('Podaj poprawny adres e-mail.');
+      setEmailError('Please enter a valid email address.');
       return;
     }
     setEmailLoading(true);
@@ -346,7 +346,7 @@ export default function Settings() {
       if (error) throw error;
       setEmailStep('sent');
     } catch (err: any) {
-      setEmailError(err.message || 'Nie udalo sie zmienic adresu e-mail.');
+      setEmailError(err.message || 'Failed to change email address.');
     } finally {
       setEmailLoading(false);
     }
@@ -357,16 +357,16 @@ export default function Settings() {
     setDeleteError('');
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Nie zalogowano');
+      if (!user) throw new Error('Not logged in');
 
       if (deleteMethod === 'password') {
-        if (!deletePassword) { setDeleteError('Wpisz haslo'); setDeleteStatus('idle'); return; }
+        if (!deletePassword) { setDeleteError('Enter password'); setDeleteStatus('idle'); return; }
         const { error } = await supabase.auth.signInWithPassword({ email: user.email!, password: deletePassword });
-        if (error) { setDeleteError('Nieprawidlowe haslo'); setDeleteStatus('idle'); return; }
+        if (error) { setDeleteError('Incorrect password'); setDeleteStatus('idle'); return; }
       } else {
-        if (deleteTotpCode.length !== 6) { setDeleteError('Wpisz 6-cyfrowy kod 2FA'); setDeleteStatus('idle'); return; }
+        if (deleteTotpCode.length !== 6) { setDeleteError('Enter 6-digit 2FA code'); setDeleteStatus('idle'); return; }
         const { error } = await supabase.auth.verifyOtp({ email: user.email!, token: deleteTotpCode, type: 'totp' });
-        if (error) { setDeleteError('Nieprawidlowy kod 2FA'); setDeleteStatus('idle'); return; }
+        if (error) { setDeleteError('Invalid 2FA code'); setDeleteStatus('idle'); return; }
       }
 
       await supabase.from('profiles').delete().eq('id', user.id);
@@ -375,7 +375,7 @@ export default function Settings() {
       setDeleteStatus('done');
       setTimeout(() => navigate('/'), 1500);
     } catch (e: unknown) {
-      setDeleteError(e instanceof Error ? e.message : 'Wystapil blad');
+      setDeleteError(e instanceof Error ? e.message : 'An error occurred');
       setDeleteStatus('idle');
     }
   };
@@ -496,21 +496,21 @@ export default function Settings() {
                   </div>
 
                   <Button onClick={handleSave} disabled={saving} size="sm">
-                    {saved ? '✓ Zapisano' : saving ? t('settings_saving') : (
+                    {saved ? '✓ Saved' : saving ? t('settings_saving') : (
                       <><Save className="w-3.5 h-3.5 mr-1.5" />{t('settings_save')}</>
                     )}
                   </Button>
 
                   {/* Delete account */}
                   <div className="pt-4 border-t border-border">
-                    <p className="text-sm font-medium text-foreground mb-1">Usuń konto</p>
-                    <p className="text-xs text-muted-foreground mb-3">Ta operacja jest nieodwracalna. Wszystkie dane zostaną trwale usunięte.</p>
+                    <p className="text-sm font-medium text-foreground mb-1">Delete account</p>
+                    <p className="text-xs text-muted-foreground mb-3">This operation is irreversible. All data will be permanently deleted.</p>
                     <button
                       onClick={() => setShowDeleteForm(true)}
                       className="px-4 py-2 rounded-lg text-sm font-medium bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/20 transition-colors"
                     >
                       <Trash2 className="inline w-3.5 h-3.5 mr-1.5" />
-                      Usuń konto
+                      Delete account
                     </button>
                   </div>
 
@@ -521,15 +521,15 @@ export default function Settings() {
                     <DialogContent className="sm:max-w-md">
                       <DialogHeader>
                         <DialogTitle className="text-destructive flex items-center gap-2">
-                          <Trash2 className="w-4 h-4" /> Usuń konto
+                          <Trash2 className="w-4 h-4" /> Delete account
                         </DialogTitle>
                         <DialogDescription>
-                          Ta operacja jest nieodwracalna. Wszystkie Twoje dane zostaną trwale usunięte.
+                          This operation is irreversible. All your data will be permanently deleted.
                         </DialogDescription>
                       </DialogHeader>
 
                       {deleteStatus === 'done' ? (
-                        <p className="text-sm text-muted-foreground py-2">Konto zostało usunięte.</p>
+                        <p className="text-sm text-muted-foreground py-2">Account deleted.</p>
                       ) : (
                         <div className="space-y-4 py-2">
                           <div className="flex gap-2 text-xs">
@@ -537,20 +537,20 @@ export default function Settings() {
                               onClick={() => setDeleteMethod('password')}
                               className={cn('px-3 py-1.5 rounded border transition-colors', deleteMethod === 'password' ? 'bg-destructive/10 border-destructive/30 text-destructive' : 'border-border text-muted-foreground hover:bg-accent')}
                             >
-                              Hasło
+                              Password
                             </button>
                             <button
                               onClick={() => setDeleteMethod('2fa')}
                               className={cn('px-3 py-1.5 rounded border transition-colors', deleteMethod === '2fa' ? 'bg-destructive/10 border-destructive/30 text-destructive' : 'border-border text-muted-foreground hover:bg-accent')}
                             >
-                              Kod 2FA (nie pamiętam hasła)
+                              2FA code (I don't remember my password)
                             </button>
                           </div>
 
                           {deleteMethod === 'password' ? (
-                            <Input type="password" placeholder="Wpisz hasło" value={deletePassword} onChange={e => setDeletePassword(e.target.value)} />
+                            <Input type="password" placeholder="Enter password" value={deletePassword} onChange={e => setDeletePassword(e.target.value)} />
                           ) : (
-                            <Input type="text" placeholder="Kod z aplikacji 2FA (6 cyfr)" maxLength={6} value={deleteTotpCode} onChange={e => setDeleteTotpCode(e.target.value.replace(/\D/g, ''))} />
+                            <Input type="text" placeholder="Code from 2FA app (6 digits)" maxLength={6} value={deleteTotpCode} onChange={e => setDeleteTotpCode(e.target.value.replace(/\D/g, ''))} />
                           )}
 
                           {deleteError && <p className="text-xs text-destructive">{deleteError}</p>}
@@ -560,14 +560,14 @@ export default function Settings() {
                               onClick={() => { setShowDeleteForm(false); setDeletePassword(''); setDeleteTotpCode(''); setDeleteError(''); }}
                               className="px-4 py-2 rounded-lg text-sm border border-border text-muted-foreground hover:bg-accent transition-colors"
                             >
-                              Anuluj
+                              Cancel
                             </button>
                             <button
                               disabled={deleteStatus === 'deleting'}
                               onClick={handleDeleteAccount}
                               className="px-4 py-2 rounded-lg text-sm font-medium bg-destructive text-white hover:bg-destructive/90 transition-colors disabled:opacity-50"
                             >
-                              {deleteStatus === 'deleting' ? 'Usuwanie...' : 'Potwierdź i usuń'}
+                              {deleteStatus === 'deleting' ? 'Deleting...' : 'Confirm and delete'}
                             </button>
                           </div>
                         </div>
@@ -615,16 +615,16 @@ export default function Settings() {
                   <div>
                     <label className="text-sm font-medium text-foreground block mb-1">
                       <Volume2 className="inline w-4 h-4 mr-1.5 text-primary" />
-                      Glos AI (czytanie raportow)
+                      AI Voice (report reading)
                     </label>
                     <p className="text-xs text-muted-foreground mb-4">
-                      Odtwarzaj raport na glos po zakonczeniu analizy. Wymaga klucza ElevenLabs w panelu Netlify.
+                      Play the report aloud after analysis completes. Requires an ElevenLabs key in the Netlify panel.
                     </p>
 
                     <div className="flex items-center justify-between p-3 rounded-xl border border-[hsl(var(--glass-border))] bg-muted/20 mb-3">
                       <div>
-                        <p className="text-sm font-medium text-foreground">Wlacz czytanie na glos</p>
-                        <p className="text-xs text-muted-foreground">Przycisk pojawi sie w raporcie analizy</p>
+                        <p className="text-sm font-medium text-foreground">Enable read aloud</p>
+                        <p className="text-xs text-muted-foreground">A button will appear in the analysis report</p>
                       </div>
                       <button
                         onClick={() => {
@@ -698,7 +698,7 @@ export default function Settings() {
                         <Shield className="w-4 h-4 text-primary" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-foreground">Uwierzytelnianie dwuskladnikowe (2FA)</p>
+                        <p className="text-sm font-medium text-foreground">Two-factor authentication (2FA)</p>
                         <p className="text-xs text-muted-foreground">Google Authenticator, Authy i inne</p>
                       </div>
                     </div>
@@ -711,12 +711,12 @@ export default function Settings() {
                         <KeyRound className="w-4 h-4 text-primary" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-foreground">Zmien haslo</p>
+                        <p className="text-sm font-medium text-foreground">Change password</p>
                         <p className="text-xs text-muted-foreground">
-                          {pwdStep === 'idle' ? <>Wyslemy kod weryfikacyjny na <strong>{email}</strong></> : null}
-                          {pwdStep === 'otp' ? 'Wpisz kod z e-maila' : null}
-                          {pwdStep === 'newpwd' ? 'Kod potwierdzony — ustaw nowe haslo' : null}
-                          {pwdStep === 'done' ? 'Haslo zostalo zmienione' : null}
+                          {pwdStep === 'idle' ? <>We'll send a verification code to <strong>{email}</strong></> : null}
+                          {pwdStep === 'otp' ? 'Enter the code from your email' : null}
+                          {pwdStep === 'newpwd' ? 'Code confirmed — set your new password' : null}
+                          {pwdStep === 'done' ? 'Password has been changed' : null}
                         </p>
                       </div>
                     </div>
@@ -728,14 +728,14 @@ export default function Settings() {
                     {pwdStep === 'idle' && (
                       <Button size="sm" variant="outline" className="w-full" disabled={pwdLoading} onClick={handleSendPwdOtp}>
                         {pwdLoading ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Mail className="w-3.5 h-3.5 mr-1.5" />}
-                        Wyslij kod weryfikacyjny
+                        Send verification code
                       </Button>
                     )}
 
                     {pwdStep === 'otp' && (
                       <form onSubmit={handleVerifyPwdOtp} className="space-y-3">
                         <div className="space-y-1.5">
-                          <p className="text-xs text-muted-foreground">Kod 6-cyfrowy z e-maila</p>
+                          <p className="text-xs text-muted-foreground">6-digit code from email</p>
                           <Input
                             value={pwdOtp}
                             onChange={e => setPwdOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
@@ -752,7 +752,7 @@ export default function Settings() {
                           </Button>
                           <Button type="submit" size="sm" className="flex-1" disabled={pwdLoading || pwdOtp.length < 6}>
                             {pwdLoading ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <ArrowRight className="w-3.5 h-3.5 mr-1.5" />}
-                            Dalej
+                            Next
                           </Button>
                         </div>
                       </form>
@@ -765,7 +765,7 @@ export default function Settings() {
                             type={showPwdNew ? 'text' : 'password'}
                             value={pwdNew}
                             onChange={e => setPwdNew(e.target.value)}
-                            placeholder="Nowe haslo"
+                            placeholder="New password"
                             autoComplete="new-password"
                             className="h-10 pr-10"
                             autoFocus
@@ -797,9 +797,9 @@ export default function Settings() {
                           </div>
                         )}
 
-                        <Input type={showPwdNew ? 'text' : 'password'} value={pwdConfirm} onChange={e => setPwdConfirm(e.target.value)} placeholder="Powtorz haslo" autoComplete="new-password" className="h-10" />
+                        <Input type={showPwdNew ? 'text' : 'password'} value={pwdConfirm} onChange={e => setPwdConfirm(e.target.value)} placeholder="Repeat password" autoComplete="new-password" className="h-10" />
                         {pwdConfirm.length > 0 && pwdNew !== pwdConfirm && (
-                          <p className="text-[11px] text-red-400">Hasla sie nie zgadzaja</p>
+                          <p className="text-[11px] text-red-400">Passwords do not match</p>
                         )}
                         <div className="flex gap-2">
                           <Button type="button" size="sm" variant="ghost" onClick={() => { setPwdStep('otp'); setPwdError(''); }}>
@@ -807,7 +807,7 @@ export default function Settings() {
                           </Button>
                           <Button type="submit" size="sm" className="flex-1" disabled={pwdLoading || pwdNew.length < 8 || pwdNew !== pwdConfirm}>
                             {pwdLoading ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <KeyRound className="w-3.5 h-3.5 mr-1.5" />}
-                            Zmien haslo
+                            Change password
                           </Button>
                         </div>
                       </form>
@@ -816,7 +816,7 @@ export default function Settings() {
                     {pwdStep === 'done' && (
                       <div className="flex items-center gap-2 text-sm text-green-500 bg-green-500/10 rounded-lg px-3 py-2">
                         <Check className="w-4 h-4 shrink-0" />
-                        Haslo zostalo zmienione pomyslnie.
+                        Password changed successfully.
                       </div>
                     )}
                   </div>
@@ -827,8 +827,8 @@ export default function Settings() {
                         <Mail className="w-4 h-4 text-primary" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-foreground">Zmien adres e-mail</p>
-                        <p className="text-xs text-muted-foreground">Aktualny: <strong>{email}</strong></p>
+                        <p className="text-sm font-medium text-foreground">Change email address</p>
+                        <p className="text-xs text-muted-foreground">Current: <strong>{email}</strong></p>
                       </div>
                     </div>
 
@@ -839,7 +839,7 @@ export default function Settings() {
                     {emailStep === 'idle' && (
                       <Button size="sm" variant="outline" className="w-full" onClick={() => { setEmailStep('input'); setEmailError(''); setNewEmail(''); }}>
                         <Mail className="w-3.5 h-3.5 mr-1.5" />
-                        Zmien e-mail
+                        Change email
                       </Button>
                     )}
 
@@ -852,7 +852,7 @@ export default function Settings() {
                           </Button>
                           <Button type="submit" size="sm" className="flex-1" disabled={emailLoading || !newEmail.trim()}>
                             {emailLoading ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <ArrowRight className="w-3.5 h-3.5 mr-1.5" />}
-                            Wyslij potwierdzenie
+                            Send confirmation
                           </Button>
                         </div>
                       </form>
@@ -861,7 +861,7 @@ export default function Settings() {
                     {emailStep === 'sent' && (
                       <div className="flex items-center gap-2 text-sm text-green-500 bg-green-500/10 rounded-lg px-3 py-2">
                         <Check className="w-4 h-4 shrink-0" />
-                        Wyslano link potwierdzajacy na <strong className="ml-1">{newEmail}</strong>. Kliknij go, zeby zatwierdzic zmiane.
+                        Confirmation link sent to <strong className="ml-1">{newEmail}</strong>. Click it to confirm the change.
                       </div>
                     )}
                   </div>
@@ -962,15 +962,15 @@ export default function Settings() {
                       <div className="flex items-start gap-2.5">
                         <FileText className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
                         <div>
-                          <p className="text-sm font-medium text-foreground">Odstapienie od umowy</p>
+                          <p className="text-sm font-medium text-foreground">Withdrawal from contract</p>
                           <p className="text-xs text-muted-foreground mt-0.5">
-                            Jako konsument masz prawo odstapic od umowy w terminie 14 dni od jej zawarcia, bez podawania przyczyny.
+                            As a consumer you have the right to withdraw from the contract within 14 days of conclusion, without giving a reason.
                           </p>
                         </div>
                       </div>
                       {withdrawalStatus !== 'sent' && (
                         <Button size="sm" variant="outline" className="shrink-0" onClick={() => setShowWithdrawal(v => !v)}>
-                          {showWithdrawal ? 'Anuluj' : 'Zloz oswiadczenie'}
+                          {showWithdrawal ? 'Cancel' : 'Submit declaration'}
                         </Button>
                       )}
                     </div>
@@ -978,23 +978,23 @@ export default function Settings() {
                     {showWithdrawal && withdrawalStatus !== 'sent' && (
                       <div className="space-y-3 p-4 rounded-xl border border-[hsl(var(--glass-border))] bg-muted/20">
                         <p className="text-xs text-muted-foreground leading-relaxed">
-                          Wypelnij ponizszy formularz. Oswiadczenie zostanie przyslane na adres <strong>kontakt@bitbrew.pl</strong>.
+                          Fill in the form below. The declaration will be sent to <strong>kontakt@bitbrew.pl</strong>.
                         </p>
                         <div className="space-y-1.5">
-                          <label className="text-xs text-muted-foreground">Nazwa uslugi, od ktorej odstepujesz *</label>
-                          <Input value={withdrawalService} onChange={e => setWithdrawalService(e.target.value)} placeholder="np. Subskrypcja Solo / Growth / Enterprise" className="text-sm" />
+                          <label className="text-xs text-muted-foreground">Name of service you are withdrawing from *</label>
+                          <Input value={withdrawalService} onChange={e => setWithdrawalService(e.target.value)} placeholder="e.g. Solo / Growth / Enterprise subscription" className="text-sm" />
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-xs text-muted-foreground">Data zawarcia umowy *</label>
+                          <label className="text-xs text-muted-foreground">Contract date *</label>
                           <Input type="date" value={withdrawalDate} onChange={e => setWithdrawalDate(e.target.value)} className="text-sm" />
                         </div>
                         {withdrawalStatus === 'error' && (
-                          <p className="text-xs text-destructive">Wystapil blad podczas wysylania. Sprobuj ponownie lub napisz bezposrednio na <strong>kontakt@bitbrew.pl</strong>.</p>
+                          <p className="text-xs text-destructive">An error occurred while sending. Try again or write directly to <strong>kontakt@bitbrew.pl</strong>.</p>
                         )}
                         <Button size="sm" onClick={handleWithdrawal} disabled={!withdrawalService.trim() || !withdrawalDate || withdrawalStatus === 'sending'} className="w-full gap-1.5">
                           {withdrawalStatus === 'sending'
-                            ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Wysylanie...</>
-                            : <><Mail className="w-3.5 h-3.5" /> Wyslij oswiadczenie o odstapieniu</>}
+                            ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Sending...</>
+                            : <><Mail className="w-3.5 h-3.5" /> Send withdrawal declaration</>}
                         </Button>
                       </div>
                     )}
@@ -1002,8 +1002,8 @@ export default function Settings() {
                     {withdrawalStatus === 'sent' && (
                       <div className="flex flex-col items-center gap-2 py-5 text-center p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
                         <CheckCircle2 className="w-8 h-8 text-emerald-400" />
-                        <p className="text-sm font-medium text-foreground">Oswiadczenie zostalo wyslane</p>
-                        <p className="text-xs text-muted-foreground max-w-xs">Potwierdzenie zostalo przyslane na Twoj adres e-mail. Odpowiemy w ciagu 14 dni.</p>
+                        <p className="text-sm font-medium text-foreground">Declaration sent</p>
+                        <p className="text-xs text-muted-foreground max-w-xs">Confirmation has been sent to your email address. We will respond within 14 days.</p>
                       </div>
                     )}
                   </div>

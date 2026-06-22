@@ -47,7 +47,7 @@ export function TotpSetup({ onStatusChange }: Props) {
       setFactorId(data.id);
       setStep('qr');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Błąd konfiguracji 2FA');
+      setError(err instanceof Error ? err.message : '2FA configuration error');
     } finally {
       setLoading(false);
     }
@@ -73,7 +73,7 @@ export function TotpSetup({ onStatusChange }: Props) {
       setStep('done');
       onStatusChange?.(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Nieprawidłowy kod. Spróbuj ponownie.');
+      setError(err instanceof Error ? err.message : 'Invalid code. Please try again.');
       setCode('');
     } finally {
       setLoading(false);
@@ -106,7 +106,7 @@ export function TotpSetup({ onStatusChange }: Props) {
       setFactorId('');
       onStatusChange?.(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Nieprawidłowy kod.');
+      setError(err instanceof Error ? err.message : 'Invalid code.');
       setCode('');
     } finally {
       setLoading(false);
@@ -132,10 +132,10 @@ export function TotpSetup({ onStatusChange }: Props) {
           <motion.div key="enrolled" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
             <div className="flex items-center gap-2 text-sm text-emerald-400">
               <ShieldCheck className="w-4 h-4" />
-              <span className="font-medium">Authenticator włączony</span>
+              <span className="font-medium">Authenticator enabled</span>
             </div>
             <p className="text-xs text-muted-foreground">
-              Twoje konto jest chronione przez dwuskładnikowe uwierzytelnianie. Przy każdym logowaniu będziesz proszony o kod z aplikacji.
+              Your account is protected by two-factor authentication. You will be prompted for a code from your app on every login.
             </p>
             <Button
               size="sm"
@@ -144,7 +144,7 @@ export function TotpSetup({ onStatusChange }: Props) {
               onClick={() => { setStep('disabling'); setCode(''); setError(''); }}
             >
               <ShieldOff className="w-3.5 h-3.5 mr-1.5" />
-              Wyłącz 2FA
+              Disable 2FA
             </Button>
           </motion.div>
         )}
@@ -152,8 +152,8 @@ export function TotpSetup({ onStatusChange }: Props) {
         {/* ── Disabling: confirm with code ── */}
         {step === 'disabling' && (
           <motion.div key="disabling" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
-            <p className="text-sm text-foreground font-medium">Potwierdź wyłączenie 2FA</p>
-            <p className="text-xs text-muted-foreground">Wpisz kod z aplikacji authenticator aby wyłączyć ochronę.</p>
+            <p className="text-sm text-foreground font-medium">Confirm disabling 2FA</p>
+            <p className="text-xs text-muted-foreground">Enter the code from your authenticator app to disable protection.</p>
             <form onSubmit={handleDisable} className="space-y-3">
               <Input
                 value={code}
@@ -167,11 +167,11 @@ export function TotpSetup({ onStatusChange }: Props) {
               {error && <p className="text-xs text-red-400">{error}</p>}
               <div className="flex gap-2">
                 <Button type="button" size="sm" variant="ghost" onClick={() => { setStep('idle'); setCode(''); setError(''); }}>
-                  Anuluj
+                  Cancel
                 </Button>
                 <Button type="submit" size="sm" variant="destructive" className="flex-1" disabled={loading || code.length < 6}>
                   {loading ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <ShieldOff className="w-3.5 h-3.5 mr-1.5" />}
-                  Wyłącz 2FA
+                  Disable 2FA
                 </Button>
               </div>
             </form>
@@ -182,12 +182,12 @@ export function TotpSetup({ onStatusChange }: Props) {
         {!enrolled && step === 'idle' && (
           <motion.div key="not-enrolled" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
             <p className="text-xs text-muted-foreground">
-              Dodaj dodatkową warstwę ochrony. Po włączeniu, przy każdym logowaniu będziesz proszony o jednorazowy kod z aplikacji (Google Authenticator, Authy itp.).
+              Add an extra layer of protection. Once enabled, you will be prompted for a one-time code from your app (Google Authenticator, Authy, etc.) on every login.
             </p>
             {error && <p className="text-xs text-red-400">{error}</p>}
             <Button size="sm" variant="outline" onClick={handleEnroll} disabled={loading}>
               {loading ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5 mr-1.5" />}
-              Włącz Authenticator
+              Enable Authenticator
             </Button>
           </motion.div>
         )}
@@ -195,9 +195,9 @@ export function TotpSetup({ onStatusChange }: Props) {
         {/* ── QR code step ── */}
         {step === 'qr' && (
           <motion.div key="qr" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-            <p className="text-sm font-medium text-foreground">Zeskanuj kod QR</p>
+            <p className="text-sm font-medium text-foreground">Scan QR code</p>
             <p className="text-xs text-muted-foreground">
-              Otwórz aplikację Google Authenticator, Authy lub podobną i zeskanuj kod QR poniżej.
+              Open the Google Authenticator, Authy, or similar app and scan the QR code below.
             </p>
             <div className="flex justify-center">
               <div className="p-3 rounded-xl bg-white border border-[hsl(var(--glass-border))]">
@@ -205,7 +205,7 @@ export function TotpSetup({ onStatusChange }: Props) {
               </div>
             </div>
             <div className="space-y-1.5">
-              <p className="text-xs text-muted-foreground">Nie możesz zeskanować? Wpisz klucz ręcznie:</p>
+              <p className="text-xs text-muted-foreground">Can't scan? Enter the key manually:</p>
               <div className="flex items-center gap-2">
                 <code className="flex-1 px-3 py-2 rounded-lg bg-muted text-xs font-mono text-foreground break-all">
                   {secret}
@@ -216,7 +216,7 @@ export function TotpSetup({ onStatusChange }: Props) {
               </div>
             </div>
             <Button size="sm" className="w-full" onClick={() => { setStep('verify'); setCode(''); setError(''); }}>
-              Dalej — wpisz kod weryfikacyjny
+              Next — enter verification code
             </Button>
           </motion.div>
         )}
@@ -224,8 +224,8 @@ export function TotpSetup({ onStatusChange }: Props) {
         {/* ── Verify code ── */}
         {step === 'verify' && (
           <motion.div key="verify" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
-            <p className="text-sm font-medium text-foreground">Weryfikacja</p>
-            <p className="text-xs text-muted-foreground">Wpisz 6-cyfrowy kod z aplikacji authenticator aby potwierdzić konfigurację.</p>
+            <p className="text-sm font-medium text-foreground">Verification</p>
+            <p className="text-xs text-muted-foreground">Enter the 6-digit code from your authenticator app to confirm setup.</p>
             <form onSubmit={handleVerify} className="space-y-3">
               <Input
                 value={code}
@@ -238,10 +238,10 @@ export function TotpSetup({ onStatusChange }: Props) {
               />
               {error && <p className="text-xs text-red-400">{error}</p>}
               <div className="flex gap-2">
-                <Button type="button" size="sm" variant="ghost" onClick={() => setStep('qr')}>Wróć</Button>
+                <Button type="button" size="sm" variant="ghost" onClick={() => setStep('qr')}>Back</Button>
                 <Button type="submit" size="sm" className="flex-1" disabled={loading || code.length < 6}>
                   {loading ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5 mr-1.5" />}
-                  Aktywuj 2FA
+                  Activate 2FA
                 </Button>
               </div>
             </form>
@@ -253,8 +253,8 @@ export function TotpSetup({ onStatusChange }: Props) {
           <motion.div key="done" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex items-center gap-3 text-emerald-400">
             <CheckCircle2 className="w-5 h-5 shrink-0" />
             <div>
-              <p className="text-sm font-medium">2FA włączone!</p>
-              <p className="text-xs text-muted-foreground">Twoje konto jest teraz chronione przez authenticator.</p>
+              <p className="text-sm font-medium">2FA enabled!</p>
+              <p className="text-xs text-muted-foreground">Your account is now protected by the authenticator.</p>
             </div>
           </motion.div>
         )}

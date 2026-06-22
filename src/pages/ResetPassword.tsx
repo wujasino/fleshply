@@ -70,14 +70,14 @@ export default function ResetPassword() {
     return s;
   })();
 
-  const strengthLabel = ['', 'Słabe', 'Średnie', 'Dobre', 'Silne'][strength];
+  const strengthLabel = ['', 'Weak', 'Medium', 'Good', 'Strong'][strength];
   const strengthColor = ['', 'bg-red-500', 'bg-yellow-500', 'bg-blue-500', 'bg-green-500'][strength];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (password.length < 8) { setError('Hasło musi mieć co najmniej 8 znaków.'); return; }
-    if (password !== confirm) { setError('Hasła nie są identyczne.'); return; }
+    if (password.length < 8) { setError('Password must be at least 8 characters.'); return; }
+    if (password !== confirm) { setError('Passwords do not match.'); return; }
 
     setLoading(true);
     try {
@@ -98,7 +98,7 @@ export default function ResetPassword() {
       setBackupCode(code);
       setStep('code');
     } catch (err: any) {
-      setError(err?.message || 'Nie udało się zmienić hasła. Spróbuj ponownie.');
+      setError(err?.message || 'Failed to change password. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -133,12 +133,12 @@ export default function ResetPassword() {
               <div className="w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
                 <AlertTriangle className="w-7 h-7 text-destructive" />
               </div>
-              <h1 className="text-xl font-display text-foreground mb-2">Link nieważny lub wygasł</h1>
+              <h1 className="text-xl font-display text-foreground mb-2">Invalid or expired link</h1>
               <p className="text-sm text-muted-foreground mb-6">
-                Linki do resetu hasła wygasają po 1 godzinie. Poproś o nowy link.
+                Password reset links expire after 1 hour. Request a new link.
               </p>
               <Button asChild className="w-full">
-                <Link to="/login">Wróć do logowania</Link>
+                <Link to="/login">Back to login</Link>
               </Button>
             </motion.div>
           )}
@@ -155,20 +155,20 @@ export default function ResetPassword() {
                 <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                   <KeyRound className="w-7 h-7 text-primary" />
                 </div>
-                <h1 className="text-2xl font-display text-foreground">Nowe hasło</h1>
-                <p className="text-sm text-muted-foreground mt-1">Wpisz nowe hasło do swojego konta</p>
+                <h1 className="text-2xl font-display text-foreground">New password</h1>
+                <p className="text-sm text-muted-foreground mt-1">Enter a new password for your account</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <Label htmlFor="password" className="text-sm font-medium">Nowe hasło</Label>
+                  <Label htmlFor="password" className="text-sm font-medium">New password</Label>
                   <div className="relative mt-1.5">
                     <Input
                       id="password"
                       type={showPw ? 'text' : 'password'}
                       value={password}
                       onChange={e => setPassword(e.target.value)}
-                      placeholder="Minimum 8 znaków"
+                      placeholder="Minimum 8 characters"
                       className="pr-10"
                       autoFocus
                     />
@@ -196,14 +196,14 @@ export default function ResetPassword() {
                 </div>
 
                 <div>
-                  <Label htmlFor="confirm" className="text-sm font-medium">Powtórz hasło</Label>
+                  <Label htmlFor="confirm" className="text-sm font-medium">Repeat password</Label>
                   <div className="relative mt-1.5">
                     <Input
                       id="confirm"
                       type={showConfirm ? 'text' : 'password'}
                       value={confirm}
                       onChange={e => setConfirm(e.target.value)}
-                      placeholder="Powtórz nowe hasło"
+                      placeholder="Repeat new password"
                       className="pr-10"
                     />
                     <button
@@ -215,7 +215,7 @@ export default function ResetPassword() {
                     </button>
                   </div>
                   {confirm.length > 0 && password !== confirm && (
-                    <p className="text-xs text-destructive mt-1">Hasła nie są identyczne</p>
+                    <p className="text-xs text-destructive mt-1">Passwords do not match</p>
                   )}
                 </div>
 
@@ -227,11 +227,11 @@ export default function ResetPassword() {
                   {loading ? (
                     <span className="flex items-center gap-2">
                       <span className="w-4 h-4 border-2 border-primary-foreground/40 border-t-primary-foreground rounded-full animate-spin" />
-                      Zapisywanie...
+                      Saving...
                     </span>
                   ) : (
                     <span className="flex items-center gap-2">
-                      Zmień hasło <ArrowRight className="w-4 h-4" />
+                      Change password <ArrowRight className="w-4 h-4" />
                     </span>
                   )}
                 </Button>
@@ -251,16 +251,16 @@ export default function ResetPassword() {
                 <div className="w-14 h-14 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-4">
                   <ShieldCheck className="w-7 h-7 text-green-500" />
                 </div>
-                <h1 className="text-2xl font-display text-foreground">Hasło zmienione!</h1>
+                <h1 className="text-2xl font-display text-foreground">Password changed!</h1>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Zapisz poniższy kod zapasowy w bezpiecznym miejscu.
+                  Save the backup code below in a safe place.
                 </p>
               </div>
 
               {/* Code display */}
               <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-4 mb-4">
                 <p className="text-xs uppercase tracking-widest text-muted-foreground text-center mb-3">
-                  Kod zapasowy — pokaże się tylko raz
+                  Backup code — shown only once
                 </p>
                 <div className="flex items-center justify-between gap-3">
                   <code className="font-mono text-lg font-bold text-foreground tracking-[0.2em] flex-1 text-center select-all">
@@ -269,7 +269,7 @@ export default function ResetPassword() {
                   <button
                     onClick={copyCode}
                     className="shrink-0 w-9 h-9 rounded-lg bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-colors"
-                    aria-label="Kopiuj kod"
+                    aria-label="Copy code"
                   >
                     {copied
                       ? <Check className="w-4 h-4 text-green-500" />
@@ -280,13 +280,13 @@ export default function ResetPassword() {
 
               <div className="rounded-lg bg-yellow-500/10 border border-yellow-500/20 px-3 py-2.5 mb-6">
                 <p className="text-xs text-yellow-600 dark:text-yellow-400 leading-relaxed">
-                  <strong>Ważne:</strong> ten kod pozwala zresetować dostęp do konta jeśli zapomnisz hasła.
-                  Zapisz go w menedżerze haseł lub wydrukuj. <strong>Nie pokażemy go ponownie.</strong>
+                  <strong>Important:</strong> this code allows you to reset access to your account if you forget your password.
+                  Save it in a password manager or print it. <strong>We will not show it again.</strong>
                 </p>
               </div>
 
               <Button className="w-full" onClick={() => navigate('/dashboard')}>
-                Przejdź do panelu <ArrowRight className="w-4 h-4 ml-2" />
+                Go to dashboard <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </motion.div>
           )}

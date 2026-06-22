@@ -9,14 +9,14 @@ import { GradientMeshBg } from '@/components/ui/gradient-mesh-bg';
 import { cn } from '@/lib/utils';
 
 const GOALS = [
-  { id: 'visibility',  icon: Zap,       label: 'Widoczność w AI',        desc: 'Chcę wiedzieć czy AI wspomina moją markę' },
-  { id: 'sentiment',   icon: TrendingUp, label: 'Sentyment i opinie',     desc: 'Chcę śledzić jak AI ocenia moją markę' },
-  { id: 'competitor',  icon: Users,      label: 'Analiza konkurencji',    desc: 'Chcę porównać się z konkurentami' },
-  { id: 'reputation',  icon: Shield,     label: 'Ochrona reputacji',      desc: 'Chcę reagować zanim klienci zapytają AI' },
-  { id: 'reporting',   icon: BarChart3,  label: 'Raporty dla klientów',   desc: 'Pracuję w agencji i raportuję marki' },
+  { id: 'visibility',  icon: Zap,       label: 'AI Visibility',           desc: 'I want to know if AI mentions my brand' },
+  { id: 'sentiment',   icon: TrendingUp, label: 'Sentiment & opinions',   desc: 'I want to track how AI rates my brand' },
+  { id: 'competitor',  icon: Users,      label: 'Competitor analysis',    desc: 'I want to compare myself with competitors' },
+  { id: 'reputation',  icon: Shield,     label: 'Reputation protection',  desc: 'I want to react before customers ask AI' },
+  { id: 'reporting',   icon: BarChart3,  label: 'Client reports',         desc: 'I work at an agency and report on brands' },
 ];
 
-const STEPS = ['Witaj', 'Twoja marka', 'Twój cel', 'Gotowe'];
+const STEPS = ['Welcome', 'Your brand', 'Your goal', 'Done'];
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -116,16 +116,16 @@ export default function Onboarding() {
                 <>
                   <div className="space-y-2">
                     <span className="text-3xl">👋</span>
-                    <h1 className="text-2xl font-display text-foreground">Witaj w BitBrew!</h1>
+                    <h1 className="text-2xl font-display text-foreground">Welcome to BitBrew!</h1>
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      Zajmie Ci to mniej niż minutę. Pomożemy Ci skonfigurować monitoring widoczności Twojej marki w AI — ChatGPT, Claude i Gemini.
+                      It'll take less than a minute. We'll help you set up monitoring of your brand's visibility in AI — ChatGPT, Claude and Gemini.
                     </p>
                   </div>
                   <ul className="space-y-2.5">
                     {[
-                      'Sprawdzimy jak AI postrzega Twoją markę',
-                      'Pokażemy wynik widoczności w skali 0–100',
-                      'Damy Ci pierwsze rekomendacje',
+                      'We'll check how AI perceives your brand',
+                      'We'll show a visibility score on a scale of 0–100',
+                      'We'll give you initial recommendations',
                     ].map(item => (
                       <li key={item} className="flex items-center gap-2.5 text-sm text-foreground">
                         <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
@@ -135,7 +135,7 @@ export default function Onboarding() {
                   </ul>
                   <div className="mt-auto">
                     <Button className="w-full gap-2" onClick={() => goTo(1)}>
-                      Zaczynamy <ArrowRight className="w-4 h-4" />
+                      Let's go <ArrowRight className="w-4 h-4" />
                     </Button>
                   </div>
                 </>
@@ -146,9 +146,9 @@ export default function Onboarding() {
                 <>
                   <div className="space-y-2">
                     <span className="text-3xl">🏷️</span>
-                    <h2 className="text-2xl font-display text-foreground">Jak nazywa się Twoja marka?</h2>
+                    <h2 className="text-2xl font-display text-foreground">What is your brand called?</h2>
                     <p className="text-sm text-muted-foreground">
-                      Podaj nazwę firmy lub produktu który chcesz monitorować.
+                      Enter the name of the company or product you want to monitor.
                     </p>
                   </div>
                   <div className="space-y-2">
@@ -162,13 +162,13 @@ export default function Onboarding() {
                       onKeyDown={e => e.key === 'Enter' && goTo(2)}
                     />
                     <p className="text-xs text-muted-foreground/60">
-                      Możesz to zmienić później i analizować dowolną markę.
+                      You can change this later and analyze any brand.
                     </p>
                   </div>
                   <div className="mt-auto flex gap-3">
-                    <Button variant="ghost" onClick={() => goTo(0)}>Wróć</Button>
+                    <Button variant="ghost" onClick={() => goTo(0)}>Back</Button>
                     <Button className="flex-1 gap-2" onClick={() => goTo(2)}>
-                      Dalej <ArrowRight className="w-4 h-4" />
+                      Next <ArrowRight className="w-4 h-4" />
                     </Button>
                   </div>
                 </>
@@ -179,8 +179,8 @@ export default function Onboarding() {
                 <>
                   <div className="space-y-2">
                     <span className="text-3xl">🎯</span>
-                    <h2 className="text-2xl font-display text-foreground">Co jest dla Ciebie najważniejsze?</h2>
-                    <p className="text-sm text-muted-foreground">Wybierz jeden lub więcej celów.</p>
+                    <h2 className="text-2xl font-display text-foreground">What matters most to you?</h2>
+                    <p className="text-sm text-muted-foreground">Choose one or more goals.</p>
                   </div>
                   <div className="grid grid-cols-1 gap-2">
                     {GOALS.map(goal => {
@@ -211,9 +211,9 @@ export default function Onboarding() {
                     })}
                   </div>
                   <div className="mt-auto flex gap-3">
-                    <Button variant="ghost" onClick={() => goTo(1)}>Wróć</Button>
+                    <Button variant="ghost" onClick={() => goTo(1)}>Back</Button>
                     <Button className="flex-1 gap-2" onClick={() => goTo(3)}>
-                      Dalej <ArrowRight className="w-4 h-4" />
+                      Next <ArrowRight className="w-4 h-4" />
                     </Button>
                   </div>
                 </>
@@ -231,27 +231,27 @@ export default function Onboarding() {
                     >
                       <CheckCircle2 className="w-8 h-8 text-primary" />
                     </motion.div>
-                    <h2 className="text-2xl font-display text-foreground">Wszystko gotowe!</h2>
+                    <h2 className="text-2xl font-display text-foreground">All set!</h2>
                     <p className="text-sm text-muted-foreground leading-relaxed">
                       {brand.trim()
-                        ? <>Zaraz przeprowadzimy pierwszą analizę marki <strong className="text-foreground">{brand}</strong> w ChatGPT, Claude i Gemini.</>
-                        : 'Możesz teraz przejść do panelu i przeanalizować dowolną markę.'}
+                        ? <>We'll now run the first analysis of the brand <strong className="text-foreground">{brand}</strong> in ChatGPT, Claude and Gemini.</>
+                        : 'You can now go to the dashboard and analyze any brand.'}
                     </p>
                   </div>
 
                   <div className="rounded-xl border border-[hsl(var(--glass-border))] bg-muted/20 p-4 space-y-2">
-                    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/60">Twój plan startowy</p>
+                    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/60">Your starting plan</p>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-foreground">Free — 3 darmowe analizy</span>
-                      <span className="text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 font-medium">Aktywny</span>
+                      <span className="text-sm text-foreground">Free — 3 free analyses</span>
+                      <span className="text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 font-medium">Active</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">Możesz rozszerzyć plan w dowolnym momencie z poziomu ustawień.</p>
+                    <p className="text-xs text-muted-foreground">You can upgrade your plan at any time from settings.</p>
                   </div>
 
                   <div className="mt-auto">
                     <Button className="w-full gap-2" onClick={handleFinish} disabled={saving}>
                       {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
-                      {brand.trim() ? `Analizuj "${brand}"` : 'Przejdź do panelu'}
+                      {brand.trim() ? `Analyze "${brand}"` : 'Go to dashboard'}
                     </Button>
                   </div>
                 </>
@@ -262,7 +262,7 @@ export default function Onboarding() {
         </div>
 
         <p className="text-center text-xs text-muted-foreground/40 mt-6">
-          BitBrew · <button className="hover:underline" onClick={() => navigate('/dashboard', { replace: true })}>Pomiń onboarding</button>
+          BitBrew · <button className="hover:underline" onClick={() => navigate('/dashboard', { replace: true })}>Skip onboarding</button>
         </p>
       </div>
     </GradientMeshBg>
