@@ -1,11 +1,9 @@
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Zap, LogOut, Sun, Moon, Settings, User, Code2, CreditCard, MessageSquare, Send, X, Bot, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
-import { useTheme } from 'next-themes';
+import { Zap, LogOut, Settings, User, Code2, CreditCard, MessageSquare, Send, X, Bot, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { logout } from '@/lib/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Switch } from '@/components/ui/switch-theme';
 import AvatarNotifications from '@/components/ui/avatar-notifications';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -30,10 +28,10 @@ const DropdownLink = ({ to, icon: Icon, label, onClick }: { to: string; icon: Re
 );
 
 const SECTION_TITLES: Record<string, string> = {
-  '/dashboard':  'Strona główna',
-  '/pricing':    'Cennik',
-  '/profile':    'Profil',
-  '/settings':   'Ustawienia',
+  '/dashboard':  'Home',
+  '/pricing':    'Pricing',
+  '/profile':    'Profile',
+  '/settings':   'Settings',
   '/developers': 'Developers',
 };
 
@@ -48,8 +46,6 @@ export const AppNavbar = ({ collapsed = false, onToggle, chatOpen = false, onCha
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const sectionTitle = SECTION_TITLES[pathname] ?? 'BitBrew';
-  const { theme, setTheme } = useTheme();
-  const isDark = theme === 'dark';
   const [open, setOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
@@ -113,7 +109,7 @@ export const AppNavbar = ({ collapsed = false, onToggle, chatOpen = false, onCha
       <button
         onClick={onToggle}
         className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-        aria-label={collapsed ? 'Rozwiń panel' : 'Zwiń panel'}
+        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       >
         {collapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
       </button>
@@ -127,16 +123,9 @@ export const AppNavbar = ({ collapsed = false, onToggle, chatOpen = false, onCha
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors"
         >
           <Zap className="w-3.5 h-3.5" />
-          Ulepsz plan
+          Upgrade plan
         </Link>
       )}
-
-      <Switch
-        value={isDark}
-        onToggle={() => setTheme(isDark ? 'light' : 'dark')}
-        iconOn={<Moon className="w-3.5 h-3.5 text-foreground" />}
-        iconOff={<Sun className="w-3.5 h-3.5 text-amber-500" />}
-      />
 
       {/* Feedback */}
       <Popover open={feedbackOpen} onOpenChange={setFeedbackOpen}>
@@ -203,8 +192,8 @@ export const AppNavbar = ({ collapsed = false, onToggle, chatOpen = false, onCha
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">
-                  <p className="font-medium">{plan} — kredyty tego miesiąca</p>
-                  <p className="text-muted-foreground">{analysesUsed} / {limit} użytych ({usedPct}%)</p>
+                  <p className="font-medium">{plan} — credits this month</p>
+                  <p className="text-muted-foreground">{analysesUsed} / {limit} used ({usedPct}%)</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -214,7 +203,7 @@ export const AppNavbar = ({ collapsed = false, onToggle, chatOpen = false, onCha
             {/* Balance */}
             <div className="p-4 border-b border-border">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Kredyty</span>
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Credits</span>
                 <Link
                   to="/pricing"
                   onClick={() => setOpen(false)}
@@ -224,11 +213,11 @@ export const AppNavbar = ({ collapsed = false, onToggle, chatOpen = false, onCha
                 </Link>
               </div>
               <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
-                <span>Łącznie</span>
-                <span className="font-medium text-foreground">{limit} analiz</span>
+                <span>Total</span>
+                <span className="font-medium text-foreground">{limit} analyses</span>
               </div>
               <div className="flex justify-between text-xs text-muted-foreground mb-2">
-                <span>Pozostało</span>
+                <span>Remaining</span>
                 <span className={cn('font-medium', remaining <= 2 ? 'text-destructive' : 'text-foreground')}>{remaining}</span>
               </div>
               <div className="h-1.5 rounded-full bg-muted overflow-hidden">
@@ -248,9 +237,9 @@ export const AppNavbar = ({ collapsed = false, onToggle, chatOpen = false, onCha
 
             {/* Nav links */}
             <div className="p-2 border-b border-border space-y-0.5">
-              <DropdownLink to="/profile"    icon={User}       label="Profil"       onClick={() => setOpen(false)} />
-              <DropdownLink to="/settings"   icon={Settings}   label="Ustawienia"   onClick={() => setOpen(false)} />
-              <DropdownLink to="/pricing"    icon={CreditCard} label="Subskrypcja"  onClick={() => setOpen(false)} />
+              <DropdownLink to="/profile"    icon={User}       label="Profile"       onClick={() => setOpen(false)} />
+              <DropdownLink to="/settings"   icon={Settings}   label="Settings"   onClick={() => setOpen(false)} />
+              <DropdownLink to="/pricing"    icon={CreditCard} label="Subscription"  onClick={() => setOpen(false)} />
               <DropdownLink to="/developers" icon={Code2}      label="Developers"   onClick={() => setOpen(false)} />
             </div>
 
@@ -261,7 +250,7 @@ export const AppNavbar = ({ collapsed = false, onToggle, chatOpen = false, onCha
                 className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-sm text-destructive hover:bg-destructive/10 transition-colors"
               >
                 <LogOut className="w-4 h-4" />
-                Wyloguj się
+                Sign out
               </button>
             </div>
           </PopoverContent>

@@ -345,7 +345,7 @@ const Login = () => {
               className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              Strona główna
+              Home
             </Link>
           </div>
 
@@ -382,7 +382,7 @@ const Login = () => {
                     <div className="flex items-center justify-between">
                       <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('password')}</Label>
                       <button type="button" onClick={() => switchMode('forgot', 1)} className="text-[11px] text-primary hover:underline">
-                        Zapomniałeś hasła?
+                        Forgot your password?
                       </button>
                     </div>
                     <div className="relative">
@@ -402,7 +402,7 @@ const Login = () => {
                     {loading ? (
                       <span className="flex items-center gap-2">
                         <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                        Logowanie...
+                        Signing in...
                       </span>
                     ) : <>{t('submit')}<ArrowRight className="w-3.5 h-3.5" /></>}
                   </Button>
@@ -419,12 +419,12 @@ const Login = () => {
             {mode === 'forgot' && (
               <motion.div key="forgot" custom={dir} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25, ease: 'easeOut' }} className="space-y-6">
                 <button type="button" onClick={() => switchMode('login', -1)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  <ArrowLeft className="w-3.5 h-3.5" /> Powrót do logowania
+                  <ArrowLeft className="w-3.5 h-3.5" /> Back to login
                 </button>
 
                 <div>
-                  <h1 className="text-2xl font-display text-foreground">Resetuj hasło</h1>
-                  <p className="text-sm text-muted-foreground mt-1">Podaj swój e-mail — wyślemy 6-cyfrowy kod weryfikacyjny.</p>
+                  <h1 className="text-2xl font-display text-foreground">Reset password</h1>
+                  <p className="text-sm text-muted-foreground mt-1">Enter your email — we'll send you a 6-digit verification code.</p>
                 </div>
 
                 {error && (
@@ -441,8 +441,8 @@ const Login = () => {
 
                   <Button type="submit" className="w-full h-10 gap-2" disabled={resetLoading}>
                     {resetLoading
-                      ? <span className="flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" />Wysyłanie...</span>
-                      : <><Mail className="w-3.5 h-3.5" />Wyślij kod</>}
+                      ? <span className="flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" />Sending...</span>
+                      : <><Mail className="w-3.5 h-3.5" />Send code</>}
                   </Button>
                 </form>
               </motion.div>
@@ -452,16 +452,16 @@ const Login = () => {
             {mode === 'otp' && (
               <motion.div key="otp" custom={dir} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25, ease: 'easeOut' }} className="space-y-6">
                 <button type="button" onClick={() => switchMode('forgot', -1)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  <ArrowLeft className="w-3.5 h-3.5" /> Zmień e-mail
+                  <ArrowLeft className="w-3.5 h-3.5" /> Change email
                 </button>
 
                 <div className="text-center">
                   <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 mb-4">
                     <KeyRound className="w-6 h-6 text-primary" />
                   </div>
-                  <h1 className="text-2xl font-display text-foreground">Wpisz kod</h1>
+                  <h1 className="text-2xl font-display text-foreground">Enter code</h1>
                   <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                    Wysłaliśmy 6-cyfrowy kod na<br/>
+                    We sent a 6-digit code to<br/>
                     <span className="text-foreground font-medium">{resetEmail}</span>
                   </p>
                 </div>
@@ -477,15 +477,15 @@ const Login = () => {
 
                   <Button type="submit" className="w-full h-10 gap-2" disabled={otpLoading || otpValue.replace(/\D/g, '').length < 6}>
                     {otpLoading
-                      ? <span className="flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" />Weryfikacja...</span>
-                      : <><ArrowRight className="w-3.5 h-3.5" />Dalej</>}
+                      ? <span className="flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" />Verifying...</span>
+                      : <><ArrowRight className="w-3.5 h-3.5" />Next</>}
                   </Button>
                 </form>
 
                 <p className="text-xs text-muted-foreground text-center">
                   Kod wygasa za 10 minut ·{' '}
                   <button type="button" onClick={() => handleForgotPassword({ preventDefault: () => {} } as React.FormEvent)} className="text-primary hover:underline">
-                    Wyślij ponownie
+                    Resend
                   </button>
                 </p>
               </motion.div>

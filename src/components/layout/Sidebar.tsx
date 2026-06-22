@@ -87,12 +87,12 @@ export const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
 
       {/* Main nav */}
       <nav className="flex-1 overflow-y-auto px-2 pt-2 space-y-0.5">
-        <NavItem to="/dashboard" icon={Home} label="Strona główna" active={pathname === '/dashboard'} collapsed={collapsed} />
+        <NavItem to="/dashboard" icon={Home} label="Home" active={pathname === '/dashboard'} collapsed={collapsed} />
 
-        <SectionLabel label="Narzędzia" collapsed={collapsed} />
+        <SectionLabel label="Tools" collapsed={collapsed} />
 
-        <NavItem to="/dashboard" icon={Sparkles} label="Analiza AI" active={pathname === '/dashboard'} collapsed={collapsed} />
-        <NavItem to="/pricing" icon={CreditCard} label="Cennik" active={pathname === '/pricing'} collapsed={collapsed} />
+        <NavItem to="/dashboard" icon={Sparkles} label="AI Analysis" active={pathname === '/dashboard'} collapsed={collapsed} />
+        <NavItem to="/pricing" icon={CreditCard} label="Pricing" active={pathname === '/pricing'} collapsed={collapsed} />
       </nav>
 
       {/* Bottom */}
@@ -105,14 +105,14 @@ export const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
           <div className="p-3 rounded-xl bg-muted border border-border mb-2">
             <div className="flex items-center gap-2 mb-0.5">
               <Users className="w-3.5 h-3.5 text-muted-foreground" />
-              <span className="text-xs font-medium text-foreground">Zaproś znajomych</span>
+              <span className="text-xs font-medium text-foreground">Invite friends</span>
             </div>
-            <p className="text-[11px] text-muted-foreground mb-2">Podziel się BitBrew ze swoim zespołem</p>
+            <p className="text-[11px] text-muted-foreground mb-2">Share BitBrew with your team</p>
             <Link
               to="/pricing"
               className="block w-full text-center text-xs py-1.5 px-3 rounded-lg bg-background border border-border text-muted-foreground hover:bg-accent transition-colors"
             >
-              Wyślij zaproszenie
+              Send invite
             </Link>
           </div>
         )}
@@ -121,14 +121,14 @@ export const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
         {plan === 'Free' && (
           <Link
             to="/pricing"
-            title={collapsed ? 'Ulepsz plan' : undefined}
+            title={collapsed ? 'Upgrade plan' : undefined}
             className={cn(
               'flex items-center justify-center gap-2 w-full py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors',
               collapsed && 'w-8 h-8 p-0 rounded-lg'
             )}
           >
             <Zap className="w-4 h-4 shrink-0" />
-            {!collapsed && 'Ulepsz plan'}
+            {!collapsed && 'Upgrade plan'}
           </Link>
         )}
       </div>
