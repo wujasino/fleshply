@@ -13,16 +13,16 @@ import { FloatingPathsBackground } from '@/components/ui/floating-paths';
 
 
 const FEATURES = [
-  { icon: Zap,       text: 'Audyt widoczności w GPT-4, Claude, Gemini' },
-  { icon: BarChart3, text: 'Śledzenie trendu sentymentu w czasie'       },
-  { icon: Shield,    text: 'Wiarygodność źródeł z wynikiem pewności'   },
+  { icon: Zap,       text: 'Visibility audit in GPT-4, Claude, Gemini' },
+  { icon: BarChart3, text: 'Sentiment trend tracking over time'         },
+  { icon: Shield,    text: 'Source credibility with confidence score'   },
 ];
 
 const pwdRules = [
-  { label: 'Min. 8 znaków',  test: (p: string) => p.length >= 8 },
-  { label: 'Wielka litera',  test: (p: string) => /[A-Z]/.test(p) },
-  { label: 'Cyfra',          test: (p: string) => /[0-9]/.test(p) },
-  { label: 'Znak specjalny', test: (p: string) => /[^A-Za-z0-9]/.test(p) },
+  { label: 'Min. 8 chars',    test: (p: string) => p.length >= 8 },
+  { label: 'Uppercase letter', test: (p: string) => /[A-Z]/.test(p) },
+  { label: 'Number',          test: (p: string) => /[0-9]/.test(p) },
+  { label: 'Special char',    test: (p: string) => /[^A-Za-z0-9]/.test(p) },
 ];
 
 function getPwdStrength(p: string) {
@@ -30,7 +30,7 @@ function getPwdStrength(p: string) {
   return pwdRules.filter(r => r.test(p)).length;
 }
 
-const strengthLabel = ['', 'Słabe', 'Słabe', 'Średnie', 'Silne'];
+const strengthLabel = ['', 'Weak', 'Weak', 'Medium', 'Strong'];
 const strengthColor = ['', 'bg-red-500', 'bg-red-500', 'bg-yellow-500', 'bg-green-500'];
 
 const slideVariants = {
@@ -135,7 +135,7 @@ const Login = () => {
         body: JSON.stringify({ email: resetEmail.trim() }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Błąd wysyłania kodu.');
+      if (!res.ok) throw new Error(data.error || 'Error sending code.');
       setOtpValue('');
       switchMode('otp', 1);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -150,7 +150,7 @@ const Login = () => {
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (otpValue.replace(/\D/g, '').length < 6) {
-      setError('Wpisz pełny 6-cyfrowy kod.');
+      setError('Please enter the full 6-digit code.');
       return;
     }
     setOtpLoading(true);
@@ -162,7 +162,7 @@ const Login = () => {
         body: JSON.stringify({ email: resetEmail.trim(), code: otpValue.replace(/\D/g, '') }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Nieprawidłowy kod.');
+      if (!res.ok) throw new Error(data.error || 'Invalid code.');
       setNewPwd('');
       setNewPwdConfirm('');
       switchMode('reset', 1);
@@ -178,11 +178,11 @@ const Login = () => {
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPwd.length < 8) {
-      setError('Nowe hasło musi mieć co najmniej 8 znaków.');
+      setError('New password must be at least 8 characters.');
       return;
     }
     if (newPwd !== newPwdConfirm) {
-      setError('Hasła nie są identyczne.');
+      setError('Passwords do not match.');
       return;
     }
     setOtpLoading(true);
@@ -194,12 +194,12 @@ const Login = () => {
         body: JSON.stringify({ email: resetEmail.trim(), code: otpValue.replace(/\D/g, ''), newPassword: newPwd }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Nie udało się zmienić hasła.');
+      if (!res.ok) throw new Error(data.error || 'Failed to change password.');
       setEmail(resetEmail.trim());
       setNewPwd('');
       setNewPwdConfirm('');
       setOtpValue('');
-      setNotice('Hasło zostało zmienione. Zaloguj się nowym hasłem.');
+      setNotice('Password changed. Sign in with your new password.');
       switchMode('login', -1);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
@@ -256,7 +256,7 @@ const Login = () => {
       if (err.message?.includes('Invalid login credentials')) {
         setError(t('invalid_credentials') || 'Nieprawidłowe dane logowania');
       } else {
-        setError(err.message || 'Błąd logowania');
+        setError(err.message || 'Login error');
       }
     } finally {
       setLoading(false);
@@ -275,7 +275,7 @@ const Login = () => {
       if (verifyErr) throw verifyErr;
       navigate(from, { replace: true });
     } catch (err: any) {
-      setError('Nieprawidłowy kod. Sprawdź aplikację i spróbuj ponownie.');
+      setError('Invalid code. Check your app and try again.');
       setTotpCode('');
     } finally {
       setTotpLoading(false);
@@ -296,11 +296,11 @@ const Login = () => {
         <div className="space-y-8">
           <div>
             <h2 className="text-3xl font-display leading-snug text-foreground">
-              Poznaj jak AI<br />
-              <span className="text-primary">widzi Twoją markę</span>
+              Discover how AI<br />
+              <span className="text-primary">sees your brand</span>
             </h2>
             <p className="mt-3 text-sm text-muted-foreground leading-relaxed max-w-xs">
-              Setki marek używa BitBrew, żeby monitorować i poprawiać swoją widoczność w modelach AI.
+              Hundreds of brands use BitBrew to monitor and improve their visibility in AI models.
             </p>
           </div>
 
@@ -324,7 +324,7 @@ const Login = () => {
               ))}
             </div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-foreground font-medium">200+</span> marek już monitoruje AI
+              <span className="text-foreground font-medium">200+</span> brands already monitoring AI
             </p>
           </div>
         </div>
@@ -345,7 +345,7 @@ const Login = () => {
               className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              Strona główna
+              Home
             </Link>
           </div>
 
@@ -382,12 +382,12 @@ const Login = () => {
                     <div className="flex items-center justify-between">
                       <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('password')}</Label>
                       <button type="button" onClick={() => switchMode('forgot', 1)} className="text-[11px] text-primary hover:underline">
-                        Zapomniałeś hasła?
+                        Forgot your password?
                       </button>
                     </div>
                     <div className="relative">
                       <Input type={showPwd ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required autoComplete="current-password" className="h-10 pr-10" />
-                      <button type="button" onClick={() => setShowPwd(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" tabIndex={-1} aria-label={showPwd ? 'Ukryj hasło' : 'Pokaż hasło'}>
+                      <button type="button" onClick={() => setShowPwd(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" tabIndex={-1} aria-label={showPwd ? 'Hide password' : 'Show password'}>
                         {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
@@ -402,7 +402,7 @@ const Login = () => {
                     {loading ? (
                       <span className="flex items-center gap-2">
                         <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                        Logowanie...
+                        Signing in...
                       </span>
                     ) : <>{t('submit')}<ArrowRight className="w-3.5 h-3.5" /></>}
                   </Button>
@@ -419,12 +419,12 @@ const Login = () => {
             {mode === 'forgot' && (
               <motion.div key="forgot" custom={dir} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25, ease: 'easeOut' }} className="space-y-6">
                 <button type="button" onClick={() => switchMode('login', -1)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  <ArrowLeft className="w-3.5 h-3.5" /> Powrót do logowania
+                  <ArrowLeft className="w-3.5 h-3.5" /> Back to login
                 </button>
 
                 <div>
-                  <h1 className="text-2xl font-display text-foreground">Resetuj hasło</h1>
-                  <p className="text-sm text-muted-foreground mt-1">Podaj swój e-mail — wyślemy 6-cyfrowy kod weryfikacyjny.</p>
+                  <h1 className="text-2xl font-display text-foreground">Reset password</h1>
+                  <p className="text-sm text-muted-foreground mt-1">Enter your email — we'll send you a 6-digit verification code.</p>
                 </div>
 
                 {error && (
@@ -441,8 +441,8 @@ const Login = () => {
 
                   <Button type="submit" className="w-full h-10 gap-2" disabled={resetLoading}>
                     {resetLoading
-                      ? <span className="flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" />Wysyłanie...</span>
-                      : <><Mail className="w-3.5 h-3.5" />Wyślij kod</>}
+                      ? <span className="flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" />Sending...</span>
+                      : <><Mail className="w-3.5 h-3.5" />Send code</>}
                   </Button>
                 </form>
               </motion.div>
@@ -452,16 +452,16 @@ const Login = () => {
             {mode === 'otp' && (
               <motion.div key="otp" custom={dir} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25, ease: 'easeOut' }} className="space-y-6">
                 <button type="button" onClick={() => switchMode('forgot', -1)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  <ArrowLeft className="w-3.5 h-3.5" /> Zmień e-mail
+                  <ArrowLeft className="w-3.5 h-3.5" /> Change email
                 </button>
 
                 <div className="text-center">
                   <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 mb-4">
                     <KeyRound className="w-6 h-6 text-primary" />
                   </div>
-                  <h1 className="text-2xl font-display text-foreground">Wpisz kod</h1>
+                  <h1 className="text-2xl font-display text-foreground">Enter code</h1>
                   <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                    Wysłaliśmy 6-cyfrowy kod na<br/>
+                    We sent a 6-digit code to<br/>
                     <span className="text-foreground font-medium">{resetEmail}</span>
                   </p>
                 </div>
@@ -477,15 +477,15 @@ const Login = () => {
 
                   <Button type="submit" className="w-full h-10 gap-2" disabled={otpLoading || otpValue.replace(/\D/g, '').length < 6}>
                     {otpLoading
-                      ? <span className="flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" />Weryfikacja...</span>
-                      : <><ArrowRight className="w-3.5 h-3.5" />Dalej</>}
+                      ? <span className="flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" />Verifying...</span>
+                      : <><ArrowRight className="w-3.5 h-3.5" />Next</>}
                   </Button>
                 </form>
 
                 <p className="text-xs text-muted-foreground text-center">
                   Kod wygasa za 10 minut ·{' '}
                   <button type="button" onClick={() => handleForgotPassword({ preventDefault: () => {} } as React.FormEvent)} className="text-primary hover:underline">
-                    Wyślij ponownie
+                    Resend
                   </button>
                 </p>
               </motion.div>
@@ -495,16 +495,16 @@ const Login = () => {
             {mode === 'reset' && (
               <motion.div key="reset" custom={dir} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25, ease: 'easeOut' }} className="space-y-6">
                 <button type="button" onClick={() => switchMode('otp', -1)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  <ArrowLeft className="w-3.5 h-3.5" /> Wróć do kodu
+                  <ArrowLeft className="w-3.5 h-3.5" /> Back to code
                 </button>
 
                 <div className="text-center">
                   <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 mb-4">
                     <KeyRound className="w-6 h-6 text-primary" />
                   </div>
-                  <h1 className="text-2xl font-display text-foreground">Ustaw nowe hasło</h1>
+                  <h1 className="text-2xl font-display text-foreground">Set new password</h1>
                   <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                    Kod potwierdzony. Wpisz teraz nowe hasło do konta.
+                    Code confirmed. Enter your new account password.
                   </p>
                 </div>
 
@@ -516,18 +516,18 @@ const Login = () => {
 
                 <form onSubmit={handleResetPassword} className="space-y-4">
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Nowe hasło</Label>
+                    <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">New password</Label>
                     <div className="relative">
                       <Input
                         type={showNewPwd ? 'text' : 'password'}
                         value={newPwd}
                         onChange={e => setNewPwd(e.target.value)}
-                        placeholder="Minimum 8 znaków"
+                        placeholder="Minimum 8 characters"
                         autoComplete="new-password"
                         autoFocus
                         className="h-10 pr-10"
                       />
-                      <button type="button" onClick={() => setShowNewPwd(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" tabIndex={-1} aria-label={showNewPwd ? 'Ukryj hasło' : 'Pokaż hasło'}>
+                      <button type="button" onClick={() => setShowNewPwd(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" tabIndex={-1} aria-label={showNewPwd ? 'Hide password' : 'Show password'}>
                         {showNewPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
@@ -555,24 +555,24 @@ const Login = () => {
                     )}
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Powtórz hasło</Label>
+                    <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Repeat password</Label>
                     <Input
                       type={showNewPwd ? 'text' : 'password'}
                       value={newPwdConfirm}
                       onChange={e => setNewPwdConfirm(e.target.value)}
-                      placeholder="Powtórz nowe hasło"
+                      placeholder="Repeat new password"
                       autoComplete="new-password"
                       className="h-10"
                     />
                     {newPwdConfirm.length > 0 && newPwd !== newPwdConfirm && (
-                      <p className="text-[11px] text-red-400">Hasła się nie zgadzają</p>
+                      <p className="text-[11px] text-red-400">Passwords do not match</p>
                     )}
                   </div>
 
                   <Button type="submit" className="w-full h-10 gap-2" disabled={otpLoading || newPwd.length < 8 || newPwd !== newPwdConfirm}>
                     {otpLoading
-                      ? <span className="flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" />Zapisywanie...</span>
-                      : <><KeyRound className="w-3.5 h-3.5" />Zmień hasło</>}
+                      ? <span className="flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" />Saving...</span>
+                      : <><KeyRound className="w-3.5 h-3.5" />Change password</>}
                   </Button>
                 </form>
               </motion.div>
@@ -587,13 +587,13 @@ const Login = () => {
                   </div>
                 </div>
                 <div>
-                  <h1 className="text-2xl font-display text-foreground">Sprawdź skrzynkę</h1>
+                  <h1 className="text-2xl font-display text-foreground">Check your inbox</h1>
                   <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                    Wysłaliśmy kod na <span className="text-foreground font-medium">{resetEmail}</span>.
+                    We sent a code to <span className="text-foreground font-medium">{resetEmail}</span>.
                   </p>
                 </div>
                 <Button type="button" variant="outline" className="w-full h-10 gap-2" onClick={() => switchMode('login', -1)}>
-                  <ArrowLeft className="w-3.5 h-3.5" /> Powrót do logowania
+                  <ArrowLeft className="w-3.5 h-3.5" /> Back to login
                 </Button>
               </motion.div>
             )}
@@ -605,8 +605,8 @@ const Login = () => {
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
                     <Shield className="w-6 h-6 text-primary" />
                   </div>
-                  <h2 className="text-xl font-display text-foreground">Weryfikacja 2FA</h2>
-                  <p className="text-sm text-muted-foreground">Wpisz kod z aplikacji authenticator</p>
+                  <h2 className="text-xl font-display text-foreground">2FA Verification</h2>
+                  <p className="text-sm text-muted-foreground">Enter the code from your authenticator app</p>
                 </div>
 
                 {error && (
@@ -629,14 +629,14 @@ const Login = () => {
                     {totpLoading ? (
                       <span className="flex items-center gap-2">
                         <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                        Weryfikacja...
+                        Verifying...
                       </span>
-                    ) : 'Zweryfikuj'}
+                    ) : 'Verify'}
                   </Button>
                 </form>
 
                 <Button type="button" variant="ghost" className="w-full text-xs text-muted-foreground" onClick={() => { setMode('login'); setError(''); }}>
-                  Wróć do logowania
+                  Back to login
                 </Button>
               </motion.div>
             )}

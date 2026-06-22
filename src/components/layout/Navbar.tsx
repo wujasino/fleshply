@@ -13,7 +13,6 @@ import {
   NavigationMenuViewport,
 } from '@/components/ui/navigation-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/lib/supabase';
 import { logout } from '@/lib/auth';
 
@@ -206,15 +205,9 @@ export const Navbar = () => {
                 <div className="w-20 h-8 rounded-lg bg-muted animate-pulse" />
               </div>
             ) : isAuthed ? (
-                /* Avatar — click goes to dashboard */
-                <Link to="/dashboard" aria-label="Panel">
-                  <Avatar className="h-8 w-8 cursor-pointer hover:opacity-80 transition-opacity">
-                    <AvatarImage src={userAvatar ?? undefined} alt={userEmail ?? ''} />
-                    <AvatarFallback className="text-xs font-semibold bg-primary text-primary-foreground">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
-                </Link>
+                <Button size="sm" asChild>
+                  <Link to="/dashboard">Go to Dashboard</Link>
+                </Button>
               ) : (
                 <div className="hidden md:flex items-center gap-2">
                   <Button variant="outline" size="sm" asChild>

@@ -1,11 +1,9 @@
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { useState, useEffect, useRef } from 'react';
-import { Zap, LogOut, Sun, Moon, Settings, User, Code2, CreditCard, MessageSquare, Send, X, Bot, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
-import { useTheme } from 'next-themes';
+import { useState, useEffect } from 'react';
+import { Zap, LogOut, Settings, User, Code2, CreditCard, MessageSquare, Send, X, Bot, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { logout } from '@/lib/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Switch } from '@/components/ui/switch-theme';
 import AvatarNotifications from '@/components/ui/avatar-notifications';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -30,19 +28,24 @@ const DropdownLink = ({ to, icon: Icon, label, onClick }: { to: string; icon: Re
 );
 
 const SECTION_TITLES: Record<string, string> = {
-  '/dashboard':  'Strona główna',
-  '/pricing':    'Cennik',
-  '/profile':    'Profil',
-  '/settings':   'Ustawienia',
+  '/dashboard':  'Home',
+  '/pricing':    'Pricing',
+  '/profile':    'Profile',
+  '/settings':   'Settings',
   '/developers': 'Developers',
 };
 
-export const AppNavbar = ({ collapsed = false, onToggle }: { collapsed?: boolean; onToggle?: () => void }) => {
+interface AppNavbarProps {
+  collapsed?: boolean;
+  onToggle?: () => void;
+  chatOpen?: boolean;
+  onChatToggle?: () => void;
+}
+
+export const AppNavbar = ({ collapsed = false, onToggle, chatOpen = false, onChatToggle }: AppNavbarProps) => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const sectionTitle = SECTION_TITLES[pathname] ?? 'BitBrew';
-  const { theme, setTheme } = useTheme();
-  const isDark = theme === 'dark';
   const [open, setOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
@@ -62,7 +65,6 @@ export const AppNavbar = ({ collapsed = false, onToggle }: { collapsed?: boolean
         if (data?.plan) setPlan(data.plan.charAt(0).toUpperCase() + data.plan.slice(1));
       });
 
-      // Count analyses this month
       const startOfMonth = new Date();
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
@@ -97,31 +99,9 @@ export const AppNavbar = ({ collapsed = false, onToggle }: { collapsed?: boolean
 
   const handleFeedbackSend = () => {
     if (!feedbackText.trim()) return;
-    // TODO: wire to backend
     setFeedbackSent(true);
     setTimeout(() => { setFeedbackSent(false); setFeedbackText(''); setFeedbackOpen(false); }, 1500);
   };
-
-  // AI Chat state
-  const [chatOpen, setChatOpen] = useState(false);
-  const [chatInput, setChatInput] = useState('');
-  const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'assistant'; text: string }[]>([]);
-  const chatBottomRef = useRef<HTMLDivElement>(null);
-
-  const handleChatSend = () => {
-    if (!chatInput.trim()) return;
-    const msg = chatInput.trim();
-    setChatInput('');
-    setChatMessages(prev => [...prev, { role: 'user', text: msg }]);
-    // TODO: wire to AI backend
-    setTimeout(() => {
-      setChatMessages(prev => [...prev, { role: 'assistant', text: 'This feature is coming soon. Stay tuned!' }]);
-    }, 600);
-  };
-
-  useEffect(() => {
-    chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chatMessages]);
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-background/90 backdrop-blur px-6">
@@ -129,7 +109,7 @@ export const AppNavbar = ({ collapsed = false, onToggle }: { collapsed?: boolean
       <button
         onClick={onToggle}
         className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-        aria-label={collapsed ? 'Rozwiń panel' : 'Zwiń panel'}
+        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       >
         {collapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
       </button>
@@ -143,21 +123,17 @@ export const AppNavbar = ({ collapsed = false, onToggle }: { collapsed?: boolean
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors"
         >
           <Zap className="w-3.5 h-3.5" />
-          Ulepsz plan
+          Upgrade plan
         </Link>
       )}
-
-      <Switch
-        value={isDark}
-        onToggle={() => setTheme(isDark ? 'light' : 'dark')}
-        iconOn={<Moon className="w-3.5 h-3.5 text-foreground" />}
-        iconOff={<Sun className="w-3.5 h-3.5 text-amber-500" />}
-      />
 
       {/* Feedback */}
       <Popover open={feedbackOpen} onOpenChange={setFeedbackOpen}>
         <PopoverTrigger asChild>
-          <button className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors" aria-label="Feedback">
+          <button
+            className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+            aria-label="Feedback"
+          >
             <MessageSquare className="w-4 h-4" />
           </button>
         </PopoverTrigger>
@@ -188,54 +164,9 @@ export const AppNavbar = ({ collapsed = false, onToggle }: { collapsed?: boolean
         </PopoverContent>
       </Popover>
 
-      {/* AI Chat */}
-      {chatOpen && (
-        <div className="fixed bottom-4 right-4 z-50 flex flex-col w-80 h-[420px] rounded-2xl border border-border bg-background shadow-2xl overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-            <div className="flex items-center gap-2">
-              <Bot className="w-4 h-4 text-primary" />
-              <span className="text-sm font-semibold text-foreground">AI Assistant</span>
-            </div>
-            <button onClick={() => setChatOpen(false)} className="text-muted-foreground hover:text-foreground transition-colors">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {chatMessages.length === 0 && (
-              <p className="text-xs text-muted-foreground text-center mt-8">Ask me anything about your brand visibility.</p>
-            )}
-            {chatMessages.map((m, i) => (
-              <div key={i} className={cn('flex', m.role === 'user' ? 'justify-end' : 'justify-start')}>
-                <div className={cn(
-                  'max-w-[85%] rounded-xl px-3 py-2 text-sm',
-                  m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'
-                )}>
-                  {m.text}
-                </div>
-              </div>
-            ))}
-            <div ref={chatBottomRef} />
-          </div>
-          <div className="flex items-center gap-2 px-3 py-3 border-t border-border">
-            <input
-              className="flex-1 rounded-lg border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder="Type a message..."
-              value={chatInput}
-              onChange={e => setChatInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleChatSend()}
-            />
-            <button
-              onClick={handleChatSend}
-              disabled={!chatInput.trim()}
-              className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-40"
-            >
-              <Send className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      )}
+      {/* AI Chat toggle */}
       <button
-        onClick={() => setChatOpen(o => !o)}
+        onClick={onChatToggle}
         className={cn(
           'flex items-center justify-center w-8 h-8 rounded-lg transition-colors',
           chatOpen ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'
@@ -248,31 +179,29 @@ export const AppNavbar = ({ collapsed = false, onToggle }: { collapsed?: boolean
       <AvatarNotifications />
 
       {userEmail && (
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <TooltipProvider delayDuration={400}>
-              <Tooltip>
-                <TooltipTrigger asChild>
+        <TooltipProvider delayDuration={400}>
+          <Tooltip>
+            <Popover open={open} onOpenChange={setOpen}>
+              <TooltipTrigger asChild>
+                <PopoverTrigger asChild>
                   <button className="flex items-center gap-2 pl-2 border-l border-border hover:opacity-80 transition-opacity">
                     <Avatar className="h-7 w-7 cursor-pointer">
                       <AvatarImage src={userAvatar ?? undefined} />
                       <AvatarFallback className="text-xs bg-primary text-primary-foreground">{initials}</AvatarFallback>
                     </Avatar>
                   </button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="text-xs">
-                  <p className="font-medium">{plan} — kredyty tego miesiąca</p>
-                  <p className="text-muted-foreground">{analysesUsed} / {limit} użytych ({usedPct}%)</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </PopoverTrigger>
+                </PopoverTrigger>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-xs">
+                <p className="font-medium">{plan} — credits this month</p>
+                <p className="text-muted-foreground">{analysesUsed} / {limit} used ({usedPct}%)</p>
+              </TooltipContent>
 
           <PopoverContent align="end" className="w-64 p-0 overflow-hidden">
             {/* Balance */}
             <div className="p-4 border-b border-border">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Kredyty</span>
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Credits</span>
                 <Link
                   to="/pricing"
                   onClick={() => setOpen(false)}
@@ -282,11 +211,11 @@ export const AppNavbar = ({ collapsed = false, onToggle }: { collapsed?: boolean
                 </Link>
               </div>
               <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
-                <span>Łącznie</span>
-                <span className="font-medium text-foreground">{limit} analiz</span>
+                <span>Total</span>
+                <span className="font-medium text-foreground">{limit} analyses</span>
               </div>
               <div className="flex justify-between text-xs text-muted-foreground mb-2">
-                <span>Pozostało</span>
+                <span>Remaining</span>
                 <span className={cn('font-medium', remaining <= 2 ? 'text-destructive' : 'text-foreground')}>{remaining}</span>
               </div>
               <div className="h-1.5 rounded-full bg-muted overflow-hidden">
@@ -306,9 +235,9 @@ export const AppNavbar = ({ collapsed = false, onToggle }: { collapsed?: boolean
 
             {/* Nav links */}
             <div className="p-2 border-b border-border space-y-0.5">
-              <DropdownLink to="/profile"    icon={User}       label="Profil"       onClick={() => setOpen(false)} />
-              <DropdownLink to="/settings"   icon={Settings}   label="Ustawienia"   onClick={() => setOpen(false)} />
-              <DropdownLink to="/pricing"    icon={CreditCard} label="Subskrypcja"  onClick={() => setOpen(false)} />
+              <DropdownLink to="/profile"    icon={User}       label="Profile"       onClick={() => setOpen(false)} />
+              <DropdownLink to="/settings"   icon={Settings}   label="Settings"   onClick={() => setOpen(false)} />
+              <DropdownLink to="/pricing"    icon={CreditCard} label="Subscription"  onClick={() => setOpen(false)} />
               <DropdownLink to="/developers" icon={Code2}      label="Developers"   onClick={() => setOpen(false)} />
             </div>
 
@@ -319,11 +248,13 @@ export const AppNavbar = ({ collapsed = false, onToggle }: { collapsed?: boolean
                 className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-sm text-destructive hover:bg-destructive/10 transition-colors"
               >
                 <LogOut className="w-4 h-4" />
-                Wyloguj się
+                Sign out
               </button>
             </div>
           </PopoverContent>
-        </Popover>
+            </Popover>
+          </Tooltip>
+        </TooltipProvider>
       )}
     </header>
   );

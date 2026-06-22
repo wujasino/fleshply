@@ -39,7 +39,7 @@ export default function AvatarNotifications({ items = defaultNotifications }: No
       <PopoverContent className="w-80 p-0" side="bottom" align="center">
         <div className="max-h-80 overflow-y-auto">
           <div className="flex justify-between items-center px-4 py-2 border-b border-border">
-            <h2 className="text-sm font-medium">Powiadomienia</h2>
+            <h2 className="text-sm font-medium">Notifications</h2>
             {hasNotifications && (
               <Button variant="ghost" size="icon" onClick={() => setNotifications([])} className="h-6 w-6 rounded-full">
                 <X className="h-4 w-4" />
@@ -47,7 +47,7 @@ export default function AvatarNotifications({ items = defaultNotifications }: No
             )}
           </div>
           {notifications.length === 0 ? (
-            <div className="p-4 text-sm text-muted-foreground text-center">Brak powiadomień</div>
+            <div className="p-4 text-sm text-muted-foreground text-center">No notifications</div>
           ) : (
             <ul className="divide-y divide-border">
               {notifications.map((item) => (

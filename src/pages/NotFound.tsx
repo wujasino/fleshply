@@ -35,24 +35,24 @@ export default function NotFound() {
         </div>
 
         <h1 className="text-2xl font-display text-foreground mb-3">
-          Strona nie istnieje
+          Page not found
         </h1>
         <p className="text-sm text-muted-foreground leading-relaxed mb-8">
-          Adres <code className="text-primary/80 bg-primary/10 px-1.5 py-0.5 rounded text-xs">{location.pathname}</code> nie
-          istnieje lub został przeniesiony. Sprawdź URL lub wróć na stronę główną.
+          The address <code className="text-primary/80 bg-primary/10 px-1.5 py-0.5 rounded text-xs">{location.pathname}</code> does not
+          exist or has been moved. Check the URL or go back to the home page.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button asChild variant="outline" className="gap-2">
             <Link to={-1 as any}>
               <ArrowLeft className="w-4 h-4" />
-              Wróć
+              Back
             </Link>
           </Button>
           <Button asChild className="gap-2">
             <Link to="/">
               <Home className="w-4 h-4" />
-              Strona główna
+              Home
             </Link>
           </Button>
         </div>

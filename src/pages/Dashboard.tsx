@@ -131,14 +131,14 @@ const ScoreHero = ({ result, t }: { result: AnalysisResult; t: (k: string) => st
 
   const buildReportText = () => {
     const lines = [
-      `Raport dla marki ${result.brandName}.`,
-      `Wynik zaufania AI: ${score} procent.`,
-      `Najsilniejszy wymiar: ${strongest[0]}, ${Math.round(strongest[1])} procent.`,
-      `Najsłabszy wymiar: ${weakest[0]}, ${Math.round(weakest[1])} procent.`,
-      `Średnia pewność modeli: ${avgConfidence} procent.`,
-      `Pozytywny sentyment: ${positiveRatio} procent.`,
+      `Report for brand ${result.brandName}.`,
+      `AI trust score: ${score} percent.`,
+      `Strongest dimension: ${strongest[0]}, ${Math.round(strongest[1])} percent.`,
+      `Weakest dimension: ${weakest[0]}, ${Math.round(weakest[1])} percent.`,
+      `Average model confidence: ${avgConfidence} percent.`,
+      `Positive sentiment: ${positiveRatio} percent.`,
     ];
-    if (score < 60) lines.push('Uwaga: AI poleca Twoich konkurentów zamiast Ciebie. Twoja marka jest niewidoczna w wynikach modeli językowych.');
+    if (score < 60) lines.push('Note: AI recommends your competitors instead of you. Your brand is invisible in language model results.');
     return lines.join(' ');
   };
 
@@ -197,7 +197,7 @@ const ScoreHero = ({ result, t }: { result: AnalysisResult; t: (k: string) => st
                   : playing
                   ? <Square className="w-3.5 h-3.5" />
                   : <Volume2 className="w-3.5 h-3.5" />}
-                {ttsLoading ? 'Ładowanie...' : playing ? 'Zatrzymaj' : 'Czytaj raport'}
+                {ttsLoading ? 'Loading...' : playing ? 'Stop' : 'Read report'}
               </button>
             )}
           </div>
@@ -263,12 +263,12 @@ const ScoreHero = ({ result, t }: { result: AnalysisResult; t: (k: string) => st
                 <p className="text-sm font-semibold text-red-300 mb-1">
                   {t('dashboard_low_score_alert_title') !== 'dashboard_low_score_alert_title'
                     ? t('dashboard_low_score_alert_title')
-                    : 'AI poleca Twoich konkurentów — nie Ciebie'}
+                    : 'AI recommends your competitors — not you'}
                 </p>
                 <p className="text-xs text-red-300/70 leading-relaxed">
                   {t('dashboard_low_score_alert_body') !== 'dashboard_low_score_alert_body'
                     ? t('dashboard_low_score_alert_body')
-                    : `Wynik ${score}% oznacza, że gdy ktoś pyta ChatGPT lub Gemini o rozwiązanie w Twojej kategorii, modele rekomendują konkurencję. Twoja marka jest niewidoczna w AI — to bezpośrednia utrata klientów.`}
+                    : `A score of ${score}% means that when someone asks ChatGPT or Gemini for a solution in your category, the models recommend competitors. Your brand is invisible in AI — this is a direct loss of customers.`}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {result.sources?.slice(0, 3).map((s, i) => (
@@ -278,7 +278,7 @@ const ScoreHero = ({ result, t }: { result: AnalysisResult; t: (k: string) => st
                       s.sentiment === 'Neutral' ? 'bg-amber-500/10 text-amber-300' :
                       'bg-emerald-500/10 text-emerald-300'
                     )}>
-                      {s.model}: {s.sentiment === 'Negative' ? '✗ nie poleca' : s.sentiment === 'Neutral' ? '~ neutralny' : '✓ poleca'}
+                      {s.model}: {s.sentiment === 'Negative' ? '✗ does not recommend' : s.sentiment === 'Neutral' ? '~ neutral' : '✓ recommends'}
                     </span>
                   ))}
                 </div>
@@ -390,7 +390,7 @@ const Dashboard = () => {
       if (res.ok) {
         const data = await res.json();
         if (data.flagged) {
-          setModerationError(data.reason || 'Niedozwolona treść.');
+          setModerationError(data.reason || 'Prohibited content.');
           return;
         }
       }
@@ -412,10 +412,10 @@ const Dashboard = () => {
               <Search className="w-6 h-6 text-primary" />
             </div>
             <h1 className="text-3xl sm:text-4xl font-display text-foreground mb-2">
-              Analiza marki
+              Brand analysis
             </h1>
             <p className="text-muted-foreground text-sm mb-8">
-              Wpisz nazwę marki, którą chcesz przeanalizować
+              Enter the brand name you want to analyze
             </p>
             <form
               onSubmit={handleSubmit}

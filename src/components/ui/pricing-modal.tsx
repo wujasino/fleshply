@@ -183,7 +183,7 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
                   tab === 'plans' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                 )}
               >
-                <RefreshCw className="w-3.5 h-3.5" /> Plany
+                <RefreshCw className="w-3.5 h-3.5" /> Plans
               </button>
               <button
                 onClick={() => setTab('credits')}
@@ -192,7 +192,7 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
                   tab === 'credits' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                 )}
               >
-                <CreditCard className="w-3.5 h-3.5" /> Kredyty
+                <CreditCard className="w-3.5 h-3.5" /> Credits
               </button>
             </div>
           </div>
@@ -280,7 +280,7 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
                 </div>
 
                 <p className="text-center text-xs text-muted-foreground/60 mt-6">
-                  {t('credits_note') || 'Kredyty nie wygasają. Jednorazowa płatność, bez subskrypcji.'}
+                  {t('credits_note') || 'Credits never expire. One-time payment, no subscription.'}
                 </p>
               </motion.div>
             )}

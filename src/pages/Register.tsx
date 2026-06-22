@@ -71,10 +71,10 @@ const getStrength = (pwd: string): Strength | null => {
 };
 
 const rules = [
-  { label: 'Min. 8 znaków',          test: (p: string) => p.length >= 8 },
-  { label: 'Wielka litera',           test: (p: string) => /[A-Z]/.test(p) },
-  { label: 'Cyfra',                   test: (p: string) => /[0-9]/.test(p) },
-  { label: 'Znak specjalny',          test: (p: string) => /[^A-Za-z0-9]/.test(p) },
+  { label: 'Min. 8 chars',            test: (p: string) => p.length >= 8 },
+  { label: 'Uppercase letter',        test: (p: string) => /[A-Z]/.test(p) },
+  { label: 'Number',                  test: (p: string) => /[0-9]/.test(p) },
+  { label: 'Special char',            test: (p: string) => /[^A-Za-z0-9]/.test(p) },
 ];
 
 const SuccessScreen = ({ email }: { email: string }) => {
@@ -88,7 +88,7 @@ const SuccessScreen = ({ email }: { email: string }) => {
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     const token = code.replace(/\D/g, '');
-    if (token.length < 6) { setError('Wpisz pełny 6-cyfrowy kod.'); return; }
+    if (token.length < 6) { setError('Please enter the full 6-digit code.'); return; }
     setVerifying(true);
     setError('');
     try {
@@ -98,8 +98,8 @@ const SuccessScreen = ({ email }: { email: string }) => {
       navigate('/onboarding', { replace: true });
     } catch (err: any) {
       setError(err.message?.includes('expired') || err.message?.includes('invalid')
-        ? 'Nieprawidłowy lub wygasły kod. Wyślij nowy.'
-        : (err.message || 'Nie udało się potwierdzić kodu.'));
+        ? 'Invalid or expired code. Please resend.'
+        : (err.message || 'Failed to confirm the code.'));
       setVerifying(false);
     }
   };
@@ -128,11 +128,11 @@ const SuccessScreen = ({ email }: { email: string }) => {
           <Mail className="w-7 h-7 text-primary" />
         </motion.div>
         <div>
-          <h2 className="text-2xl font-display text-foreground">Sprawdź skrzynkę</h2>
+          <h2 className="text-2xl font-display text-foreground">Check your inbox</h2>
           <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-            Wysłaliśmy 6-cyfrowy kod aktywacyjny na{' '}
+            We sent a 6-digit activation code to{' '}
             <span className="text-foreground font-medium">{email}</span>.<br />
-            Wpisz go poniżej, żeby aktywować konto.
+            Enter it below to activate your account.
           </p>
         </div>
 
@@ -146,20 +146,20 @@ const SuccessScreen = ({ email }: { email: string }) => {
           <OtpInput value={code} onChange={setCode} />
           <Button type="submit" className="w-full h-10 gap-2" disabled={verifying || code.replace(/\D/g, '').length < 6}>
             {verifying
-              ? <span className="flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" />Weryfikacja...</span>
-              : <><KeyRound className="w-3.5 h-3.5" />Aktywuj konto</>}
+              ? <span className="flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" />Verifying...</span>
+              : <><KeyRound className="w-3.5 h-3.5" />Activate account</>}
           </Button>
         </form>
 
         {resent ? (
-          <p className="text-xs text-green-400">✓ Nowy kod wysłany.</p>
+          <p className="text-xs text-green-400">✓ New code sent.</p>
         ) : (
           <button
             onClick={handleResend}
             disabled={resending}
             className="text-xs text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
           >
-            {resending ? 'Wysyłanie…' : 'Nie dostałem kodu — wyślij ponownie'}
+            {resending ? 'Sending…' : "Didn't receive a code — resend"}
           </button>
         )}
       </motion.div>
@@ -200,7 +200,7 @@ const Register = () => {
       await registerUser(email, password);
       setSuccess(true);
     } catch (err: any) {
-      setError(err.message || 'Błąd rejestracji');
+      setError(err.message || 'Registration error');
     } finally {
       setLoading(false);
     }
@@ -223,23 +223,23 @@ const Register = () => {
         <div className="space-y-8">
           <div>
             <span className="inline-block px-3 py-1 text-[10px] uppercase tracking-[0.2em] bg-primary/10 text-primary rounded-lg border border-primary/20 mb-4">
-              Bezpłatny start
+              Free start
             </span>
             <h2 className="text-3xl font-display leading-snug text-foreground">
               3 analizy gratis —<br />
               <span className="text-primary">bez karty kredytowej</span>
             </h2>
             <p className="mt-3 text-sm text-muted-foreground leading-relaxed max-w-xs">
-              Dołącz do setek marek, które już wiedzą jak modele AI je opisują i rekomendują.
+              Join hundreds of brands that already know how AI models describe and recommend them.
             </p>
           </div>
 
           {/* Steps */}
           <ol className="space-y-5">
             {[
-              { n: '01', title: 'Załóż konto',        desc: 'Email lub Google — w 30 sekund' },
-              { n: '02', title: 'Podaj nazwę marki',   desc: 'Lub URL strony' },
-              { n: '03', title: 'Odbierz raport',      desc: 'Wynik widoczności AI + rekomendacje' },
+              { n: '01', title: 'Create account',    desc: 'Email or Google — in 30 seconds' },
+              { n: '02', title: 'Enter brand name',  desc: 'Or website URL' },
+              { n: '03', title: 'Get your report',   desc: 'AI visibility score + recommendations' },
             ].map(({ n, title, desc }) => (
               <li key={n} className="flex items-start gap-4">
                 <span className="text-xs font-data text-primary/60 mt-0.5 w-6 shrink-0">{n}</span>
@@ -273,7 +273,7 @@ const Register = () => {
               className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              Strona główna
+              Home
             </Link>
           </div>
 
@@ -404,7 +404,7 @@ const Register = () => {
                 {pwdMismatch && (
                   <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                     className="text-[11px] text-red-400">
-                    Hasła się nie zgadzają
+                    Passwords do not match
                   </motion.p>
                 )}
               </AnimatePresence>

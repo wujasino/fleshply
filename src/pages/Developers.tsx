@@ -39,10 +39,10 @@ type Delivery = {
 };
 
 const ALL_EVENTS: { id: WebhookEvent; label: string; desc: string }[] = [
-  { id: 'analysis.completed', label: 'analysis.completed', desc: 'Wysyłane gdy analiza marki zostanie zakończona' },
-  { id: 'analysis.failed',    label: 'analysis.failed',    desc: 'Gdy analiza nie powiedzie się' },
-  { id: 'sentiment.dropped',  label: 'sentiment.dropped',  desc: 'Gdy sentyment AI spadnie poniżej progu' },
-  { id: 'score.changed',      label: 'score.changed',      desc: 'Gdy wynik widoczności zmieni się o ≥5 pkt' },
+  { id: 'analysis.completed', label: 'analysis.completed', desc: 'Sent when a brand analysis is completed' },
+  { id: 'analysis.failed',    label: 'analysis.failed',    desc: 'Sent when an analysis fails' },
+  { id: 'sentiment.dropped',  label: 'sentiment.dropped',  desc: 'Sent when AI sentiment drops below threshold' },
+  { id: 'score.changed',      label: 'score.changed',      desc: 'Sent when the visibility score changes by ≥5 pts' },
 ];
 
 // ── localStorage stubs ──────────────────────────────────────────
@@ -94,7 +94,7 @@ const Developers = () => {
             </div>
             <h1 className="text-3xl font-display text-foreground">API & Webhooks</h1>
             <p className="text-muted-foreground text-sm mt-1.5">
-              Zintegruj BitBrew z własnym stackiem. Zarządzaj kluczami API i webhookami.
+              Integrate BitBrew with your own stack. Manage API keys and webhooks.
             </p>
           </div>
           <Link
@@ -171,7 +171,7 @@ const KeysSection = ({ userId, keys, setKeys }: { userId: string; keys: ApiKey[]
   };
 
   const revoke = (id: string) => {
-    if (!confirm('Cofnąć ten klucz? Aplikacje używające go przestaną działać.')) return;
+    if (!confirm('Revoke this key? Apps using it will stop working.')) return;
     setKeys(keys.filter(k => k.id !== id));
   };
 
@@ -179,20 +179,20 @@ const KeysSection = ({ userId, keys, setKeys }: { userId: string; keys: ApiKey[]
     <div className="space-y-5">
       {/* Create form */}
       <div className="rounded-2xl border border-[hsl(var(--glass-border))] bg-card/40 backdrop-blur-xl p-5">
-        <h3 className="text-sm font-medium text-foreground mb-1">Wygeneruj nowy klucz</h3>
+        <h3 className="text-sm font-medium text-foreground mb-1">Generate new key</h3>
         <p className="text-xs text-muted-foreground mb-4">
-          Nazwij klucz, żeby łatwo go odróżnić (np. „Produkcja", „Backend Slack").
+          Name the key so you can easily tell it apart (e.g. "Production", "Slack Backend").
         </p>
         <div className="flex flex-col sm:flex-row gap-2">
           <Input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Nazwa klucza"
+            placeholder="Key name"
             className="flex-1"
           />
           <Button onClick={create} disabled={!name.trim() || creating} className="gap-2">
             <Plus className="w-4 h-4" />
-            Wygeneruj klucz
+            Generate key
           </Button>
         </div>
       </div>
@@ -209,16 +209,16 @@ const KeysSection = ({ userId, keys, setKeys }: { userId: string; keys: ApiKey[]
             <div className="flex items-start gap-3">
               <CircleCheck className="w-5 h-5 text-primary mt-0.5 shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground">Klucz wygenerowany</p>
+                <p className="text-sm font-medium text-foreground">Key generated</p>
                 <p className="text-xs text-muted-foreground mt-0.5 mb-3">
-                  Skopiuj go teraz — z bezpieczeństwa pokażemy go tylko raz.
+                  Copy it now — for security we will only show it once.
                 </p>
                 <SecretCopyBox secret={newSecret.secret} />
                 <button
                   onClick={() => setNewSecret(null)}
                   className="text-xs text-muted-foreground hover:text-foreground mt-3"
                 >
-                  Mam zapisany klucz, zamknij
+                  I've saved the key, close
                 </button>
               </div>
             </div>
@@ -230,13 +230,13 @@ const KeysSection = ({ userId, keys, setKeys }: { userId: string; keys: ApiKey[]
       <div className="rounded-2xl border border-[hsl(var(--glass-border))] bg-card/40 backdrop-blur-xl overflow-hidden">
         <div className="px-5 py-3 border-b border-[hsl(var(--glass-border))] flex items-center justify-between">
           <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-            Twoje klucze ({keys.length})
+            Your keys ({keys.length})
           </p>
         </div>
         {keys.length === 0 ? (
           <div className="px-5 py-10 text-center">
             <Key className="w-8 h-8 text-muted-foreground/40 mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">Brak kluczy API. Wygeneruj pierwszy.</p>
+            <p className="text-sm text-muted-foreground">No API keys. Generate your first one.</p>
           </div>
         ) : (
           <ul className="divide-y divide-[hsl(var(--glass-border))]">
@@ -250,14 +250,14 @@ const KeysSection = ({ userId, keys, setKeys }: { userId: string; keys: ApiKey[]
                     </code>
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-0.5">
-                    Utworzony {new Date(k.createdAt).toLocaleDateString()} ·{' '}
-                    {k.lastUsed ? `Użyty ${new Date(k.lastUsed).toLocaleDateString()}` : 'Nigdy nie użyty'}
+                    Created {new Date(k.createdAt).toLocaleDateString()} ·{' '}
+                    {k.lastUsed ? `Last used ${new Date(k.lastUsed).toLocaleDateString()}` : 'Never used'}
                   </p>
                 </div>
                 <button
                   onClick={() => revoke(k.id)}
                   className="p-2 text-muted-foreground hover:text-destructive transition-colors"
-                  aria-label="Usuń klucz"
+                  aria-label="Delete key"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -268,7 +268,7 @@ const KeysSection = ({ userId, keys, setKeys }: { userId: string; keys: ApiKey[]
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Klucze służą do autoryzacji żądań HTTP. Wysyłaj je w nagłówku{' '}
+        Keys are used to authorize HTTP requests. Send them in the{' '}
         <code className="font-data text-foreground bg-muted px-1.5 py-0.5 rounded">Authorization: Bearer …</code>
       </p>
     </div>
@@ -335,7 +335,7 @@ const WebhooksSection = ({ userId, hooks, setHooks, deliveries, setDeliveries }:
     setHooks(hooks.map(h => h.id === id ? { ...h, active: !h.active } : h));
 
   const remove = (id: string) => {
-    if (!confirm('Usunąć ten webhook?')) return;
+    if (!confirm('Delete this webhook?')) return;
     setHooks(hooks.filter(h => h.id !== id));
   };
 
@@ -362,29 +362,29 @@ const WebhooksSection = ({ userId, hooks, setHooks, deliveries, setDeliveries }:
       {/* Create form */}
       <div className="rounded-2xl border border-[hsl(var(--glass-border))] bg-card/40 backdrop-blur-xl p-5 space-y-4">
         <div>
-          <h3 className="text-sm font-medium text-foreground mb-1">Dodaj webhook</h3>
+          <h3 className="text-sm font-medium text-foreground mb-1">Add webhook</h3>
           <p className="text-xs text-muted-foreground">
-            Wysyłamy POST z JSON na podany URL gdy zajdzie wybrane zdarzenie.
+            We send a POST with JSON to the given URL when the selected event occurs.
           </p>
         </div>
 
         <div className="space-y-1.5">
-          <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">URL endpointu</Label>
+          <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Endpoint URL</Label>
           <Input
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://twoja-domena.com/webhooks/bitbrew"
+            placeholder="https://your-domain.com/webhooks/bitbrew"
             className={cn(
               url && !isValidUrl && 'border-red-500/60'
             )}
           />
           {url && !isValidUrl && (
-            <p className="text-[11px] text-red-400">Wymagany prawidłowy URL HTTPS</p>
+            <p className="text-[11px] text-red-400">A valid HTTPS URL is required</p>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Zdarzenia</Label>
+          <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Events</Label>
           <div className="grid sm:grid-cols-2 gap-2">
             {ALL_EVENTS.map(ev => {
               const checked = events.includes(ev.id);
@@ -418,7 +418,7 @@ const WebhooksSection = ({ userId, hooks, setHooks, deliveries, setDeliveries }:
 
         <Button onClick={create} disabled={!isValidUrl || events.length === 0} className="gap-2">
           <Plus className="w-4 h-4" />
-          Dodaj webhook
+          Add webhook
         </Button>
       </div>
 
@@ -426,13 +426,13 @@ const WebhooksSection = ({ userId, hooks, setHooks, deliveries, setDeliveries }:
       <div className="rounded-2xl border border-[hsl(var(--glass-border))] bg-card/40 backdrop-blur-xl overflow-hidden">
         <div className="px-5 py-3 border-b border-[hsl(var(--glass-border))]">
           <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-            Twoje webhooki ({hooks.length})
+            Your webhooks ({hooks.length})
           </p>
         </div>
         {hooks.length === 0 ? (
           <div className="px-5 py-10 text-center">
             <Webhook className="w-8 h-8 text-muted-foreground/40 mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">Brak webhooków. Dodaj pierwszy powyżej.</p>
+            <p className="text-sm text-muted-foreground">No webhooks. Add your first one above.</p>
           </div>
         ) : (
           <ul className="divide-y divide-[hsl(var(--glass-border))]">
@@ -445,7 +445,7 @@ const WebhooksSection = ({ userId, hooks, setHooks, deliveries, setDeliveries }:
                       h.active ? 'bg-emerald-500/10 text-emerald-400' : 'bg-muted text-muted-foreground'
                     )}>
                       <span className={cn('w-1.5 h-1.5 rounded-full', h.active ? 'bg-emerald-400' : 'bg-muted-foreground')} />
-                      {h.active ? 'Aktywny' : 'Wstrzymany'}
+                      {h.active ? 'Active' : 'Paused'}
                     </span>
                   </div>
                   <code className="text-xs font-data text-foreground/90 break-all">{h.url}</code>
@@ -460,13 +460,13 @@ const WebhooksSection = ({ userId, hooks, setHooks, deliveries, setDeliveries }:
                 <div className="flex items-center gap-1 shrink-0">
                   <Button size="sm" variant="outline" onClick={() => test(h)} disabled={testing === h.id} className="gap-1.5">
                     {testing === h.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
-                    Testuj
+                    Test
                   </Button>
                   <button
                     onClick={() => toggleActive(h.id)}
                     className="px-2.5 py-2 text-xs text-muted-foreground hover:text-foreground"
                   >
-                    {h.active ? 'Wstrzymaj' : 'Wznów'}
+                    {h.active ? 'Pause' : 'Resume'}
                   </button>
                   <button onClick={() => remove(h.id)} className="p-2 text-muted-foreground hover:text-destructive">
                     <Trash2 className="w-4 h-4" />
@@ -482,12 +482,12 @@ const WebhooksSection = ({ userId, hooks, setHooks, deliveries, setDeliveries }:
       <div className="rounded-2xl border border-[hsl(var(--glass-border))] bg-card/40 backdrop-blur-xl overflow-hidden">
         <div className="px-5 py-3 border-b border-[hsl(var(--glass-border))]">
           <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-            Ostatnie dostarczenia
+            Recent deliveries
           </p>
         </div>
         {deliveries.length === 0 ? (
           <div className="px-5 py-8 text-center text-sm text-muted-foreground">
-            Brak dostarczeń. Kliknij „Testuj" przy webhooku, żeby wysłać przykładowe zdarzenie.
+            No deliveries yet. Click "Test" on a webhook to send a sample event.
           </div>
         ) : (
           <ul className="divide-y divide-[hsl(var(--glass-border))]">

@@ -15,7 +15,7 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
         setIsAuthenticated(!!session);
         setError(null);
       } catch (err) {
-        setError('Błąd podczas sprawdzania sesji. Sprawdź konsolę przeglądarki.');
+        setError('Error checking session. Check the browser console.');
         setIsAuthenticated(false);
       } finally {
         setIsLoading(false);
@@ -28,7 +28,7 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background text-sm text-muted-foreground">
-        Ładowanie...
+        Loading...
       </div>
     );
   }
@@ -37,7 +37,7 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <div className="text-center max-w-md">
-          <h2 className="text-lg font-semibold text-red-500 mb-2">Błąd konfiguracji</h2>
+          <h2 className="text-lg font-semibold text-red-500 mb-2">Configuration error</h2>
           <p className="text-sm text-muted-foreground mb-4">{error}</p>
           <p className="text-xs text-muted-foreground">Sprawdź plik <code className="bg-secondary p-1 rounded">.env</code></p>
         </div>
