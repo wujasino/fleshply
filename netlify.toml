@@ -15,7 +15,7 @@
   autoLaunch = false
 
 [functions]
-  node_bundler = "esbuild"
+  node_bundler = "nft"
 
 # ── Google OAuth proxy — ukrywa ID projektu Supabase ─────────────────────────
 [[redirects]]
