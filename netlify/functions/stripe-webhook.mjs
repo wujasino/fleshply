@@ -1,5 +1,7 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const { createClient } = require('@supabase/supabase-js');
+import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -26,7 +28,7 @@ function creditsFromPaymentLink(paymentLink) {
   return 0;
 }
 
-module.exports.handler = async (event) => {
+export const handler = async (event) => {
   const sig = event.headers['stripe-signature'];
   let stripeEvent;
 
@@ -43,7 +45,6 @@ module.exports.handler = async (event) => {
   if (stripeEvent.type === 'checkout.session.completed') {
     const session = stripeEvent.data.object;
 
-    // Idempotency: skip already-processed events
     const { data: existing } = await supabase
       .from('webhook_events')
       .select('id')
@@ -54,15 +55,12 @@ module.exports.handler = async (event) => {
       return { statusCode: 200, body: JSON.stringify({ received: true, duplicate: true }) };
     }
 
-    // Record event first to prevent double-processing on retry
     await supabase.from('webhook_events').insert({ stripe_event_id: stripeEvent.id });
 
-    // ── Credit pack purchased via Payment Link ──────────────────────────────
     const userId = session.client_reference_id || session.metadata?.userId;
     const creditsToAdd = creditsFromPaymentLink(session.payment_link);
 
     if (creditsToAdd > 0 && userId) {
-      // Use RPC for atomic increment to avoid race conditions
       const { error } = await supabase.rpc('increment_credits', {
         p_user_id: userId,
         p_amount: creditsToAdd,
@@ -70,7 +68,6 @@ module.exports.handler = async (event) => {
 
       if (error) {
         console.error('increment_credits RPC error:', error.message);
-        // Fall back to read-then-write
         const { data: profile } = await supabase
           .from('profiles')
           .select('credits')
@@ -86,13 +83,11 @@ module.exports.handler = async (event) => {
       return { statusCode: 200, body: JSON.stringify({ received: true, credits_added: creditsToAdd }) };
     }
 
-    // ── Subscription plan purchased via create-checkout ─────────────────────
     const planUserId = session.metadata?.userId;
     const priceId    = session.metadata?.priceId || '';
 
     if (planUserId && priceId) {
       const plan = priceId === process.env.VITE_STRIPE_SOLO_PRICE_ID ? 'solo' : 'growth';
-
       await supabase
         .from('profiles')
         .update({ plan })

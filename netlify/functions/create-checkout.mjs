@@ -1,17 +1,16 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const { createClient } = require('@supabase/supabase-js');
+import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
 
 const ALLOWED_PRICE_IDS = new Set([
   process.env.VITE_STRIPE_SOLO_PRICE_ID,
   process.env.VITE_STRIPE_GROWTH_PRICE_ID,
 ].filter(Boolean));
 
-module.exports.handler = async (event) => {
+export const handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
   }
 
-  // Payload size guard
   if (event.body && event.body.length > 10 * 1024) {
     return { statusCode: 413, body: JSON.stringify({ error: 'Payload too large' }) };
   }
@@ -20,7 +19,6 @@ module.exports.handler = async (event) => {
     return { statusCode: 500, body: JSON.stringify({ error: 'Server misconfiguration' }) };
   }
 
-  // Verify caller via JWT — never trust userId from request body
   const token = (event.headers.authorization || '').replace(/^Bearer\s+/i, '');
   if (!token) {
     return { statusCode: 401, body: JSON.stringify({ error: 'Unauthorized' }) };
@@ -45,12 +43,10 @@ module.exports.handler = async (event) => {
   }
 
   const { priceId } = body;
-
   if (!priceId) {
     return { statusCode: 400, body: JSON.stringify({ error: 'Missing priceId' }) };
   }
 
-  // Whitelist — reject unknown price IDs
   if (ALLOWED_PRICE_IDS.size > 0 && !ALLOWED_PRICE_IDS.has(priceId)) {
     return { statusCode: 400, body: JSON.stringify({ error: 'Invalid priceId' }) };
   }
@@ -69,6 +65,8 @@ module.exports.handler = async (event) => {
     // use default
   }
 
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
   try {
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
@@ -76,7 +74,7 @@ module.exports.handler = async (event) => {
       line_items: [{ price: priceId, quantity: 1 }],
       customer_email: user.email,
       metadata: {
-        userId: user.id, // from verified JWT, not client body
+        userId: user.id,
         priceId,
       },
       success_url: `${origin}/pricing?success=true&session_id={CHECKOUT_SESSION_ID}`,
