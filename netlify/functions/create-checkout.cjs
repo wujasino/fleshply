@@ -79,8 +79,8 @@ module.exports.handler = async (event) => {
         userId: user.id, // from verified JWT, not client body
         priceId,
       },
-      success_url: `${origin}/cennik?success=true&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/cennik?canceled=true`,
+      success_url: `${origin}/pricing?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/pricing?canceled=true`,
     });
 
     return {
