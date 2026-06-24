@@ -100,8 +100,8 @@ const Pricing = () => {
       if (!response.ok) {
         let err = `HTTP ${response.status}`;
         try { const d = await response.json(); err = d.error || err; } catch {}
-        console.error(err);
-        setMessage('Could not start payment. Please try again later.');
+        console.error('Checkout error:', err);
+        setMessage(`Error: ${err}`);
         return;
       }
 
