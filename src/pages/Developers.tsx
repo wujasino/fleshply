@@ -8,7 +8,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useTranslation } from '@/lib/locale';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 
@@ -64,7 +63,6 @@ const genSecret = () => {
 type Tab = 'keys' | 'webhooks';
 
 const Developers = () => {
-  useTranslation();
   const [tab, setTab] = useState<Tab>('keys');
   const [userId, setUserId] = useState<string | null>(null);
   const [keys, setKeys] = useState<ApiKey[]>([]);
@@ -102,7 +100,7 @@ const Developers = () => {
             className="inline-flex items-center gap-2 text-sm text-primary hover:underline self-start"
           >
             <BookOpen className="w-4 h-4" />
-            Dokumentacja API
+            API Documentation
             <ExternalLink className="w-3 h-3" />
           </Link>
         </div>
@@ -110,8 +108,8 @@ const Developers = () => {
         {/* Tabs */}
         <div className="flex gap-1 mb-6 border-b border-[hsl(var(--glass-border))]">
           {([
-            { id: 'keys',     label: 'Klucze API',  icon: Key },
-            { id: 'webhooks', label: 'Webhooki',    icon: Webhook },
+            { id: 'keys',     label: 'API Keys',  icon: Key },
+            { id: 'webhooks', label: 'Webhooks',   icon: Webhook },
           ] as { id: Tab; label: string; icon: typeof Key }[]).map(({ id, label, icon: Icon }) => (
             <button
               key={id}

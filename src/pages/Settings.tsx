@@ -351,6 +351,16 @@ export default function Settings() {
     }
   };
 
+  const handleDataExport = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data: analyses } = await supabase.from('analyses').select('*').eq('user_id', user.id);
+    const blob = new Blob([JSON.stringify({ user: { id: user.id, email: user.email }, analyses: analyses ?? [] }, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'bitbrew-data.json'; a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleDeleteAccount = async () => {
     setDeleteStatus('deleting');
     setDeleteError('');

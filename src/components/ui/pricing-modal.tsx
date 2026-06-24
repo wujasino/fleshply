@@ -4,7 +4,6 @@ import { Zap, AlertTriangle, CreditCard, RefreshCw } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { PricingCards, type PricingTierCard } from '@/components/ui/pricing-cards';
-import { useTranslation } from '@/lib/locale';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 
@@ -26,21 +25,19 @@ interface Props {
 }
 
 export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
-  const { t, locale } = useTranslation();
   const [tab, setTab] = useState<'plans' | 'credits'>('plans');
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
-  const [currency, setCurrency] = useState<'pln' | 'usd'>(locale === 'pl' ? 'pln' : 'usd');
+  const [currency, setCurrency] = useState<'pln' | 'usd'>('usd');
   const [loading, setLoading] = useState<string | null>(null);
   const [loadingCredits, setLoadingCredits] = useState<string | null>(null);
   const [message, setMessage] = useState('');
   const [showDowngrade, setShowDowngrade] = useState(false);
 
-  useEffect(() => { setCurrency(locale === 'pl' ? 'pln' : 'usd'); }, [locale]);
   useEffect(() => { if (!open) setMessage(''); }, [open]);
 
   const prices = currency === 'pln' ? PLN : USD;
-  const period_month = currency === 'pln' ? t('tier_period_month') : '/mo';
-  const period_year  = currency === 'pln' ? t('tier_period_year')  : '/yr';
+  const period_month = '/mo';
+  const period_year  = '/yr';
 
   const handlePlanSelect = async (planId: string) => {
     if (planId === currentPlan) return;
@@ -57,17 +54,17 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
       const priceId = planId === 'solo'
         ? import.meta.env.VITE_STRIPE_SOLO_PRICE_ID
         : import.meta.env.VITE_STRIPE_GROWTH_PRICE_ID;
-      if (!priceId) { setMessage(t('pricing_error_stripe_config')); return; }
+      if (!priceId) { setMessage('Stripe is not configured. Please contact support.'); return; }
       const res = await fetch('/.netlify/functions/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
         body: JSON.stringify({ priceId }),
       });
-      if (!res.ok) { setMessage(t('pricing_error_payment')); return; }
+      if (!res.ok) { setMessage('Could not start payment. Please try again later.'); return; }
       const data = await res.json();
-      if (!data?.url) { setMessage(data?.error || t('pricing_error_session')); return; }
+      if (!data?.url) { setMessage(data?.error || 'Could not create payment session.'); return; }
       window.location.href = data.url;
-    } catch { setMessage(t('pricing_error_connection')); }
+    } catch { setMessage('Connection error. Please try again.'); }
     finally { setLoading(null); }
   };
 
@@ -81,7 +78,7 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
         credits_120: import.meta.env.VITE_STRIPE_CREDITS_120 ?? '',
       };
       const baseUrl = linkMap[packId];
-      if (!baseUrl) { setMessage(t('pricing_error_credits_config')); return; }
+      if (!baseUrl) { setMessage('Stripe link not configured for this credit pack.'); return; }
       const url = new URL(baseUrl);
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
@@ -89,75 +86,75 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
         if (user.email) url.searchParams.set('prefilled_email', user.email);
       }
       window.location.href = url.toString();
-    } catch { setMessage(t('pricing_error_connection')); }
+    } catch { setMessage('Connection error. Please try again.'); }
     finally { setLoadingCredits(null); }
   };
 
   const creditPacks = [
-    { id: 'credits_20',  label: t('credits_pack_20'),  price: prices.credits_20,  analyses: 20,  popular: false },
-    { id: 'credits_50',  label: t('credits_pack_50'),  price: prices.credits_50,  analyses: 50,  popular: true  },
-    { id: 'credits_120', label: t('credits_pack_120'), price: prices.credits_120, analyses: 120, popular: false },
+    { id: 'credits_20',  label: '20 extra analyses',  price: prices.credits_20,  analyses: 20,  popular: false },
+    { id: 'credits_50',  label: '50 extra analyses',  price: prices.credits_50,  analyses: 50,  popular: true  },
+    { id: 'credits_120', label: '120 extra analyses', price: prices.credits_120, analyses: 120, popular: false },
   ];
 
   const plans: PricingTierCard[] = [
     {
-      id: 'free', name: 'Free', description: t('tier_free_desc'),
+      id: 'free', name: 'Free', description: 'Start with three free brand analyses, no credit card required.',
       priceMonthly: 'Free', priceYearly: 'Free', periodMonthly: '', periodYearly: '',
-      isPopular: false, buttonLabel: currentPlan === 'free' ? t('plan_label') + ' ✓' : t('start_for_free'),
+      isPopular: false, buttonLabel: currentPlan === 'free' ? 'Current plan ✓' : 'Start for free',
       features: [
-        { name: t('tier_free_feat_1'), isIncluded: true },
-        { name: t('tier_free_feat_2'), isIncluded: true },
-        { name: t('tier_free_feat_3'), isIncluded: true },
-        { name: t('tier_free_feat_4'), isIncluded: true },
-        { name: t('tier_solo_feat_3'), isIncluded: false },
-        { name: t('tier_solo_feat_5'), isIncluded: false },
-        { name: t('tier_growth_feat_4'), isIncluded: false },
+        { name: '3 free brand analyses', isIncluded: true },
+        { name: 'Overall AI Visibility Score', isIncluded: true },
+        { name: 'Perception radar (5 dimensions)', isIncluded: true },
+        { name: 'AI Verdict — actionable summary', isIncluded: true },
+        { name: 'Sentiment trend (30 days)', isIncluded: false },
+        { name: 'Brand knowledge context (RAG)', isIncluded: false },
+        { name: 'Competitor comparison', isIncluded: false },
       ],
     },
     {
-      id: 'solo', name: 'Solo', description: t('tier_solo_desc'),
+      id: 'solo', name: 'Solo', description: 'For indie founders and solo marketers tracking their brand.',
       priceMonthly: prices.solo_monthly, priceYearly: prices.solo_yearly,
       periodMonthly: period_month, periodYearly: period_year,
-      isPopular: false, buttonLabel: currentPlan === 'solo' ? 'Aktualny plan ✓' : t('get_started'),
+      isPopular: false, buttonLabel: currentPlan === 'solo' ? 'Current plan ✓' : 'Get started',
       features: [
-        { name: t('tier_solo_feat_1'), isIncluded: true },
-        { name: t('tier_solo_feat_2'), isIncluded: true },
-        { name: t('tier_solo_feat_3'), isIncluded: true },
-        { name: t('tier_solo_feat_4'), isIncluded: true },
-        { name: t('tier_solo_feat_5'), isIncluded: true },
-        { name: t('tier_solo_feat_6'), isIncluded: true },
-        { name: t('tier_growth_feat_4'), isIncluded: false },
+        { name: '10 brand analyses per month', isIncluded: true },
+        { name: '3 LLM sources (GPT-4o, Claude, Gemini)', isIncluded: true },
+        { name: 'Sentiment trend (30 days)', isIncluded: true },
+        { name: 'Source breakdown chart', isIncluded: true },
+        { name: 'Brand knowledge context (RAG)', isIncluded: true },
+        { name: 'CSV export', isIncluded: true },
+        { name: 'Competitor comparison', isIncluded: false },
       ],
     },
     {
-      id: 'growth', name: 'Growth', description: t('tier_growth_desc'),
+      id: 'growth', name: 'Growth', description: 'For growing teams who need deeper competitive insights.',
       priceMonthly: prices.growth_monthly, priceYearly: prices.growth_yearly,
       periodMonthly: period_month, periodYearly: period_year,
-      isPopular: true, buttonLabel: currentPlan === 'growth' ? 'Aktualny plan ✓' : t('get_started'),
+      isPopular: true, buttonLabel: currentPlan === 'growth' ? 'Current plan ✓' : 'Get started',
       features: [
-        { name: t('tier_growth_feat_1'), isIncluded: true },
-        { name: t('tier_growth_feat_2'), isIncluded: true },
-        { name: t('tier_growth_feat_3'), isIncluded: true },
-        { name: t('tier_growth_feat_4'), isIncluded: true },
-        { name: t('tier_growth_feat_5'), isIncluded: true },
-        { name: t('tier_growth_feat_6'), isIncluded: true },
-        { name: t('tier_growth_feat_7'), isIncluded: true },
+        { name: '50 brand analyses per month', isIncluded: true },
+        { name: 'All 6 LLM sources + Perplexity', isIncluded: true },
+        { name: 'Full source table with confidence', isIncluded: true },
+        { name: 'Competitor comparison', isIncluded: true },
+        { name: '1-year history & weekly digest', isIncluded: true },
+        { name: 'API access', isIncluded: true },
+        { name: 'Priority email support', isIncluded: true },
       ],
     },
     {
-      id: 'enterprise', name: 'Enterprise Suite', description: t('tier_ent_desc'),
-      priceMonthly: t('tier_ent_price'), priceYearly: t('tier_ent_price'),
+      id: 'enterprise', name: 'Enterprise Suite', description: 'For enterprises requiring full AI visibility control.',
+      priceMonthly: 'Custom pricing', priceYearly: 'Custom pricing',
       periodMonthly: '', periodYearly: '',
-      isPopular: false, buttonLabel: t('contact_sales'),
+      isPopular: false, buttonLabel: 'Contact Sales',
       features: [
-        { name: t('tier_ent_feat_1'), isIncluded: true },
-        { name: t('tier_ent_feat_2'), isIncluded: true },
-        { name: t('tier_ent_feat_3'), isIncluded: true },
-        { name: t('tier_ent_feat_4'), isIncluded: true },
-        { name: t('tier_ent_feat_5'), isIncluded: true },
-        { name: t('tier_ent_feat_6'), isIncluded: true },
-        { name: t('tier_ent_feat_7'), isIncluded: true },
-        { name: t('tier_ent_feat_8'), isIncluded: true },
+        { name: 'Unlimited analyses', isIncluded: true },
+        { name: 'Custom LLM sources + private models', isIncluded: true },
+        { name: 'Real-time monitoring & alerts', isIncluded: true },
+        { name: 'Unlimited history + webhooks', isIncluded: true },
+        { name: 'Slack & Teams integration', isIncluded: true },
+        { name: 'Dedicated account manager', isIncluded: true },
+        { name: 'White-label dashboard', isIncluded: true },
+        { name: 'SLA guarantee (99.9%)', isIncluded: true },
       ],
     },
   ];
@@ -168,9 +165,9 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
         <DialogContent className="max-w-5xl w-full max-h-[90vh] overflow-y-auto p-0">
           <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-[hsl(var(--glass-border))] px-6 py-4 flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-display font-semibold">{t('nav_pricing')}</h2>
+              <h2 className="text-lg font-display font-semibold">Pricing</h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {t('plan_label')}: <span className="text-primary font-medium capitalize">{currentPlan}</span>
+                Plan: <span className="text-primary font-medium capitalize">{currentPlan}</span>
               </p>
             </div>
 
@@ -254,7 +251,7 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
                       )}>
                       {pack.popular && (
                         <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wider">
-                          {t('most_popular')}
+                          Most popular
                         </span>
                       )}
                       <div className="flex items-center gap-2">
@@ -265,7 +262,7 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
                         <span className="text-3xl font-display font-bold text-foreground">{pack.price}</span>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {pack.analyses} {t('credits_analyses_label') || 'analiz'}
+                        {pack.analyses} analyses
                       </p>
                       <Button
                         className="w-full mt-auto"
@@ -273,14 +270,14 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
                         onClick={() => handleCreditsBuy(pack.id)}
                         disabled={!!loadingCredits}
                       >
-                        {loadingCredits === pack.id ? t('loading') || '...' : t('credits_buy')}
+                        {loadingCredits === pack.id ? '...' : 'Buy pack'}
                       </Button>
                     </div>
                   ))}
                 </div>
 
                 <p className="text-center text-xs text-muted-foreground/60 mt-6">
-                  {t('credits_note') || 'Credits never expire. One-time payment, no subscription.'}
+                  Credits never expire. One-time payment, no subscription.
                 </p>
               </motion.div>
             )}
@@ -296,18 +293,18 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
               <div className="w-10 h-10 rounded-full bg-yellow-500/10 flex items-center justify-center shrink-0">
                 <AlertTriangle className="w-5 h-5 text-yellow-500" />
               </div>
-              <DialogTitle>{t('pricing_downgrade_title')}</DialogTitle>
+              <DialogTitle>Switch to Free plan</DialogTitle>
             </div>
             <DialogDescription className="text-sm text-muted-foreground leading-relaxed">
-              {t('pricing_downgrade_desc')}
+              Are you sure you want to switch to the Free plan?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex gap-2 mt-2">
             <Button variant="outline" className="flex-1" onClick={() => setShowDowngrade(false)}>
-              {t('pricing_downgrade_stay')}
+              Stay on current plan
             </Button>
             <Button variant="destructive" className="flex-1" onClick={() => { setShowDowngrade(false); onClose(); window.location.href = '/dashboard'; }}>
-              {t('pricing_downgrade_confirm')}
+              Yes, switch to Free
             </Button>
           </DialogFooter>
         </DialogContent>
