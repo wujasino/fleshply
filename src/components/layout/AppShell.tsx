@@ -1,23 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { AppNavbar } from './AppNavbar';
 import { AiChatSidebar } from './AiChatSidebar';
+import { cn } from '@/lib/utils';
 
 export const AppShell = ({ children }: { children: React.ReactNode }) => {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  const { pathname } = useLocation();
+
+  // Close the mobile drawer whenever the route changes
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
-      <Sidebar collapsed={collapsed} />
+      <Sidebar collapsed={collapsed} mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
 
       <div
-        className="flex-1 flex flex-col overflow-hidden transition-all duration-200"
-        style={{ marginLeft: collapsed ? '3.5rem' : '15rem', marginRight: chatOpen ? '20rem' : '0' }}
+        className={cn(
+          'flex-1 flex flex-col overflow-hidden transition-all duration-200 min-w-0',
+          collapsed ? 'md:ml-14' : 'md:ml-60',
+          chatOpen && 'md:mr-80'
+        )}
       >
         <AppNavbar
           collapsed={collapsed}
           onToggle={() => setCollapsed(c => !c)}
+          onMobileToggle={() => setMobileOpen(o => !o)}
           chatOpen={chatOpen}
           onChatToggle={() => setChatOpen(o => !o)}
         />

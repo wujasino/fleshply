@@ -36,7 +36,7 @@ export const AiChatSidebar = ({ open, onClose }: AiChatSidebarProps) => {
     <aside
       className={cn(
         'fixed right-0 top-0 bottom-0 z-40 flex flex-col bg-background border-l border-border transition-all duration-200 overflow-hidden',
-        open ? 'w-80' : 'w-0'
+        open ? 'w-full md:w-80' : 'w-0'
       )}
     >
       {open && (
@@ -50,7 +50,7 @@ export const AiChatSidebar = ({ open, onClose }: AiChatSidebarProps) => {
             <button
               onClick={onClose}
               className="w-7 h-7 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-              aria-label="Zamknij chat"
+              aria-label="Close chat"
             >
               <X className="w-4 h-4" />
             </button>

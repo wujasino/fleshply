@@ -1,6 +1,6 @@
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Zap, LogOut, Settings, User, Code2, CreditCard, MessageSquare, Send, X, Bot, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Zap, LogOut, Settings, User, Code2, CreditCard, MessageSquare, Send, X, Bot, PanelLeftClose, PanelLeftOpen, Menu } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { logout } from '@/lib/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -38,11 +38,12 @@ const SECTION_TITLES: Record<string, string> = {
 interface AppNavbarProps {
   collapsed?: boolean;
   onToggle?: () => void;
+  onMobileToggle?: () => void;
   chatOpen?: boolean;
   onChatToggle?: () => void;
 }
 
-export const AppNavbar = ({ collapsed = false, onToggle, chatOpen = false, onChatToggle }: AppNavbarProps) => {
+export const AppNavbar = ({ collapsed = false, onToggle, onMobileToggle, chatOpen = false, onChatToggle }: AppNavbarProps) => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const sectionTitle = SECTION_TITLES[pathname] ?? 'BitBrew';
@@ -104,26 +105,35 @@ export const AppNavbar = ({ collapsed = false, onToggle, chatOpen = false, onCha
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-background/90 backdrop-blur px-6">
-      {/* Collapse/expand toggle + section name */}
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-1 sm:gap-2 border-b border-border bg-background/90 backdrop-blur px-2 sm:px-6">
+      {/* Mobile hamburger — opens sidebar drawer */}
+      <button
+        onClick={onMobileToggle}
+        className="flex md:hidden items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors shrink-0"
+        aria-label="Open menu"
+      >
+        <Menu className="w-4 h-4" />
+      </button>
+
+      {/* Collapse/expand toggle — desktop only */}
       <button
         onClick={onToggle}
-        className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+        className="hidden md:flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors shrink-0"
         aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       >
         {collapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
       </button>
-      <span className="text-sm font-semibold text-foreground">{sectionTitle}</span>
+      <span className="text-sm font-semibold text-foreground truncate min-w-0">{sectionTitle}</span>
 
       <div className="flex-1" />
 
       {plan === 'Free' && (
         <Link
           to="/pricing"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors"
+          className="inline-flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors shrink-0"
         >
           <Zap className="w-3.5 h-3.5" />
-          Upgrade plan
+          <span className="hidden sm:inline">Upgrade plan</span>
         </Link>
       )}
 
@@ -131,13 +141,13 @@ export const AppNavbar = ({ collapsed = false, onToggle, chatOpen = false, onCha
       <Popover open={feedbackOpen} onOpenChange={setFeedbackOpen}>
         <PopoverTrigger asChild>
           <button
-            className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+            className="hidden sm:flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors shrink-0"
             aria-label="Feedback"
           >
             <MessageSquare className="w-4 h-4" />
           </button>
         </PopoverTrigger>
-        <PopoverContent align="end" className="w-72 p-4">
+        <PopoverContent align="end" className="w-[calc(100vw-1.5rem)] max-w-72 p-4">
           <p className="text-sm font-semibold text-foreground mb-1">Send feedback</p>
           <p className="text-xs text-muted-foreground mb-3">Tell us what you think or report an issue.</p>
           {feedbackSent ? (
@@ -168,7 +178,7 @@ export const AppNavbar = ({ collapsed = false, onToggle, chatOpen = false, onCha
       <button
         onClick={onChatToggle}
         className={cn(
-          'flex items-center justify-center w-8 h-8 rounded-lg transition-colors',
+          'flex items-center justify-center w-8 h-8 rounded-lg transition-colors shrink-0',
           chatOpen ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'
         )}
         aria-label="AI Chat"
@@ -176,7 +186,9 @@ export const AppNavbar = ({ collapsed = false, onToggle, chatOpen = false, onCha
         <Bot className="w-4 h-4" />
       </button>
 
-      <AvatarNotifications />
+      <div className="shrink-0">
+        <AvatarNotifications />
+      </div>
 
       {userEmail && (
         <TooltipProvider delayDuration={400}>
@@ -197,7 +209,7 @@ export const AppNavbar = ({ collapsed = false, onToggle, chatOpen = false, onCha
                 <p className="text-muted-foreground">{analysesUsed} / {limit} used ({usedPct}%)</p>
               </TooltipContent>
 
-          <PopoverContent align="end" className="w-64 p-0 overflow-hidden">
+          <PopoverContent align="end" className="w-[calc(100vw-1.5rem)] max-w-64 p-0 overflow-hidden">
             {/* Balance */}
             <div className="p-4 border-b border-border">
               <div className="flex items-center justify-between mb-2">
