@@ -48,14 +48,14 @@ export default function BrandKnowledgeForm({ brandName }: BrandKnowledgeFormProp
   }, [loadFragments]);
 
   const handleSave = async () => {
-    if (!brandName.trim()) { setStatus('error'); setMessage('Najpierw wpisz nazwę marki.'); return; }
-    if (text.trim().length < 20) { setStatus('error'); setMessage('Min. 20 znaków.'); return; }
+    if (!brandName.trim()) { setStatus('error'); setMessage('Enter a brand name first.'); return; }
+    if (text.trim().length < 20) { setStatus('error'); setMessage('Min. 20 characters.'); return; }
 
     setStatus('loading');
     setMessage('');
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Musisz być zalogowany.');
+      if (!session) throw new Error('You must be signed in.');
 
       const res = await fetch('/.netlify/functions/ingest-knowledge', {
         method: 'POST',
@@ -67,16 +67,16 @@ export default function BrandKnowledgeForm({ brandName }: BrandKnowledgeFormProp
       });
 
       const result = await res.json();
-      if (!res.ok) throw new Error(result.error || 'Błąd zapisu.');
+      if (!res.ok) throw new Error(result.error || 'Failed to save.');
 
       setStatus('ok');
-      setMessage(`Zapisano ${result.inserted} fragment(ów).`);
+      setMessage(`Saved ${result.inserted} fragment(s).`);
       setText('');
       await loadFragments();
       setTimeout(() => { setStatus('idle'); setMessage(''); }, 3000);
     } catch (err) {
       setStatus('error');
-      setMessage(err instanceof Error ? err.message : 'Nieznany błąd.');
+      setMessage(err instanceof Error ? err.message : 'Unknown error.');
     }
   };
 
@@ -110,15 +110,15 @@ export default function BrandKnowledgeForm({ brandName }: BrandKnowledgeFormProp
           </div>
           <div className="text-left">
             <div className="flex items-center gap-2">
-              <p className="text-sm font-semibold text-foreground">Baza wiedzy o marce</p>
+              <p className="text-sm font-semibold text-foreground">Brand knowledge base</p>
               <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/25">
-                Poprawia wyniki
+                Improves results
               </span>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {loadingFragments ? 'Ładowanie…' : fragments.length > 0
-                ? `${fragments.length} fragment${fragments.length === 1 ? '' : fragments.length < 5 ? 'y' : 'ów'} · ${brandName}`
-                : 'Dodaj kontekst aby AI lepiej rozumiało Twoją markę'}
+              {loadingFragments ? 'Loading…' : fragments.length > 0
+                ? `${fragments.length} fragment${fragments.length === 1 ? '' : 's'} · ${brandName}`
+                : 'Add context to help AI better understand your brand'}
             </p>
           </div>
         </div>
@@ -146,13 +146,13 @@ export default function BrandKnowledgeForm({ brandName }: BrandKnowledgeFormProp
               {/* Add new fragment */}
               <div className="pt-4 space-y-3">
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Wklej opis, pozycjonowanie, fakty o marce. Analiza użyje tego jako zweryfikowanego kontekstu zamiast polegać tylko na wiedzy ogólnej modelu.
+                  Paste a description, positioning, or facts about the brand. The analysis will use this as verified context instead of relying only on the model's general knowledge.
                 </p>
                 <div className="relative">
                   <textarea
                     value={text}
                     onChange={e => setText(e.target.value)}
-                    placeholder="Np. Marka X to producent... założony w... ich flagowy produkt to... wartości to..."
+                    placeholder="E.g. Brand X is a manufacturer... founded in... their flagship product is... their values are..."
                     rows={4}
                     className="w-full bg-background/60 border border-[hsl(var(--glass-border))] rounded-xl text-sm text-foreground placeholder:text-muted-foreground/50 px-4 py-3 resize-none focus:outline-none focus:border-primary/40 transition-colors"
                   />
@@ -172,8 +172,8 @@ export default function BrandKnowledgeForm({ brandName }: BrandKnowledgeFormProp
                     className="gap-1.5"
                   >
                     {status === 'loading'
-                      ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Zapisywanie…</>
-                      : <><Plus className="w-3.5 h-3.5" /> Dodaj fragment</>}
+                      ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving…</>
+                      : <><Plus className="w-3.5 h-3.5" /> Add fragment</>}
                   </Button>
 
                   <AnimatePresence mode="wait">
@@ -185,7 +185,7 @@ export default function BrandKnowledgeForm({ brandName }: BrandKnowledgeFormProp
                         exit={{ opacity: 0 }}
                         className={cn(
                           'flex items-center gap-1.5 text-xs',
-                          status === 'ok' ? 'text-emerald-400' : 'text-destructive'
+                          status === 'ok' ? 'text-emerald-600 dark:text-emerald-400' : 'text-destructive'
                         )}
                       >
                         {status === 'ok'
@@ -202,7 +202,7 @@ export default function BrandKnowledgeForm({ brandName }: BrandKnowledgeFormProp
               {fragments.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 pt-1">
-                    Zapisane fragmenty
+                    Saved fragments
                   </p>
                   <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
                     {fragments.map(fragment => (
@@ -228,14 +228,14 @@ export default function BrandKnowledgeForm({ brandName }: BrandKnowledgeFormProp
                               </button>
                             )}
                             <p className="text-[10px] text-muted-foreground/40 mt-1.5 font-data">
-                              {new Date(fragment.created_at).toLocaleDateString('pl-PL', { dateStyle: 'medium' })}
+                              {new Date(fragment.created_at).toLocaleDateString('en-US', { dateStyle: 'medium' })}
                             </p>
                           </div>
                           <button
                             onClick={() => handleDelete(fragment.id)}
                             disabled={deletingId === fragment.id}
                             className="shrink-0 w-6 h-6 rounded-md opacity-0 group-hover:opacity-100 hover:bg-destructive/10 flex items-center justify-center transition-all"
-                            aria-label="Usuń fragment"
+                            aria-label="Delete fragment"
                           >
                             {deletingId === fragment.id
                               ? <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
@@ -251,7 +251,7 @@ export default function BrandKnowledgeForm({ brandName }: BrandKnowledgeFormProp
               {!loadingFragments && fragments.length === 0 && (
                 <div className="text-center py-4">
                   <p className="text-xs text-muted-foreground/50">
-                    Brak zapisanej wiedzy dla „{brandName}". Dodaj pierwszy fragment powyżej.
+                    No saved knowledge for "{brandName}". Add your first fragment above.
                   </p>
                 </div>
               )}
