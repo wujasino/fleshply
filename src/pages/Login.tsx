@@ -254,9 +254,11 @@ const Login = () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       if (err.message?.includes('Invalid login credentials')) {
-        setError(t('invalid_credentials') || 'Nieprawidłowe dane logowania');
+        setError('Incorrect email or password. Please check your details and try again.');
+      } else if (err.message?.includes('Email not confirmed')) {
+        setError('Your email is not confirmed yet. Please check your inbox for the activation link.');
       } else {
-        setError(err.message || 'Login error');
+        setError(err.message || 'Login error. Please try again.');
       }
     } finally {
       setLoading(false);
