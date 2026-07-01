@@ -235,7 +235,7 @@ const Pricing = () => {
     { q: 'Can I cancel anytime?',             a: 'Yes — cancel at any time and keep access until the end of your billing period.' },
     { q: 'What happens if I exceed my limit?', a: 'If you hit your plan limit, you can upgrade instantly or purchase additional analysis credits.' },
     { q: 'Can I change plans later?',          a: 'Absolutely — switch plans anytime without losing your existing data.' },
-    { q: 'Will I receive a VAT invoice?',      a: 'Yes — all payments go through Stripe, which automatically generates VAT-compliant invoices sent to your email. For EU companies, enter your VAT number in the Stripe checkout to receive a B2B invoice.' },
+    { q: 'Will I receive a VAT invoice?',      a: 'Yes — every payment automatically generates a VAT-compliant invoice sent to your email. For EU companies, enter your VAT number at checkout to receive a B2B invoice.' },
     { q: 'How do you handle my company data?', a: 'Any brand context you upload stays in your private workspace. We never train AI models on your data, never share it with third parties beyond the AI providers needed to run each analysis, and we are fully GDPR compliant.' },
     { q: 'Can I change plans mid-billing cycle?', a: 'Yes — upgrade takes effect immediately and is prorated. Downgrading applies at the end of the current billing period so you always get what you paid for.' },
     { q: 'Need help choosing a plan?',         a: 'Our team is available by email to recommend the best option for your brand.' },
@@ -266,7 +266,7 @@ const Pricing = () => {
                   </li>
                 ))}
               </ul>
-              <p className="mt-3 text-xs text-muted-foreground/70">Your subscription will be cancelled via Stripe — access continues until the end of the current billing period.</p>
+              <p className="mt-3 text-xs text-muted-foreground/70">Your subscription will be cancelled — access continues until the end of the current billing period.</p>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex gap-2 mt-2">

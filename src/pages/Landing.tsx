@@ -661,8 +661,7 @@ const Landing = () => {
             {[
               { icon: '🔒', label: 'SSL / TLS', sub: 'Encrypted connection' },
               { icon: '🇪🇺', label: 'GDPR Ready', sub: 'EU-compliant data' },
-              { icon: '🏦', label: 'Stripe', sub: 'Secure payments' },
-              { icon: '⚡', label: 'Netlify CDN', sub: 'Global hosting' },
+              { icon: '💳', label: 'Secure payments', sub: 'SSL-encrypted checkout' },
               { icon: '🔐', label: '2FA', sub: 'Account protection' },
             ].map(badge => (
               <div key={badge.label} className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border border-[hsl(var(--glass-border))] bg-card/40">
