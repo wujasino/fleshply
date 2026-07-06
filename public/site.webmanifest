@@ -1,6 +1,6 @@
 {
-  "name": "BitBrew",
-  "short_name": "BitBrew",
+  "name": "Perceply",
+  "short_name": "Perceply",
   "description": "Skaner widoczności marki w AI",
   "start_url": "/",
   "display": "standalone",
