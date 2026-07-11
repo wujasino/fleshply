@@ -29,6 +29,7 @@ dist-ssr
 # Local Netlify folder
 .netlify
 
-# Claude Code local state (skills are tracked)
+# Claude Code local state (skills and agents are tracked)
 .claude/*
 !.claude/skills/
+!.claude/agents/
