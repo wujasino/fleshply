@@ -5,7 +5,12 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { AppShell } from "@/components/layout/AppShell";
+
+// AppShell (sidebar, app navbar, AI chat) is only used on authenticated app routes —
+// code-split it so it stays out of the initial bundle served on landing/login/register.
+const AppShell = lazy(() =>
+  import("@/components/layout/AppShell").then(m => ({ default: m.AppShell }))
+);
 
 // Route-level code splitting — each page loads only when navigated to
 const Landing        = lazy(() => import("./pages/Landing"));
