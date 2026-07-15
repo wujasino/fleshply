@@ -15,31 +15,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 
-/* USD prices */
-const USD = {
-  starter_monthly: '$12',
-  starter_yearly: '$119',
-  solo_monthly: '$29',
-  solo_yearly: '$279',
-  growth_monthly: '$79',
-  growth_yearly: '$749',
-  credits_20: '$9',
-  credits_50: '$19',
-  credits_120: '$39',
-};
-
-const EUR = {
-  starter_monthly: '€11',
-  starter_yearly: '€109',
-  solo_monthly: '€27',
-  solo_yearly: '€259',
-  growth_monthly: '€75',
-  growth_yearly: '€695',
-  credits_20: '€8',
-  credits_50: '€18',
-  credits_120: '€36',
-};
-
+/* Ceny w PLN — rynek lokalny */
 const PLN = {
   starter_monthly: '49 zł',
   starter_yearly: '470 zł',
@@ -57,22 +33,12 @@ const Pricing = () => {
   const [loadingCredits, setLoadingCredits] = useState<string | null>(null);
   const [message, setMessage] = useState<string>('');
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
-  const [currency, setCurrency] = useState<'pln' | 'usd' | 'eur'>('usd');
   const [showDowngradeDialog, setShowDowngradeDialog] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
-  const prices = currency === 'pln' ? PLN : currency === 'eur' ? EUR : USD;
-  const period_month = '/mo';
-  const period_year  = '/yr';
-
-  // Auto-detect currency from browser locale (manual toggle still overrides)
-  useEffect(() => {
-    const lang = (navigator.language || '').toLowerCase();
-    const eurozone = ['de', 'fr', 'es', 'it', 'nl', 'pt', 'fi', 'ie', 'at', 'be', 'gr', 'sk', 'si', 'lv', 'lt', 'ee', 'lu', 'mt', 'cy', 'hr'];
-    if (lang.startsWith('pl')) setCurrency('pln');
-    else if (eurozone.some(code => lang.startsWith(code))) setCurrency('eur');
-    else setCurrency('usd');
-  }, []);
+  const prices = PLN;
+  const period_month = '/mies.';
+  const period_year  = '/rok';
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => setIsLoggedIn(!!user));
@@ -80,9 +46,9 @@ const Pricing = () => {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('success'))  setMessage('Payment successful! Your plan has been activated.');
-    if (params.get('canceled')) setMessage('Payment was cancelled.');
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    if (params.get('success'))  setMessage('Płatność zakończona sukcesem! Twój plan został aktywowany.');
+    if (params.get('canceled')) setMessage('Płatność została anulowana.');
+  }, []);
 
   const confirmDowngrade = () => {
     setShowDowngradeDialog(false);
@@ -114,7 +80,7 @@ const Pricing = () => {
       };
       const priceId = priceMap[planId];
 
-      if (!priceId) { setMessage('Stripe is not configured. Please contact support.'); return; }
+      if (!priceId) { setMessage('Stripe nie jest skonfigurowany. Skontaktuj się z pomocą.'); return; }
 
       const response = await fetch('/.netlify/functions/create-checkout', {
         method: 'POST',
@@ -127,26 +93,26 @@ const Pricing = () => {
 
       if (!response.ok) {
         let err = `HTTP ${response.status}`;
-        try { const d = await response.json(); err = d.error || err; } catch {}
+        try { const d = await response.json(); err = d.error || err; } catch { /* ignore */ }
         console.error('Checkout error:', err);
-        setMessage(`Error: ${err}`);
+        setMessage(`Błąd: ${err}`);
         return;
       }
 
       const data = await response.json();
-      if (!data?.url) { setMessage(data?.error || 'Could not create payment session.'); return; }
+      if (!data?.url) { setMessage(data?.error || 'Nie udało się utworzyć sesji płatności.'); return; }
       window.location.href = data.url;
     } catch {
-      setMessage('Connection error. Please try again.');
+      setMessage('Błąd połączenia. Spróbuj ponownie.');
     } finally {
       setLoading(null);
     }
   };
 
   const creditPacks = [
-    { id: 'credits_20',  label: '20 extra analyses',  price: prices.credits_20,  analyses: 20,  popular: false },
-    { id: 'credits_50',  label: '50 extra analyses',  price: prices.credits_50,  analyses: 50,  popular: true  },
-    { id: 'credits_120', label: '120 extra analyses', price: prices.credits_120, analyses: 120, popular: false },
+    { id: 'credits_20',  label: '20 dodatkowych analiz',  price: prices.credits_20,  analyses: 20,  popular: false },
+    { id: 'credits_50',  label: '50 dodatkowych analiz',  price: prices.credits_50,  analyses: 50,  popular: true  },
+    { id: 'credits_120', label: '120 dodatkowych analiz', price: prices.credits_120, analyses: 120, popular: false },
   ];
 
   const handleCreditsBuy = async (packId: string) => {
@@ -159,7 +125,7 @@ const Pricing = () => {
         credits_120: import.meta.env.VITE_STRIPE_CREDITS_120 ?? '',
       };
       const baseUrl = linkMap[packId];
-      if (!baseUrl) { setMessage('Stripe link not configured for this credit pack.'); return; }
+      if (!baseUrl) { setMessage('Brak skonfigurowanego linku Stripe dla tego pakietu.'); return; }
 
       const url = new URL(baseUrl);
       const { data: { user } } = await supabase.auth.getUser();
@@ -169,7 +135,7 @@ const Pricing = () => {
       }
       window.location.href = url.toString();
     } catch {
-      setMessage('Connection error. Please try again.');
+      setMessage('Błąd połączenia. Spróbuj ponownie.');
     } finally {
       setLoadingCredits(null);
     }
@@ -179,113 +145,113 @@ const Pricing = () => {
     {
       id: 'free',
       name: 'Free',
-      description: 'Start with three free brand analyses, no credit card required.',
-      priceMonthly: 'Free',
-      priceYearly: 'Free',
+      description: 'Zacznij od trzech darmowych analiz marki — bez karty.',
+      priceMonthly: 'Za darmo',
+      priceYearly: 'Za darmo',
       periodMonthly: '',
       periodYearly: '',
       isPopular: false,
-      buttonLabel: 'Start for free',
+      buttonLabel: 'Zacznij za darmo',
       features: [
-        { name: '3 free brand analyses', isIncluded: true },
-        { name: 'Overall AI Visibility Score', isIncluded: true },
-        { name: 'Perception radar (5 dimensions)', isIncluded: true },
-        { name: 'AI Verdict — actionable summary', isIncluded: true },
-        { name: 'Sentiment trend (30 days)', isIncluded: false },
-        { name: 'Brand knowledge context (RAG)', isIncluded: false },
-        { name: 'Competitor comparison', isIncluded: false },
+        { name: '3 darmowe analizy marki', isIncluded: true },
+        { name: 'Ogólny wynik widoczności w AI', isIncluded: true },
+        { name: 'Radar percepcji (5 wymiarów)', isIncluded: true },
+        { name: 'Werdykt AI — praktyczne podsumowanie', isIncluded: true },
+        { name: 'Trend sentymentu (30 dni)', isIncluded: false },
+        { name: 'Kontekst wiedzy o marce (RAG)', isIncluded: false },
+        { name: 'Porównanie z konkurencją', isIncluded: false },
       ],
     },
     {
       id: 'starter',
       name: 'Starter',
-      description: 'For creators taking their first steps into AI visibility.',
+      description: 'Dla twórców stawiających pierwsze kroki w widoczności w AI.',
       priceMonthly: prices.starter_monthly,
       priceYearly: prices.starter_yearly,
       periodMonthly: period_month,
       periodYearly: period_year,
       isPopular: false,
-      buttonLabel: 'Get started',
+      buttonLabel: 'Wybierz plan',
       features: [
-        { name: '5 brand analyses per month', isIncluded: true },
-        { name: '3 LLM sources (GPT-4o, Claude, Gemini)', isIncluded: true },
-        { name: 'Sentiment trend (30 days)', isIncluded: true },
-        { name: 'AI Verdict — actionable summary', isIncluded: true },
-        { name: 'Brand knowledge context (RAG)', isIncluded: false },
-        { name: 'Competitor comparison', isIncluded: false },
+        { name: '5 analiz marki miesięcznie', isIncluded: true },
+        { name: '3 modele LLM (GPT-4o, Claude, Gemini)', isIncluded: true },
+        { name: 'Trend sentymentu (30 dni)', isIncluded: true },
+        { name: 'Werdykt AI — praktyczne podsumowanie', isIncluded: true },
+        { name: 'Kontekst wiedzy o marce (RAG)', isIncluded: false },
+        { name: 'Porównanie z konkurencją', isIncluded: false },
       ],
     },
     {
       id: 'solo',
       name: 'Solo',
-      description: 'For indie founders and solo marketers tracking their brand.',
+      description: 'Dla niezależnych founderów i marketerów śledzących swoją markę.',
       priceMonthly: prices.solo_monthly,
       priceYearly: prices.solo_yearly,
       periodMonthly: period_month,
       periodYearly: period_year,
       isPopular: false,
-      buttonLabel: 'Get started',
+      buttonLabel: 'Wybierz plan',
       features: [
-        { name: '10 brand analyses per month', isIncluded: true },
-        { name: '3 LLM sources (GPT-4o, Claude, Gemini)', isIncluded: true },
-        { name: 'Sentiment trend (30 days)', isIncluded: true },
-        { name: 'Source breakdown chart', isIncluded: true },
-        { name: 'Brand knowledge context (RAG)', isIncluded: true },
-        { name: 'CSV export', isIncluded: true },
-        { name: 'Competitor comparison', isIncluded: false },
+        { name: '10 analiz marki miesięcznie', isIncluded: true },
+        { name: '3 modele LLM (GPT-4o, Claude, Gemini)', isIncluded: true },
+        { name: 'Trend sentymentu (30 dni)', isIncluded: true },
+        { name: 'Wykres źródeł', isIncluded: true },
+        { name: 'Kontekst wiedzy o marce (RAG)', isIncluded: true },
+        { name: 'Eksport CSV', isIncluded: true },
+        { name: 'Porównanie z konkurencją', isIncluded: false },
       ],
     },
     {
       id: 'growth',
       name: 'Business',
-      description: 'For growing teams who need deeper competitive insights.',
+      description: 'Dla rosnących zespołów, które potrzebują głębszej analizy konkurencji.',
       priceMonthly: prices.growth_monthly,
       priceYearly: prices.growth_yearly,
       periodMonthly: period_month,
       periodYearly: period_year,
       isPopular: true,
-      buttonLabel: 'Get started',
+      buttonLabel: 'Wybierz plan',
       features: [
-        { name: '50 brand analyses per month', isIncluded: true },
-        { name: 'All 6 LLM sources + Perplexity', isIncluded: true },
-        { name: 'Full source table with confidence', isIncluded: true },
-        { name: 'Competitor comparison', isIncluded: true },
-        { name: '1-year history & weekly digest', isIncluded: true },
-        { name: 'API access', isIncluded: true },
-        { name: 'Priority email support', isIncluded: true },
+        { name: '50 analiz marki miesięcznie', isIncluded: true },
+        { name: 'Wszystkie 6 modeli + Perplexity', isIncluded: true },
+        { name: 'Pełna tabela źródeł z poziomem pewności', isIncluded: true },
+        { name: 'Porównanie z konkurencją', isIncluded: true },
+        { name: 'Roczna historia i cotygodniowy digest', isIncluded: true },
+        { name: 'Dostęp do API', isIncluded: true },
+        { name: 'Priorytetowe wsparcie e-mail', isIncluded: true },
       ],
     },
     {
       id: 'enterprise',
       name: 'Custom',
-      description: 'A tailored plan for teams that need full AI visibility control.',
-      priceMonthly: "Let's talk",
-      priceYearly: "Let's talk",
+      description: 'Plan skrojony dla zespołów potrzebujących pełnej kontroli widoczności w AI.',
+      priceMonthly: 'Wycena',
+      priceYearly: 'Wycena',
       periodMonthly: '',
       periodYearly: '',
       isPopular: false,
-      buttonLabel: 'Contact Sales',
+      buttonLabel: 'Skontaktuj się',
       features: [
-        { name: 'Unlimited analyses', isIncluded: true },
-        { name: 'Custom LLM sources + private models', isIncluded: true },
-        { name: 'Real-time monitoring & alerts', isIncluded: true },
-        { name: 'Unlimited history + webhooks', isIncluded: true },
-        { name: 'Slack & Teams integration', isIncluded: true },
-        { name: 'Dedicated account manager', isIncluded: true },
-        { name: 'White-label dashboard', isIncluded: true },
-        { name: 'SLA guarantee (99.9%)', isIncluded: true },
+        { name: 'Nielimitowane analizy', isIncluded: true },
+        { name: 'Własne źródła LLM + modele prywatne', isIncluded: true },
+        { name: 'Monitoring w czasie rzeczywistym i alerty', isIncluded: true },
+        { name: 'Nielimitowana historia + webhooki', isIncluded: true },
+        { name: 'Integracja ze Slack i Teams', isIncluded: true },
+        { name: 'Dedykowany opiekun konta', isIncluded: true },
+        { name: 'Panel white-label', isIncluded: true },
+        { name: 'Gwarancja SLA (99,9%)', isIncluded: true },
       ],
     },
   ];
 
   const faqItems = [
-    { q: 'Can I cancel anytime?',             a: 'Yes — cancel at any time and keep access until the end of your billing period.' },
-    { q: 'What happens if I exceed my limit?', a: 'If you hit your plan limit, you can upgrade instantly or purchase additional analysis credits.' },
-    { q: 'Can I change plans later?',          a: 'Absolutely — switch plans anytime without losing your existing data.' },
-    { q: 'Will I receive a VAT invoice?',      a: 'Yes — every payment automatically generates a VAT-compliant invoice sent to your email. For EU companies, enter your VAT number at checkout to receive a B2B invoice.' },
-    { q: 'How do you handle my company data?', a: 'Any brand context you upload stays in your private workspace. We never train AI models on your data, never share it with third parties beyond the AI providers needed to run each analysis, and we are fully GDPR compliant.' },
-    { q: 'Can I change plans mid-billing cycle?', a: 'Yes — upgrade takes effect immediately and is prorated. Downgrading applies at the end of the current billing period so you always get what you paid for.' },
-    { q: 'Need help choosing a plan?',         a: 'Our team is available by email to recommend the best option for your brand.' },
+    { q: 'Czy mogę anulować w dowolnym momencie?',             a: 'Tak — anuluj w dowolnej chwili i zachowaj dostęp do końca okresu rozliczeniowego.' },
+    { q: 'Co się stanie, gdy przekroczę limit?', a: 'Po osiągnięciu limitu planu możesz od razu przejść wyżej lub dokupić dodatkowe kredyty na analizy.' },
+    { q: 'Czy mogę później zmienić plan?',          a: 'Oczywiście — zmieniaj plany w dowolnym momencie bez utraty danych.' },
+    { q: 'Czy otrzymam fakturę VAT?',      a: 'Tak — każda płatność automatycznie generuje fakturę VAT wysyłaną na Twój e-mail. Firmy z UE mogą podać numer VAT przy płatności, aby otrzymać fakturę B2B.' },
+    { q: 'Jak przetwarzacie dane mojej firmy?', a: 'Kontekst marki, który wgrywasz, pozostaje w Twojej prywatnej przestrzeni. Nigdy nie trenujemy modeli AI na Twoich danych ani nie udostępniamy ich stronom trzecim poza dostawcami AI niezbędnymi do wykonania analizy. Działamy w pełni zgodnie z RODO.' },
+    { q: 'Czy mogę zmienić plan w trakcie okresu rozliczeniowego?', a: 'Tak — podwyższenie planu działa natychmiast i jest rozliczane proporcjonalnie. Obniżenie wchodzi w życie na koniec bieżącego okresu, więc zawsze dostajesz to, za co zapłaciłeś.' },
+    { q: 'Potrzebujesz pomocy w wyborze planu?',         a: 'Nasz zespół jest dostępny e-mailowo i pomoże dobrać najlepszą opcję dla Twojej marki.' },
   ];
 
   return (
@@ -298,30 +264,30 @@ const Pricing = () => {
               <div className="w-10 h-10 rounded-full bg-yellow-500/10 flex items-center justify-center shrink-0">
                 <AlertTriangle className="w-5 h-5 text-yellow-500" />
               </div>
-              <DialogTitle>Switch to Free plan</DialogTitle>
+              <DialogTitle>Przejście na plan Free</DialogTitle>
             </div>
             <DialogDescription className="text-sm text-muted-foreground leading-relaxed">
-              Are you sure you want to switch to the Free plan?
+              Czy na pewno chcesz przejść na plan Free?
               <ul className="mt-3 space-y-1.5 text-sm">
                 {[
-                  'You will lose access to advanced LLM sources (Claude, Gemini and more)',
-                  'Your limit will drop to 3 analyses per month',
-                  'Analysis history and CSV export will be disabled',
+                  'Stracisz dostęp do zaawansowanych modeli (Claude, Gemini i inne)',
+                  'Twój limit spadnie do 3 analiz miesięcznie',
+                  'Historia analiz i eksport CSV zostaną wyłączone',
                 ].map(bullet => (
                   <li key={bullet} className="flex items-start gap-2">
                     <span className="text-yellow-500 mt-0.5">*</span> {bullet}
                   </li>
                 ))}
               </ul>
-              <p className="mt-3 text-xs text-muted-foreground/70">Your subscription will be cancelled — access continues until the end of the current billing period.</p>
+              <p className="mt-3 text-xs text-muted-foreground/70">Subskrypcja zostanie anulowana — dostęp trwa do końca bieżącego okresu rozliczeniowego.</p>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex gap-2 mt-2">
             <Button variant="outline" className="flex-1" onClick={() => setShowDowngradeDialog(false)}>
-              Stay on current plan
+              Zostań na obecnym planie
             </Button>
             <Button variant="destructive" className="flex-1" onClick={confirmDowngrade}>
-              Yes, switch to Free
+              Tak, przejdź na Free
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -332,46 +298,26 @@ const Pricing = () => {
           <p className="mt-6 mb-2 text-center text-sm text-primary font-medium">{message}</p>
         )}
 
-        {/* Control bar — left: currency + billing-cycle toggles, right: usage + billing */}
+        {/* Control bar — left: billing-cycle toggle, right: usage + billing */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pt-8 pb-8">
-          {/* Left: toggles */}
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Currency */}
-            <div className="flex items-center gap-1 p-1 rounded-lg border border-[hsl(var(--glass-border))] bg-muted/40">
-              {(['pln', 'usd', 'eur'] as const).map(c => (
-                <button
-                  key={c}
-                  onClick={() => setCurrency(c)}
-                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                    currency === c
-                      ? 'bg-background text-foreground shadow-sm border border-input'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  {c === 'pln' ? '🇵🇱 PLN' : c === 'usd' ? '🇺🇸 USD' : '🇪🇺 EUR'}
-                </button>
-              ))}
-            </div>
-
-            {/* Billing cycle */}
-            <div className="flex items-center gap-1 p-1 rounded-lg border border-[hsl(var(--glass-border))] bg-muted/40">
-              {(['monthly', 'yearly'] as const).map(cycle => (
-                <button
-                  key={cycle}
-                  onClick={() => setBillingCycle(cycle)}
-                  className={`relative px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                    billingCycle === cycle
-                      ? 'bg-background text-foreground shadow-sm border border-input'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  {cycle === 'monthly' ? 'Monthly' : 'Yearly'}
-                  {cycle === 'yearly' && (
-                    <span className="ml-1.5 text-[10px] font-semibold text-primary">−20%</span>
-                  )}
-                </button>
-              ))}
-            </div>
+          {/* Left: billing cycle */}
+          <div className="flex items-center gap-1 p-1 rounded-lg border border-[hsl(var(--glass-border))] bg-muted/40 w-fit">
+            {(['monthly', 'yearly'] as const).map(cycle => (
+              <button
+                key={cycle}
+                onClick={() => setBillingCycle(cycle)}
+                className={`relative px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  billingCycle === cycle
+                    ? 'bg-background text-foreground shadow-sm border border-input'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {cycle === 'monthly' ? 'Miesięcznie' : 'Rocznie'}
+                {cycle === 'yearly' && (
+                  <span className="ml-1.5 text-[10px] font-semibold text-primary">−20%</span>
+                )}
+              </button>
+            ))}
           </div>
 
           {/* Right: credit usage + billing */}
@@ -398,18 +344,18 @@ const Pricing = () => {
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 mb-2">
               <Clock className="w-5 h-5 text-primary" />
-              <h2 className="text-2xl font-display text-foreground">What this takes everyone else</h2>
+              <h2 className="text-2xl font-display text-foreground">Ile to zajmuje innym</h2>
             </div>
             <p className="text-sm text-muted-foreground max-w-xl mx-auto">
-              Understanding how AI models describe your brand the old way costs days or weeks. Perceply does it while you wait.
+              Sprawdzenie, jak modele AI opisują Twoją markę, po staremu zajmuje dni lub tygodnie. Perceply robi to, zanim zdążysz mrugnąć.
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { method: 'Manual prompting by hand', time: '2–3 days', note: 'Querying each model, one prompt at a time, then tallying the answers yourself.' },
-              { method: 'A marketing agency audit', time: '2–4 weeks', note: 'Briefing, research and a slide deck — plus a four-figure invoice.' },
-              { method: 'Traditional monitoring tools', time: 'Hours of setup', note: 'They watch social and search — not what AI assistants actually say.' },
+              { method: 'Ręczne odpytywanie modeli', time: '2–3 dni', note: 'Pytanie każdego modelu, prompt po promptcie, i samodzielne zliczanie odpowiedzi.' },
+              { method: 'Audyt w agencji marketingowej', time: '2–4 tygodnie', note: 'Brief, research i prezentacja — plus faktura na cztery cyfry.' },
+              { method: 'Tradycyjne narzędzia monitoringu', time: 'Godziny wdrożenia', note: 'Śledzą social media i wyszukiwarki — a nie to, co naprawdę mówi AI.' },
             ].map(item => (
               <div key={item.method} className="rounded-2xl border border-[hsl(var(--glass-border))] bg-background/70 p-5">
                 <p className="text-2xl font-display text-foreground">{item.time}</p>
@@ -419,11 +365,11 @@ const Pricing = () => {
             ))}
             {/* Perceply — the payoff */}
             <div className="rounded-2xl border border-primary/30 bg-primary/[0.06] p-5 flex flex-col">
-              <p className="text-2xl font-display text-primary">~15 seconds</p>
+              <p className="text-2xl font-display text-primary">~15 sekund</p>
               <p className="text-sm font-semibold text-foreground mt-2">Perceply</p>
-              <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">All models queried in parallel, scored and turned into a ranked action plan — automatically.</p>
+              <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">Wszystkie modele odpytane równolegle, ocenione i zamienione w priorytetowy plan działania — automatycznie.</p>
               <div className="mt-3 flex items-center gap-1.5 text-xs font-medium text-primary">
-                <Check className="w-3.5 h-3.5" /> Repeatable every month
+                <Check className="w-3.5 h-3.5" /> Powtarzalne co miesiąc
               </div>
             </div>
           </div>
@@ -437,7 +383,7 @@ const Pricing = () => {
           viewport={{ once: true }}
         >
           <h2 className="text-2xl font-display text-foreground text-center mb-8">
-            Frequently asked questions
+            Często zadawane pytania
           </h2>
           <Accordion
             type="single"
@@ -467,9 +413,9 @@ const Pricing = () => {
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 mb-2">
               <Zap className="w-5 h-5 text-primary" />
-              <h2 className="text-2xl font-display text-foreground">Need more analyses?</h2>
+              <h2 className="text-2xl font-display text-foreground">Potrzebujesz więcej analiz?</h2>
             </div>
-            <p className="text-sm text-muted-foreground">Top up your account with one-time credit packs — no plan change required.</p>
+            <p className="text-sm text-muted-foreground">Doładuj konto jednorazowymi pakietami kredytów — bez zmiany planu.</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
@@ -484,13 +430,13 @@ const Pricing = () => {
               >
                 {pack.popular && (
                   <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-semibold px-3 py-1 bg-primary text-primary-foreground rounded-full whitespace-nowrap">
-                    Best value
+                    Najlepsza wartość
                   </span>
                 )}
                 <div>
                   <p className="text-3xl font-display text-foreground">{pack.price}</p>
                   <p className="text-sm text-muted-foreground mt-1">{pack.label}</p>
-                  <p className="text-[11px] text-muted-foreground/60 mt-2">One-time credit top-up</p>
+                  <p className="text-[11px] text-muted-foreground/60 mt-2">Jednorazowe doładowanie</p>
                 </div>
                 <Button
                   onClick={() => handleCreditsBuy(pack.id)}
@@ -498,7 +444,7 @@ const Pricing = () => {
                   variant={pack.popular ? 'default' : 'outline'}
                   className="w-full"
                 >
-                  {loadingCredits === pack.id ? 'Loading...' : 'Buy pack'}
+                  {loadingCredits === pack.id ? 'Ładowanie...' : 'Kup pakiet'}
                 </Button>
               </div>
             ))}
@@ -509,16 +455,16 @@ const Pricing = () => {
         <div className="mt-16">
           <div className="rounded-3xl border border-[hsl(var(--glass-border))] bg-card/60 p-8 text-center">
             <p className="text-sm uppercase tracking-[0.35em] text-primary mb-3">
-              Built for the AI era
+              Stworzone na erę AI
             </p>
             <h2 className="text-2xl font-display text-foreground max-w-2xl mx-auto">
-              Stay ahead of AI-driven reputation and search shifts.
+              Wyprzedzaj zmiany reputacji i wyszukiwania napędzane przez AI.
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 text-left">
               {[
-                { title: 'GEO-first approach', desc: 'Built around Generative Engine Optimization — the emerging standard for AI-era brand visibility.' },
-                { title: '3 leading AI models', desc: 'Coverage across ChatGPT, Claude and Gemini — the assistants your customers ask for recommendations.' },
-                { title: 'Track over time', desc: 'Repeatable monthly audits show whether your optimization work actually moves the needle.' },
+                { title: 'Podejście GEO-first', desc: 'Zbudowane wokół Generative Engine Optimization — nowego standardu widoczności marki w erze AI.' },
+                { title: '3 wiodące modele AI', desc: 'Pokrycie ChatGPT, Claude i Gemini — asystentów, których Twoi klienci pytają o rekomendacje.' },
+                { title: 'Śledź w czasie', desc: 'Powtarzalne miesięczne audyty pokazują, czy Twoja optymalizacja realnie działa.' },
               ].map(item => (
                 <div key={item.title} className="rounded-2xl border border-[hsl(var(--glass-border))] bg-background/60 p-5">
                   <p className="text-sm font-semibold text-foreground mb-1.5">{item.title}</p>

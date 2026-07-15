@@ -71,7 +71,7 @@ export const CreditsUsageWidget = () => {
             style={{ width: `${unlimited ? 100 : pct}%` }}
           />
         </div>
-        <p className="mt-1 text-[10px] text-muted-foreground">Analyses used this month</p>
+        <p className="mt-1 text-[10px] text-muted-foreground">Analiz w tym miesiącu</p>
       </div>
 
       {/* Billing shortcut */}
@@ -79,7 +79,7 @@ export const CreditsUsageWidget = () => {
         to="/settings?tab=billing"
         className="inline-flex items-center gap-1.5 rounded-xl border border-[hsl(var(--glass-border))] bg-card/60 px-3.5 text-sm font-medium text-foreground hover:bg-accent transition-colors"
       >
-        <CreditCard className="w-4 h-4 text-muted-foreground" /> Billing
+        <CreditCard className="w-4 h-4 text-muted-foreground" /> Rozliczenia
       </Link>
     </div>
   );

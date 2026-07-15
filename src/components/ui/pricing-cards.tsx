@@ -140,7 +140,7 @@ export const PricingCards: React.FC<PricingCardsProps> = ({
                   className={cn("w-full mt-4 rounded-xl", !plan.isPopular && "text-primary hover:text-primary")}
                   size="lg"
                 >
-                  {isLoading ? 'Loading…' : plan.buttonLabel}
+                  {isLoading ? 'Ładowanie…' : plan.buttonLabel}
                 </Button>
               </div>
 
@@ -157,7 +157,7 @@ export const PricingCards: React.FC<PricingCardsProps> = ({
                 {prevName && (
                   <p className="mt-5 flex items-center gap-2 text-sm text-muted-foreground">
                     <Plus className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    Everything in {prevName}
+                    Wszystko z {prevName}
                   </p>
                 )}
               </div>
@@ -173,7 +173,7 @@ export const PricingCards: React.FC<PricingCardsProps> = ({
             <thead>
               <tr className="bg-muted/30">
                 <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-foreground/80 min-w-[180px]">
-                  Feature
+                  Funkcja
                 </th>
                 {plans.map((plan) => (
                   <th
