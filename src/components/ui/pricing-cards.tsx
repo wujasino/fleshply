@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Card } from "@/components/ui/card";
-import { Check, X, Plus } from "lucide-react";
+import { Check, X, Plus, ChevronDown } from "lucide-react";
 import { useTranslation } from "@/lib/locale";
 
 type BillingCycle = 'monthly' | 'yearly';
@@ -48,6 +48,7 @@ export const PricingCards: React.FC<PricingCardsProps> = ({
   ...props
 }) => {
   const { t } = useTranslation();
+  const [showComparison, setShowComparison] = React.useState(false);
   const allFeatures = Array.from(new Set(plans.flatMap(p => p.features.map(f => f.name))));
 
   return (
@@ -166,61 +167,77 @@ export const PricingCards: React.FC<PricingCardsProps> = ({
         })}
       </div>
 
-      {/* Comparison table — desktop only */}
+      {/* Comparison table — desktop only, collapsed by default to keep the page short */}
       {allFeatures.length > 0 && (
-        <div className="mt-16 hidden md:block border rounded-lg overflow-x-auto shadow-sm">
-          <table className="min-w-full divide-y divide-border/80">
-            <thead>
-              <tr className="bg-muted/30">
-                <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-foreground/80 min-w-[180px]">
-                  Funkcja
-                </th>
-                {plans.map((plan) => (
-                  <th
-                    key={`th-${plan.id}`}
-                    scope="col"
-                    className={cn(
-                      "px-6 py-4 text-center text-sm font-semibold text-foreground/80 whitespace-nowrap",
-                      plan.isPopular && "bg-primary/10"
-                    )}
-                  >
-                    {plan.name}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/80 bg-background/90">
-              {allFeatures.map((featureName, index) => (
-                <tr
-                  key={featureName}
-                  className={cn(
-                    "transition-colors hover:bg-accent/20",
-                    index % 2 === 0 ? "bg-background" : "bg-muted/10"
-                  )}
-                >
-                  <td className="px-6 py-3 text-left text-sm font-medium text-foreground/90">
-                    {featureName}
-                  </td>
-                  {plans.map((plan) => {
-                    const feature = plan.features.find(f => f.name === featureName);
-                    const isIncluded = feature?.isIncluded ?? false;
-                    const Icon = isIncluded ? Check : X;
-                    return (
-                      <td
-                        key={`${plan.id}-${featureName}`}
-                        className={cn("px-6 py-3 text-center", plan.isPopular && "bg-primary/5")}
+        <div className="mt-10 hidden md:block">
+          <div className="flex justify-center">
+            <button
+              type="button"
+              onClick={() => setShowComparison(v => !v)}
+              aria-expanded={showComparison}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[hsl(var(--glass-border))] bg-card/60 text-sm font-medium text-foreground hover:bg-accent transition-colors"
+            >
+              {showComparison ? 'Ukryj pełne porównanie' : 'Porównaj wszystkie funkcje'}
+              <ChevronDown className={cn("h-4 w-4 transition-transform", showComparison && "rotate-180")} />
+            </button>
+          </div>
+
+          {showComparison && (
+            <div className="mt-6 border rounded-lg overflow-x-auto shadow-sm">
+              <table className="min-w-full divide-y divide-border/80">
+                <thead>
+                  <tr className="bg-muted/30">
+                    <th scope="col" className="px-5 py-3 text-left text-sm font-semibold text-foreground/80 min-w-[180px]">
+                      Funkcja
+                    </th>
+                    {plans.map((plan) => (
+                      <th
+                        key={`th-${plan.id}`}
+                        scope="col"
+                        className={cn(
+                          "px-5 py-3 text-center text-sm font-semibold text-foreground/80 whitespace-nowrap",
+                          plan.isPopular && "bg-primary/10"
+                        )}
                       >
-                        <Icon
-                          className={cn("h-5 w-5 mx-auto", isIncluded ? "text-primary" : "text-muted-foreground/50")}
-                          aria-hidden="true"
-                        />
+                        {plan.name}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/80 bg-background/90">
+                  {allFeatures.map((featureName, index) => (
+                    <tr
+                      key={featureName}
+                      className={cn(
+                        "transition-colors hover:bg-accent/20",
+                        index % 2 === 0 ? "bg-background" : "bg-muted/10"
+                      )}
+                    >
+                      <td className="px-5 py-2 text-left text-sm font-medium text-foreground/90">
+                        {featureName}
                       </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      {plans.map((plan) => {
+                        const feature = plan.features.find(f => f.name === featureName);
+                        const isIncluded = feature?.isIncluded ?? false;
+                        const Icon = isIncluded ? Check : X;
+                        return (
+                          <td
+                            key={`${plan.id}-${featureName}`}
+                            className={cn("px-5 py-2 text-center", plan.isPopular && "bg-primary/5")}
+                          >
+                            <Icon
+                              className={cn("h-4 w-4 mx-auto", isIncluded ? "text-primary" : "text-muted-foreground/50")}
+                              aria-hidden="true"
+                            />
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
     </div>
