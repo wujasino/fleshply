@@ -72,7 +72,7 @@ export const handler = async (event) => {
   <rect x="${labelW}" width="8" height="36" fill="${color}"/>
   <g font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="11">
     <circle cx="16" cy="18" r="6" fill="none" stroke="#FFBF00" stroke-width="2"/>
-    <text x="30" y="15" fill="#FFBF00" font-weight="700" font-size="10">BITBREW</text>
+    <text x="30" y="15" fill="#FFBF00" font-weight="700" font-size="10">PERCEPLY</text>
     <text x="30" y="27" fill="#9b9ba1" font-size="9">AI Visibility · ${brand}</text>
     <text x="${labelW + scoreW / 2}" y="23" fill="#0b0b0c" font-weight="800" font-size="14" text-anchor="middle">${score}</text>
   </g>
