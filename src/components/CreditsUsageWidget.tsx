@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CreditCard, Zap } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 
@@ -14,9 +14,8 @@ const PLAN_LIMITS: Record<string, number> = {
 };
 
 /**
- * Compact account cluster shown on the pricing control bar: current plan's
- * credit usage this month plus a shortcut to the billing settings. Renders
- * nothing for signed-out visitors (there is no usage to show).
+ * Account status shown on the pricing control bar: a credit-usage meter and the
+ * current plan with a billing shortcut. Renders nothing for signed-out visitors.
  */
 export const CreditsUsageWidget = () => {
   const [ready, setReady] = useState(false);
@@ -50,37 +49,39 @@ export const CreditsUsageWidget = () => {
 
   const limit = PLAN_LIMITS[plan] ?? 3;
   const unlimited = limit >= 9999;
-  const pct = unlimited ? 0 : Math.min(100, Math.round((used / limit) * 100));
+  const pct = unlimited ? 100 : Math.min(100, Math.round((used / limit) * 100));
   const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
 
   return (
-    <div className="flex items-stretch gap-2">
-      {/* Credit usage */}
-      <div className="rounded-xl border border-[hsl(var(--glass-border))] bg-card/60 px-3.5 py-2 min-w-[190px]">
-        <div className="flex items-center justify-between gap-3 mb-1.5">
-          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-foreground">
-            <Zap className="w-3.5 h-3.5 text-primary" /> {planLabel}
-          </span>
-          <span className="text-[11px] font-data text-muted-foreground">
-            {used}/{unlimited ? '∞' : limit}
+    <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+      {/* Credit usage meter */}
+      <div className="flex-1 sm:min-w-[260px] rounded-xl border border-[hsl(var(--glass-border))] bg-card/60 px-4 py-3">
+        <div className="flex items-center justify-between gap-3 mb-2">
+          <span className="text-sm text-muted-foreground">Wykorzystane kredyty</span>
+          <span className="text-sm font-medium text-foreground font-data whitespace-nowrap">
+            {used} / {unlimited ? '∞' : limit} kredytów
           </span>
         </div>
-        <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+        <div className="h-2 rounded-full bg-muted overflow-hidden">
           <div
-            className={cn('h-full rounded-full', pct >= 90 ? 'bg-red-500' : 'bg-primary')}
+            className={cn('h-full rounded-full transition-[width]', pct >= 90 ? 'bg-red-500' : 'bg-primary')}
             style={{ width: `${unlimited ? 100 : pct}%` }}
           />
         </div>
-        <p className="mt-1 text-[10px] text-muted-foreground">Analiz w tym miesiącu</p>
       </div>
 
-      {/* Billing shortcut */}
-      <Link
-        to="/settings?tab=billing"
-        className="inline-flex items-center gap-1.5 rounded-xl border border-[hsl(var(--glass-border))] bg-card/60 px-3.5 text-sm font-medium text-foreground hover:bg-accent transition-colors"
-      >
-        <CreditCard className="w-4 h-4 text-muted-foreground" /> Rozliczenia
-      </Link>
+      {/* Current plan + billing shortcut */}
+      <div className="flex items-center justify-between gap-3 rounded-xl border border-[hsl(var(--glass-border))] bg-card/60 px-4 py-3 sm:min-w-[260px]">
+        <span className="text-sm text-foreground">
+          Twój obecny plan: <span className="font-semibold">{planLabel}</span>
+        </span>
+        <Link
+          to="/settings?tab=billing"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-[hsl(var(--glass-border))] bg-background px-3 py-1.5 text-sm font-medium text-foreground hover:bg-accent transition-colors shrink-0"
+        >
+          <Settings className="w-3.5 h-3.5 text-muted-foreground" /> Rozliczenia
+        </Link>
+      </div>
     </div>
   );
 };
