@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Home, CreditCard, Sparkles, Code2, Zap, Users } from 'lucide-react';
+import { Home, CreditCard, Code2, Zap, Users } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
@@ -121,7 +121,6 @@ export const Sidebar = ({ collapsed = false, mobileOpen = false, onMobileClose }
 
           <SectionLabel label="Tools" collapsed={effectiveCollapsed} />
 
-          <NavItem to="/dashboard" icon={Sparkles} label="AI Analysis" active={pathname === '/dashboard'} collapsed={effectiveCollapsed} onNavigate={handleNavigate} />
           <NavItem to="/pricing" icon={CreditCard} label="Pricing" active={pathname === '/pricing'} collapsed={effectiveCollapsed} onNavigate={handleNavigate} />
         </nav>
 
