@@ -26,7 +26,10 @@ const tabs: { id: Tab; label: string; icon: React.FC<{ className?: string }> }[]
 
 export default function Settings() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<Tab>('account');
+  const [activeTab, setActiveTab] = useState<Tab>(() => {
+    const requested = new URLSearchParams(window.location.search).get('tab');
+    return tabs.some(t => t.id === requested) ? (requested as Tab) : 'account';
+  });
   const [voicePrefs, setVoicePrefs] = useState<VoicePrefs>(loadVoicePrefs);
 
   // Billing / subscription

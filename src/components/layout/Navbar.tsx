@@ -1,7 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { LogOut, User, Settings, Code2 } from 'lucide-react';
-import { useTheme } from 'next-themes';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -28,8 +27,6 @@ const publicLinks = [
 export const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { theme } = useTheme();
-  const logoSrc = theme === 'dark' ? '/perceply-logo-cream.png' : '/perceply-logo.png';
   const [mobileOpen, setMobileOpen] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [isAuthed, setIsAuthed] = useState(false);
@@ -189,10 +186,12 @@ export const Navbar = () => {
               </PopoverContent>
             </Popover>
 
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 shrink-0">
-              <img src={logoSrc} alt="Perceply" className="h-7 w-auto" />
-              <span className="text-lg font-display font-semibold text-foreground tracking-tight">perceply</span>
+            {/* Wordmark + what-it-does descriptor */}
+            <Link to="/" aria-label="Perceply — AI brand visibility" className="flex items-center gap-2 shrink-0">
+              <span className="text-lg font-display font-semibold text-foreground tracking-tight">Perceply</span>
+              <span className="hidden sm:inline-flex items-center leading-none pl-2 border-l border-[hsl(var(--glass-border))] text-[10px] font-data uppercase tracking-[0.18em] text-muted-foreground">
+                AI Visibility
+              </span>
             </Link>
           </div>
 

@@ -43,7 +43,7 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
     if (planId === currentPlan) return;
     if (planId === 'free') { setShowDowngrade(true); return; }
     if (planId === 'enterprise') {
-      window.location.href = 'mailto:kontakt@bitbrew.pl?subject=Enterprise Plan';
+      window.location.href = 'mailto:kontakt@bitbrew.pl?subject=Custom Plan';
       return;
     }
     setLoading(planId);
@@ -127,7 +127,7 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
       ],
     },
     {
-      id: 'growth', name: 'Growth', description: 'For growing teams who need deeper competitive insights.',
+      id: 'growth', name: 'Business', description: 'For growing teams who need deeper competitive insights.',
       priceMonthly: prices.growth_monthly, priceYearly: prices.growth_yearly,
       periodMonthly: period_month, periodYearly: period_year,
       isPopular: true, buttonLabel: currentPlan === 'growth' ? 'Current plan ✓' : 'Get started',
@@ -142,8 +142,8 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
       ],
     },
     {
-      id: 'enterprise', name: 'Enterprise Suite', description: 'For enterprises requiring full AI visibility control.',
-      priceMonthly: 'Custom pricing', priceYearly: 'Custom pricing',
+      id: 'enterprise', name: 'Custom', description: 'A tailored plan for teams that need full AI visibility control.',
+      priceMonthly: "Let's talk", priceYearly: "Let's talk",
       periodMonthly: '', periodYearly: '',
       isPopular: false, buttonLabel: 'Contact Sales',
       features: [

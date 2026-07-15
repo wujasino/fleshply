@@ -230,8 +230,8 @@
   }
 
   .font-display {
-    @apply tracking-tighter font-medium;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    @apply tracking-tight font-medium;
+    font-family: 'Space Grotesk', 'Inter', system-ui, -apple-system, sans-serif;
   }
 
   .font-data {

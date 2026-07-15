@@ -231,6 +231,7 @@ const dict: Record<string, string> = {
     tier_period_year: '/year',
     tier_period_empty: '',
     most_popular: 'Most Popular',
+    popular: 'Popular',
     contact_sales: 'Contact Sales',
     get_started: 'Get Started',
     past_brews: 'Recent Analyses',

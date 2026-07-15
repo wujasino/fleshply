@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Zap, AlertTriangle } from 'lucide-react';
+import { Zap, AlertTriangle, Clock, Check } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { PricingCards, type PricingTierCard } from '@/components/ui/pricing-cards';
+import { CreditsUsageWidget } from '@/components/CreditsUsageWidget';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -15,6 +17,8 @@ import {
 
 /* USD prices */
 const USD = {
+  starter_monthly: '$12',
+  starter_yearly: '$119',
   solo_monthly: '$29',
   solo_yearly: '$279',
   growth_monthly: '$79',
@@ -25,6 +29,8 @@ const USD = {
 };
 
 const EUR = {
+  starter_monthly: '€11',
+  starter_yearly: '€109',
   solo_monthly: '€27',
   solo_yearly: '€259',
   growth_monthly: '€75',
@@ -35,6 +41,8 @@ const EUR = {
 };
 
 const PLN = {
+  starter_monthly: '49 zł',
+  starter_yearly: '470 zł',
   solo_monthly: '99 zł',
   solo_yearly: '950 zł',
   growth_monthly: '249 zł',
@@ -88,7 +96,7 @@ const Pricing = () => {
       return;
     }
     if (planId === 'enterprise') {
-      window.location.href = 'mailto:kontakt@bitbrew.pl?subject=Enterprise Plan';
+      window.location.href = 'mailto:kontakt@bitbrew.pl?subject=Custom Plan';
       return;
     }
 
@@ -99,9 +107,12 @@ const Pricing = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { window.location.href = '/register?plan=' + planId; return; }
 
-      const priceId = planId === 'solo'
-        ? import.meta.env.VITE_STRIPE_SOLO_PRICE_ID
-        : import.meta.env.VITE_STRIPE_GROWTH_PRICE_ID;
+      const priceMap: Record<string, string | undefined> = {
+        starter: import.meta.env.VITE_STRIPE_STARTER_PRICE_ID,
+        solo: import.meta.env.VITE_STRIPE_SOLO_PRICE_ID,
+        growth: import.meta.env.VITE_STRIPE_GROWTH_PRICE_ID,
+      };
+      const priceId = priceMap[planId];
 
       if (!priceId) { setMessage('Stripe is not configured. Please contact support.'); return; }
 
@@ -186,6 +197,25 @@ const Pricing = () => {
       ],
     },
     {
+      id: 'starter',
+      name: 'Starter',
+      description: 'For creators taking their first steps into AI visibility.',
+      priceMonthly: prices.starter_monthly,
+      priceYearly: prices.starter_yearly,
+      periodMonthly: period_month,
+      periodYearly: period_year,
+      isPopular: false,
+      buttonLabel: 'Get started',
+      features: [
+        { name: '5 brand analyses per month', isIncluded: true },
+        { name: '3 LLM sources (GPT-4o, Claude, Gemini)', isIncluded: true },
+        { name: 'Sentiment trend (30 days)', isIncluded: true },
+        { name: 'AI Verdict — actionable summary', isIncluded: true },
+        { name: 'Brand knowledge context (RAG)', isIncluded: false },
+        { name: 'Competitor comparison', isIncluded: false },
+      ],
+    },
+    {
       id: 'solo',
       name: 'Solo',
       description: 'For indie founders and solo marketers tracking their brand.',
@@ -207,7 +237,7 @@ const Pricing = () => {
     },
     {
       id: 'growth',
-      name: 'Growth',
+      name: 'Business',
       description: 'For growing teams who need deeper competitive insights.',
       priceMonthly: prices.growth_monthly,
       priceYearly: prices.growth_yearly,
@@ -227,10 +257,10 @@ const Pricing = () => {
     },
     {
       id: 'enterprise',
-      name: 'Enterprise Suite',
-      description: 'For enterprises requiring full AI visibility control.',
-      priceMonthly: 'Custom pricing',
-      priceYearly: 'Custom pricing',
+      name: 'Custom',
+      description: 'A tailored plan for teams that need full AI visibility control.',
+      priceMonthly: "Let's talk",
+      priceYearly: "Let's talk",
       periodMonthly: '',
       periodYearly: '',
       isPopular: false,
@@ -297,40 +327,56 @@ const Pricing = () => {
         </DialogContent>
       </Dialog>
 
-      <div className="pb-20 px-4 max-w-6xl mx-auto">
-        {/* Header */}
-        <motion.div
-          className="text-center mb-10 pt-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <h1 className="text-3xl sm:text-4xl font-display text-foreground mb-3">
-            Simple, transparent pricing
-          </h1>
-          <p className="text-muted-foreground text-sm max-w-lg mx-auto">
-            Start free, scale as your brand monitoring needs grow. No hidden fees.
-          </p>
-          {message && (
-            <p className="mt-4 text-sm text-primary font-medium">{message}</p>
-          )}
+      <div className="pb-20 px-4 max-w-7xl mx-auto">
+        {message && (
+          <p className="mt-6 mb-2 text-center text-sm text-primary font-medium">{message}</p>
+        )}
 
-          {/* Currency toggle */}
-          <div className="flex items-center justify-center mt-6 gap-1 p-1 rounded-lg border border-[hsl(var(--glass-border))] bg-muted/40 w-fit mx-auto">
-            {(['pln', 'usd', 'eur'] as const).map(c => (
-              <button
-                key={c}
-                onClick={() => setCurrency(c)}
-                className={`px-5 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  currency === c
-                    ? 'bg-background text-foreground shadow-sm border border-input'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {c === 'pln' ? '🇵🇱 PLN' : c === 'usd' ? '🇺🇸 USD' : '🇪🇺 EUR'}
-              </button>
-            ))}
+        {/* Control bar — left: currency + billing-cycle toggles, right: usage + billing */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pt-8 pb-8">
+          {/* Left: toggles */}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Currency */}
+            <div className="flex items-center gap-1 p-1 rounded-lg border border-[hsl(var(--glass-border))] bg-muted/40">
+              {(['pln', 'usd', 'eur'] as const).map(c => (
+                <button
+                  key={c}
+                  onClick={() => setCurrency(c)}
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    currency === c
+                      ? 'bg-background text-foreground shadow-sm border border-input'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {c === 'pln' ? '🇵🇱 PLN' : c === 'usd' ? '🇺🇸 USD' : '🇪🇺 EUR'}
+                </button>
+              ))}
+            </div>
+
+            {/* Billing cycle */}
+            <div className="flex items-center gap-1 p-1 rounded-lg border border-[hsl(var(--glass-border))] bg-muted/40">
+              {(['monthly', 'yearly'] as const).map(cycle => (
+                <button
+                  key={cycle}
+                  onClick={() => setBillingCycle(cycle)}
+                  className={`relative px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    billingCycle === cycle
+                      ? 'bg-background text-foreground shadow-sm border border-input'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {cycle === 'monthly' ? 'Monthly' : 'Yearly'}
+                  {cycle === 'yearly' && (
+                    <span className="ml-1.5 text-[10px] font-semibold text-primary">−20%</span>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
-        </motion.div>
+
+          {/* Right: credit usage + billing */}
+          <CreditsUsageWidget />
+        </div>
 
         {/* Pricing cards */}
         <PricingCards
@@ -339,7 +385,77 @@ const Pricing = () => {
           onCycleChange={setBillingCycle}
           onPlanSelect={(planId) => handlePlanSelect(planId)}
           loadingPlan={loading}
+          showBillingToggle={false}
         />
+
+        {/* How long this takes everyone else vs Perceply */}
+        <motion.div
+          className="mt-20"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 mb-2">
+              <Clock className="w-5 h-5 text-primary" />
+              <h2 className="text-2xl font-display text-foreground">What this takes everyone else</h2>
+            </div>
+            <p className="text-sm text-muted-foreground max-w-xl mx-auto">
+              Understanding how AI models describe your brand the old way costs days or weeks. Perceply does it while you wait.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { method: 'Manual prompting by hand', time: '2–3 days', note: 'Querying each model, one prompt at a time, then tallying the answers yourself.' },
+              { method: 'A marketing agency audit', time: '2–4 weeks', note: 'Briefing, research and a slide deck — plus a four-figure invoice.' },
+              { method: 'Traditional monitoring tools', time: 'Hours of setup', note: 'They watch social and search — not what AI assistants actually say.' },
+            ].map(item => (
+              <div key={item.method} className="rounded-2xl border border-[hsl(var(--glass-border))] bg-background/70 p-5">
+                <p className="text-2xl font-display text-foreground">{item.time}</p>
+                <p className="text-sm font-medium text-foreground mt-2">{item.method}</p>
+                <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">{item.note}</p>
+              </div>
+            ))}
+            {/* Perceply — the payoff */}
+            <div className="rounded-2xl border border-primary/30 bg-primary/[0.06] p-5 flex flex-col">
+              <p className="text-2xl font-display text-primary">~15 seconds</p>
+              <p className="text-sm font-semibold text-foreground mt-2">Perceply</p>
+              <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">All models queried in parallel, scored and turned into a ranked action plan — automatically.</p>
+              <div className="mt-3 flex items-center gap-1.5 text-xs font-medium text-primary">
+                <Check className="w-3.5 h-3.5" /> Repeatable every month
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* FAQ — collapsible */}
+        <motion.div
+          className="mt-20 max-w-3xl mx-auto"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <h2 className="text-2xl font-display text-foreground text-center mb-8">
+            Frequently asked questions
+          </h2>
+          <Accordion
+            type="single"
+            collapsible
+            className="rounded-2xl border border-[hsl(var(--glass-border))] bg-card/40 divide-y divide-[hsl(var(--glass-border))] overflow-hidden"
+          >
+            {faqItems.map((item, idx) => (
+              <AccordionItem key={item.q} value={`faq-${idx}`} className="border-none px-5">
+                <AccordionTrigger className="text-left text-sm font-semibold text-foreground hover:no-underline py-4">
+                  {item.q}
+                </AccordionTrigger>
+                <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
+                  {item.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </motion.div>
 
         {/* Credit packs */}
         <motion.div
@@ -389,8 +505,8 @@ const Pricing = () => {
           </div>
         </motion.div>
 
-        {/* Social proof + FAQ */}
-        <div className="mt-16 space-y-10">
+        {/* Social proof */}
+        <div className="mt-16">
           <div className="rounded-3xl border border-[hsl(var(--glass-border))] bg-card/60 p-8 text-center">
             <p className="text-sm uppercase tracking-[0.35em] text-primary mb-3">
               Built for the AI era
@@ -407,23 +523,6 @@ const Pricing = () => {
                 <div key={item.title} className="rounded-2xl border border-[hsl(var(--glass-border))] bg-background/60 p-5">
                   <p className="text-sm font-semibold text-foreground mb-1.5">{item.title}</p>
                   <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <h2 className="text-lg font-semibold text-foreground">
-              Frequently Asked Questions
-            </h2>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {faqItems.map((item) => (
-                <div
-                  key={item.q}
-                  className="rounded-3xl border border-[hsl(var(--glass-border))] bg-background/80 p-6"
-                >
-                  <h3 className="text-sm font-semibold text-foreground">{item.q}</h3>
-                  <p className="mt-3 text-sm text-muted-foreground">{item.a}</p>
                 </div>
               ))}
             </div>

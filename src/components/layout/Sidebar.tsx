@@ -93,7 +93,7 @@ export const Sidebar = ({ collapsed = false, mobileOpen = false, onMobileClose }
           {!effectiveCollapsed ? (
             <Link to="/dashboard" onClick={handleNavigate} className="flex items-center gap-2">
               <img src={logoSrc} alt="Perceply" className="h-6 w-auto" />
-              <span className="text-base font-display font-semibold text-foreground tracking-tight">perceply</span>
+              <span className="text-base font-display font-semibold text-foreground tracking-tight">Perceply</span>
             </Link>
           ) : (
             <Link to="/dashboard" onClick={handleNavigate} aria-label="Perceply">

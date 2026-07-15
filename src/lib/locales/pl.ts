@@ -238,6 +238,7 @@ const dict: Record<string, string> = {
     pricing_faq_q_support: 'Potrzebuję pomocy przy wyborze planu?',
     pricing_faq_a_support: 'Nasz zespół chętnie doradzi, który plan najlepiej wesprze Twoją markę.',
     most_popular: 'Najpopularniejsze',
+    popular: 'Popular',
     contact_sales: 'Skontaktuj się z działem sprzedaży',
     get_started: 'Rozpocznij',
     past_brews: 'Ostatnie analizy',

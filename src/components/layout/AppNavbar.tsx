@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 
 const PLAN_LIMITS: Record<string, number> = {
   Free: 3,
+  Starter: 5,
   Solo: 30,
   Growth: 120,
   Enterprise: 9999,
