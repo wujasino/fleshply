@@ -1,6 +1,6 @@
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { LogOut, Settings, User, Code2, CreditCard, MessageSquare, Send, X, Bot, PanelLeftClose, PanelLeftOpen, Menu, Crown } from 'lucide-react';
+import { LogOut, Settings, User, Code2, CreditCard, MessageSquare, Send, X, Bot, PanelLeftClose, PanelLeftOpen, Menu, Crown, Search } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { logout } from '@/lib/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -27,6 +27,15 @@ const DropdownLink = ({ to, icon: Icon, label, onClick }: { to: string; icon: Re
     {label}
   </Link>
 );
+
+// Navbar command search — a keyword jumps straight to a section.
+const NAV_COMMANDS: { match: RegExp; to: string }[] = [
+  { match: /(api|webhook|klucz|developer|deweloper|\bdev\b)/i, to: '/developers' },
+  { match: /(ustawie|settings|konto|account)/i, to: '/settings' },
+  { match: /(raport|report|histor)/i, to: '/reports' },
+  { match: /(cennik|pricing|\bplan|subskryp|kredyt|billing|rozlicz)/i, to: '/pricing' },
+  { match: /(dashboard|analiz|\bhome\b|panel|start)/i, to: '/dashboard' },
+];
 
 const SECTION_TITLES: Record<string, string> = {
   '/dashboard':  'Home',
@@ -55,6 +64,15 @@ export const AppNavbar = ({ collapsed = false, onToggle, onMobileToggle, chatOpe
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [plan, setPlan] = useState('Free');
   const [analysesUsed, setAnalysesUsed] = useState(0);
+  const [search, setSearch] = useState('');
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = search.trim();
+    if (!q) return;
+    const cmd = NAV_COMMANDS.find(c => c.match.test(q));
+    if (cmd) { navigate(cmd.to); setSearch(''); }
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -127,7 +145,21 @@ export const AppNavbar = ({ collapsed = false, onToggle, onMobileToggle, chatOpe
       </button>
       <span className="text-sm font-semibold text-foreground truncate min-w-0">{sectionTitle}</span>
 
-      <div className="flex-1" />
+      {/* Center: command search — a keyword jumps to a section (e.g. "api" → Developers) */}
+      <div className="flex-1 flex justify-center px-2">
+        <form onSubmit={handleSearch} className="hidden md:block w-full max-w-md">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Szukaj sekcji — np. api, ustawienia, raporty…"
+              aria-label="Search"
+              className="w-full h-9 rounded-lg border border-border bg-muted/40 text-sm text-foreground placeholder:text-muted-foreground pl-9 pr-3 focus:outline-none focus:ring-1 focus:ring-primary focus:bg-background transition-colors"
+            />
+          </div>
+        </form>
+      </div>
 
       {plan === 'Free' && (
         <Link
