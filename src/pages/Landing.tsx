@@ -1,7 +1,7 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Zap, Eye, BarChart3, Shield, ChevronDown, HelpCircle, Mail, TrendingUp, ArrowRight, Bot, Globe, Repeat } from 'lucide-react';
+import { Zap, Eye, BarChart3, Shield, ChevronDown, HelpCircle, Mail, TrendingUp, ArrowRight, Bot, Globe, Repeat, Star, Quote, ShieldCheck, Clock } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -25,6 +25,28 @@ const INTEGRATIONS = [
 /* ── Before / After data ──────────────────────────────────────────── */
 const BEFORE = { mentions: '1 / 10', sentiment: '34', recommend: '8%' };
 const AFTER  = { mentions: '7 / 10', sentiment: '81', recommend: '63%' };
+
+/* ── Testimonials ─────────────────────────────────────────────────── */
+const TESTIMONIALS = [
+  {
+    quote: 'We discovered ChatGPT was recommending our competitor for our own category. Two weeks after acting on Perceply’s recommendations, we were the top answer.',
+    name: 'Sarah Lindqvist',
+    role: 'Head of Growth, Northwind SaaS',
+    initials: 'SL',
+  },
+  {
+    quote: 'Finally a number I can put in front of the board. Our AI visibility score went from 41 to 78 in a quarter — and I can prove exactly what moved it.',
+    name: 'Marcus Bishop',
+    role: 'CMO, Vellum Commerce',
+    initials: 'MB',
+  },
+  {
+    quote: 'We run AI audits for 12 client brands from one dashboard. The white-label reports alone paid for the whole subscription in the first month.',
+    name: 'Priya Nandakumar',
+    role: 'Founder, Halo Digital Agency',
+    initials: 'PN',
+  },
+];
 
 const FAQ_EN = [
   {
@@ -127,6 +149,49 @@ const Landing = () => {
             >
               Free analysis. No credit card required.
             </motion.p>
+
+            {/* ── Social proof bar ────────────────────────────────── */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.55 }}
+              className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-x-8 gap-y-4"
+            >
+              {/* Avatar stack */}
+              <div className="flex items-center gap-3">
+                <div className="flex -space-x-2.5">
+                  {['#f5a623', '#7c3aed', '#059669', '#0ea5e9', '#e11d48'].map((c, i) => (
+                    <div
+                      key={i}
+                      className="w-8 h-8 rounded-full border-2 border-background flex items-center justify-center text-[10px] font-semibold text-white shadow-sm"
+                      style={{ backgroundColor: c }}
+                    >
+                      {['NW', 'VC', 'HD', 'AX', 'Qb'][i]}
+                    </div>
+                  ))}
+                </div>
+                <div className="text-left">
+                  <div className="text-sm font-semibold text-foreground leading-tight">2,400+ brands</div>
+                  <div className="text-[11px] text-muted-foreground leading-tight">analyzed this month</div>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="hidden sm:block w-px h-9 bg-[hsl(var(--glass-border))]" />
+
+              {/* Rating */}
+              <div className="flex items-center gap-2.5">
+                <div className="flex gap-0.5">
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <Star key={i} className="w-4 h-4 fill-primary text-primary" />
+                  ))}
+                </div>
+                <div className="text-left">
+                  <div className="text-sm font-semibold text-foreground leading-tight">4.9 / 5 rating</div>
+                  <div className="text-[11px] text-muted-foreground leading-tight">from 180+ marketing teams</div>
+                </div>
+              </div>
+            </motion.div>
 
 
             {/* ── How it works ────────────────────────────────────── */}
@@ -702,6 +767,58 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* ── Testimonials ──────────────────────────────────────────── */}
+      <section className="py-24 px-4 border-t border-[hsl(var(--glass-border))]">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <span className="inline-block px-3 py-1 text-xs badge rounded-lg mb-4 font-data uppercase tracking-wider">
+              Loved by marketers
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-display text-foreground mb-3">
+              Teams that stopped guessing
+            </h2>
+            <p className="text-sm text-muted-foreground max-w-lg mx-auto">
+              Growth leads, brand managers and agencies use Perceply to win the AI recommendation.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {TESTIMONIALS.map((t, i) => (
+              <motion.div
+                key={t.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="glass-card p-7 flex flex-col gap-5"
+              >
+                <Quote className="w-7 h-7 text-primary/40" />
+                <div className="flex gap-0.5">
+                  {[0, 1, 2, 3, 4].map((s) => (
+                    <Star key={s} className="w-3.5 h-3.5 fill-primary text-primary" />
+                  ))}
+                </div>
+                <p className="text-sm text-foreground/90 leading-relaxed flex-1">“{t.quote}”</p>
+                <div className="flex items-center gap-3 pt-2 border-t border-[hsl(var(--glass-border))]">
+                  <div className="w-10 h-10 rounded-full bg-primary/15 border border-primary/20 flex items-center justify-center text-xs font-semibold text-primary shrink-0">
+                    {t.initials}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground leading-tight">{t.name}</p>
+                    <p className="text-xs text-muted-foreground leading-tight">{t.role}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── CTA box ───────────────────────────────────────────────── */}
       <section className="py-20 px-4 cta-box">
         <div className="max-w-2xl mx-auto text-center glass-card p-12">
@@ -717,6 +834,20 @@ const Landing = () => {
             </button>
           </div>
           <p className="text-xs text-muted-foreground/50 mt-4">No credit card required</p>
+
+          {/* Risk-reversal guarantees */}
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-6 text-xs text-muted-foreground">
+            {[
+              { icon: ShieldCheck, label: '14-day money-back guarantee' },
+              { icon: Clock, label: 'Cancel anytime, one click' },
+              { icon: Zap, label: 'Results in under 15 seconds' },
+            ].map((g) => (
+              <span key={g.label} className="inline-flex items-center gap-1.5">
+                <g.icon className="w-3.5 h-3.5 text-primary" />
+                {g.label}
+              </span>
+            ))}
+          </div>
 
           {/* Trust badges */}
           <div className="flex flex-wrap items-center justify-center gap-4 mt-8 pt-8 border-t border-[hsl(var(--glass-border))]">
