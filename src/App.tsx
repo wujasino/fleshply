@@ -15,6 +15,7 @@ const AppShell = lazy(() =>
 // Route-level code splitting — each page loads only when navigated to
 const Landing        = lazy(() => import("./pages/Landing"));
 const Dashboard      = lazy(() => import("./pages/Dashboard"));
+const Automations    = lazy(() => import("./pages/Automations"));
 const Pricing        = lazy(() => import("./pages/Pricing"));
 const Profile        = lazy(() => import("./pages/Profile"));
 const Login          = lazy(() => import("./pages/Login"));
@@ -43,6 +44,7 @@ const queryClient = new QueryClient({
 const PAGE_TITLES: Record<string, string> = {
   '/':           'Perceply — AI Brand Visibility Scanner',
   '/dashboard':  'Dashboard | Perceply',
+  '/automations':'Automations | Perceply',
   '/pricing':    'Pricing | Perceply',
   '/profile':    'Profile | Perceply',
   '/settings':   'Settings | Perceply',
@@ -77,6 +79,14 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/dashboard" element={<AppShell><Dashboard /></AppShell>} />
+            <Route
+              path="/automations"
+              element={
+                <ProtectedRoute>
+                  <AppShell><Automations /></AppShell>
+                </ProtectedRoute>
+              }
+            />
             <Route path="/pricing" element={<AppShell><Pricing /></AppShell>} />
             <Route
               path="/profile"
