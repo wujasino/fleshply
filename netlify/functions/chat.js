@@ -227,6 +227,7 @@ Other guidelines:
 
 // Client model id → { provider, apiModel, envKey }.
 const MODEL_ROUTING = {
+  'claude-fable-5':    { provider: 'anthropic', apiModel: 'claude-fable-5',              envKey: 'ANTHROPIC_API_KEY' },
   'claude-sonnet-4-5': { provider: 'anthropic', apiModel: 'claude-sonnet-4-5',           envKey: 'ANTHROPIC_API_KEY' },
   'claude-haiku-4-5':  { provider: 'anthropic', apiModel: 'claude-haiku-4-5-20251001',   envKey: 'ANTHROPIC_API_KEY' },
   'gpt-4o':            { provider: 'openai',    apiModel: 'gpt-4o',                       envKey: 'OPENAI_API_KEY' },

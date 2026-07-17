@@ -10,6 +10,7 @@ import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover
 /* Language models the assistant can run on. Claude models are live;
    others are shown as upcoming (disabled) until their providers are wired. */
 const MODELS: { id: string; label: string; available: boolean }[] = [
+  { id: 'claude-fable-5',    label: 'Claude Fable 5',    available: true },
   { id: 'claude-sonnet-4-5', label: 'Claude Sonnet 4.5', available: true },
   { id: 'claude-haiku-4-5',  label: 'Claude Haiku 4.5',  available: true },
   { id: 'gpt-4o',            label: 'GPT-4o',            available: true },
