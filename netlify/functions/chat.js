@@ -223,31 +223,137 @@ Other guidelines:
 - Never invent competitors or brands the user did not mention.
 - You only configure monitoring. You do not run scans, change billing, or promise features that don't exist.`;
 
-/* ── Anthropic tool-use loop ─────────────────────────────────────────── */
+/* ── Multi-provider tool-use loop (Anthropic / OpenAI / Google) ──────── */
 
-// Client model ids → concrete Anthropic model. Non-Anthropic selections
-// fall back to the default (their providers aren't wired yet).
-const MODEL_MAP = {
-  'claude-sonnet-4-5': 'claude-sonnet-4-5',
-  'claude-haiku-4-5': 'claude-haiku-4-5-20251001',
+// Client model id → { provider, apiModel, envKey }.
+const MODEL_ROUTING = {
+  'claude-sonnet-4-5': { provider: 'anthropic', apiModel: 'claude-sonnet-4-5',           envKey: 'ANTHROPIC_API_KEY' },
+  'claude-haiku-4-5':  { provider: 'anthropic', apiModel: 'claude-haiku-4-5-20251001',   envKey: 'ANTHROPIC_API_KEY' },
+  'gpt-4o':            { provider: 'openai',    apiModel: 'gpt-4o',                       envKey: 'OPENAI_API_KEY' },
+  'gemini-1-5-pro':    { provider: 'google',    apiModel: 'gemini-1.5-pro',              envKey: 'GEMINI_API_KEY' },
 };
-const resolveModel = (m) => MODEL_MAP[m] || 'claude-sonnet-4-5';
+const routeModel = (m) => MODEL_ROUTING[m] || MODEL_ROUTING['claude-sonnet-4-5'];
 
-const callAnthropic = (messages, modelId) => fetchWithTimeout('https://api.anthropic.com/v1/messages', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'x-api-key': process.env.ANTHROPIC_API_KEY,
-    'anthropic-version': '2023-06-01',
-  },
-  body: JSON.stringify({
-    model: modelId || 'claude-sonnet-4-5',
-    max_tokens: 1024,
-    system: SYSTEM_PROMPT,
-    tools: TOOLS,
-    messages,
-  }),
-});
+// Tool schemas per provider (derived once from the Anthropic-shaped TOOLS).
+const OPENAI_TOOLS = TOOLS.map(t => ({ type: 'function', function: { name: t.name, description: t.description, parameters: t.input_schema } }));
+// Gemini's schema is stricter — collapse union/null types to plain strings.
+const geminiSchema = (schema) => {
+  const props = {};
+  for (const [k, v] of Object.entries(schema.properties || {})) {
+    const type = Array.isArray(v.type) ? (v.type.find(t => t !== 'null') || 'string') : (v.type || 'string');
+    const p = { type };
+    if (v.description) p.description = v.description;
+    if (Array.isArray(v.enum)) p.enum = v.enum.filter(e => e !== null);
+    if (type === 'array') p.items = v.items || { type: 'string' };
+    props[k] = p;
+  }
+  return { type: 'object', properties: props, ...(schema.required ? { required: schema.required } : {}) };
+};
+const GEMINI_TOOLS = TOOLS.map(t => ({ name: t.name, description: t.description, parameters: geminiSchema(t.input_schema) }));
+
+// Each loop takes the normalized history [{role,text}] and a `stage(name,input)`
+// callback (shared staging logic), and returns the assistant's final text.
+
+async function anthropicLoop(apiModel, history, stage) {
+  const msgs = history.map(m => ({ role: m.role, content: m.text }));
+  let finalText = '';
+  for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
+    const res = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({ model: apiModel, max_tokens: 1024, system: SYSTEM_PROMPT, tools: TOOLS, messages: msgs }),
+    });
+    if (!res.ok) throw new Error(`anthropic ${res.status}`);
+    const data = await res.json();
+    const content = Array.isArray(data.content) ? data.content : [];
+    finalText = content.filter(b => b.type === 'text').map(b => b.text).join('\n').trim() || finalText;
+    if (data.stop_reason !== 'tool_use') break;
+    msgs.push({ role: 'assistant', content });
+    const results = [];
+    for (const b of content) {
+      if (b.type !== 'tool_use') continue;
+      results.push({ type: 'tool_result', tool_use_id: b.id, content: JSON.stringify(stage(b.name, b.input || {})) });
+    }
+    msgs.push({ role: 'user', content: results });
+  }
+  return finalText;
+}
+
+async function openaiLoop(apiModel, history, stage) {
+  const msgs = [{ role: 'system', content: SYSTEM_PROMPT }, ...history.map(m => ({ role: m.role, content: m.text }))];
+  let finalText = '';
+  for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
+    const res = await fetchWithTimeout('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
+      body: JSON.stringify({ model: apiModel, messages: msgs, tools: OPENAI_TOOLS, temperature: 0.3 }),
+    });
+    if (!res.ok) throw new Error(`openai ${res.status}`);
+    const data = await res.json();
+    const msg = data.choices?.[0]?.message;
+    if (!msg) break;
+    if (msg.content) finalText = String(msg.content).trim() || finalText;
+    if (!msg.tool_calls || !msg.tool_calls.length) break;
+    msgs.push(msg);
+    for (const tc of msg.tool_calls) {
+      let args = {};
+      try { args = JSON.parse(tc.function?.arguments || '{}'); } catch { /* ignore */ }
+      msgs.push({ role: 'tool', tool_call_id: tc.id, content: JSON.stringify(stage(tc.function.name, args)) });
+    }
+  }
+  return finalText;
+}
+
+async function geminiLoop(apiModel, history, stage) {
+  const contents = history.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.text }] }));
+  let finalText = '';
+  for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
+    const res = await fetchWithTimeout(
+      `https://generativelanguage.googleapis.com/v1beta/models/${apiModel}:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          contents,
+          tools: [{ function_declarations: GEMINI_TOOLS }],
+        }),
+      }
+    );
+    if (!res.ok) throw new Error(`gemini ${res.status}`);
+    const data = await res.json();
+    const parts = data.candidates?.[0]?.content?.parts || [];
+    const text = parts.filter(p => p.text).map(p => p.text).join('\n').trim();
+    if (text) finalText = text;
+    const calls = parts.filter(p => p.functionCall).map(p => p.functionCall);
+    if (!calls.length) break;
+    contents.push({ role: 'model', parts: calls.map(c => ({ functionCall: c })) });
+    contents.push({ role: 'user', parts: calls.map(c => ({ functionResponse: { name: c.name, response: stage(c.name, c.args || {}) } })) });
+  }
+  return finalText;
+}
+
+const runProvider = (provider, apiModel, history, stage) =>
+  provider === 'openai' ? openaiLoop(apiModel, history, stage)
+    : provider === 'google' ? geminiLoop(apiModel, history, stage)
+      : anthropicLoop(apiModel, history, stage);
+
+/* ── Automation credits ──────────────────────────────────────────────── */
+
+const AUTOMATION_LIMITS = { free: 3, starter: 20, solo: 100, growth: 500, enterprise: 999999 };
+
+const getCredits = async (admin, userId) => {
+  const { data: profile } = await admin.from('profiles').select('plan').eq('id', userId).maybeSingle();
+  const plan = String(profile?.plan ?? 'free').toLowerCase();
+  const limit = AUTOMATION_LIMITS[plan] ?? 3;
+  const start = new Date(); start.setDate(1); start.setHours(0, 0, 0, 0);
+  const { count } = await admin
+    .from('automation_usage')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .gte('created_at', start.toISOString());
+  return { used: count ?? 0, limit };
+};
 
 export const handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -285,6 +391,16 @@ export const handler = async (event) => {
   try {
     const parsed = JSON.parse(event.body || '{}');
     if (Array.isArray(parsed.apply)) {
+      // Enforce the monthly automation-credit limit before persisting.
+      const credits = await getCredits(admin, authedUser.id);
+      if (credits.used >= credits.limit) {
+        return {
+          statusCode: 402,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ error: 'You\'ve used all your automation credits this month. Upgrade your plan to apply more changes.', credits }),
+        };
+      }
+
       const actions = parsed.apply.slice(0, 20);
       let next = await loadConfig(admin, authedUser.id);
       for (const a of actions) {
@@ -293,10 +409,13 @@ export const handler = async (event) => {
         }
       }
       const config = await persistConfig(admin, authedUser.id, next);
+      // Consume one credit for this applied change.
+      await admin.from('automation_usage').insert({ user_id: authedUser.id, kind: 'apply' });
+
       return {
         statusCode: 200,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ applied: true, config }),
+        body: JSON.stringify({ applied: true, config, credits: { used: credits.used + 1, limit: credits.limit } }),
       };
     }
   } catch (err) {
@@ -304,85 +423,68 @@ export const handler = async (event) => {
     return { statusCode: 500, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'Could not save your changes. Please try again.' }) };
   }
 
-  // Graceful degradation when the model key is not configured.
-  if (!process.env.ANTHROPIC_API_KEY) {
-    const config = await loadConfig(admin, authedUser.id).catch(() => null);
-    return {
-      statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        reply: "The chat assistant isn't fully connected yet (missing model key), but your monitoring settings are safe. You can still configure everything from the dashboard.",
-        config,
-      }),
-    };
-  }
-
   try {
     const body = JSON.parse(event.body || '{}');
     const incoming = Array.isArray(body.messages) ? body.messages : [];
-    const modelId = resolveModel(body.model);
+    const route = routeModel(body.model);
 
-    // Normalize client history into Anthropic message format (string content).
-    const messages = incoming
+    // The requested provider's key must be configured.
+    if (!process.env[route.envKey]) {
+      const config = await loadConfig(admin, authedUser.id).catch(() => null);
+      const credits = await getCredits(admin, authedUser.id).catch(() => null);
+      return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reply: `That model isn't connected yet (missing ${route.provider} key). Try Claude, or ask an admin to add the key. Your settings are safe.`,
+          config, credits,
+        }),
+      };
+    }
+
+    // Normalize client history into [{role, text}].
+    const history = incoming
       .filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.text === 'string')
       .slice(-16)
-      .map(m => ({ role: m.role, content: clampStr(m.text, 4000) }));
+      .map(m => ({ role: m.role, text: clampStr(m.text, 4000) }));
 
-    if (!messages.length || messages[messages.length - 1].role !== 'user') {
+    if (!history.length || history[history.length - 1].role !== 'user') {
       return { statusCode: 400, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'A user message is required.' }) };
     }
 
-    // The saved state, plus a working copy that accumulates *staged* changes.
-    // Nothing here is written to the DB — write tools only preview.
+    // Saved state + a working copy that accumulates *staged* changes.
+    // Write tools only preview here; nothing is persisted until Apply.
     const savedConfig = await loadConfig(admin, authedUser.id);
     let workingConfig = { ...savedConfig };
     const pending = [];
+    const stage = (name, input) => {
+      if (name === 'get_config') return workingConfig;
+      if (WRITE_TOOLS.has(name)) {
+        workingConfig = reduceConfig(workingConfig, name, input || {});
+        pending.push({ name, input: input || {}, label: labelFor(name, input || {}) });
+        return { staged: true, resulting_config: workingConfig };
+      }
+      return { error: `Unknown tool: ${name}` };
+    };
 
     let finalText = '';
-    for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
-      const res = await callAnthropic(messages, modelId);
-      if (!res.ok) {
-        const errBody = await res.text().catch(() => '');
-        console.warn('Anthropic error', res.status, errBody.slice(0, 200));
-        throw new Error('Model request failed');
-      }
-      const data = await res.json();
-      const content = Array.isArray(data.content) ? data.content : [];
-
-      // Collect any assistant text in this turn.
-      finalText = content.filter(b => b.type === 'text').map(b => b.text).join('\n').trim() || finalText;
-
-      if (data.stop_reason !== 'tool_use') break;
-
-      messages.push({ role: 'assistant', content });
-      const toolResults = [];
-      for (const block of content) {
-        if (block.type !== 'tool_use') continue;
-        let result;
-        if (block.name === 'get_config') {
-          // Read tool reflects the working (staged) state so Claude reasons correctly.
-          result = workingConfig;
-        } else if (WRITE_TOOLS.has(block.name)) {
-          // Stage — do not persist. Preview the resulting config and queue the action.
-          workingConfig = reduceConfig(workingConfig, block.name, block.input || {});
-          pending.push({ name: block.name, input: block.input || {}, label: labelFor(block.name, block.input || {}) });
-          result = { staged: true, resulting_config: workingConfig };
-        } else {
-          result = { error: `Unknown tool: ${block.name}` };
-        }
-        toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: JSON.stringify(result) });
-      }
-      messages.push({ role: 'user', content: toolResults });
+    try {
+      finalText = await runProvider(route.provider, route.apiModel, history, stage);
+    } catch (err) {
+      console.warn('provider error', route.provider, err.message);
+      throw new Error('Model request failed');
     }
 
+    const credits = await getCredits(admin, authedUser.id).catch(() => null);
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         reply: finalText || 'Done.',
-        config: savedConfig,          // what's currently saved
-        pending,                      // proposed actions awaiting confirmation
-        preview: pending.length ? workingConfig : null, // resulting config if applied
+        config: savedConfig,
+        pending,
+        preview: pending.length ? workingConfig : null,
+        credits,
       }),
     };
   } catch (error) {

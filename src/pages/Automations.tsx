@@ -12,13 +12,16 @@ import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover
 const MODELS: { id: string; label: string; available: boolean }[] = [
   { id: 'claude-sonnet-4-5', label: 'Claude Sonnet 4.5', available: true },
   { id: 'claude-haiku-4-5',  label: 'Claude Haiku 4.5',  available: true },
-  { id: 'gpt-4o',            label: 'GPT-4o',            available: false },
-  { id: 'gemini-1-5-pro',    label: 'Gemini 1.5 Pro',    available: false },
+  { id: 'gpt-4o',            label: 'GPT-4o',            available: true },
+  { id: 'gemini-1-5-pro',    label: 'Gemini 1.5 Pro',    available: true },
 ];
 
-const PLAN_LIMITS: Record<string, number> = { free: 3, starter: 5, solo: 30, growth: 120, enterprise: 9999 };
+// Monthly automation-credit limits per plan (must match the chat function).
+const PLAN_LIMITS: Record<string, number> = { free: 3, starter: 20, solo: 100, growth: 500, enterprise: 999999 };
 
-interface Attachment { id: string; name: string; size: number; kind: 'file' | 'voice'; }
+interface Attachment { id: string; name: string; size: number; kind: 'file' | 'voice'; status: 'uploading' | 'done' | 'error'; path?: string; }
+
+const UPLOAD_BUCKET = 'automation-uploads';
 
 const fmtDuration = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
@@ -176,7 +179,7 @@ const Automations = () => {
         const plan = String(data?.plan ?? 'free').toLowerCase();
         const limit = PLAN_LIMITS[plan] ?? 3;
         const startOfMonth = new Date(); startOfMonth.setDate(1); startOfMonth.setHours(0, 0, 0, 0);
-        supabase.from('analyses')
+        supabase.from('automation_usage')
           .select('id', { count: 'exact', head: true })
           .eq('user_id', uid)
           .gte('created_at', startOfMonth.toISOString())
@@ -185,12 +188,22 @@ const Automations = () => {
     });
   }, []);
 
+  const uploadBlob = async (id: string, blob: Blob, filename: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { setError('Please sign in to upload.'); setAttachments(a => a.map(x => x.id === id ? { ...x, status: 'error' } : x)); return; }
+    const path = `${session.user.id}/${id}-${filename}`;
+    const { error: upErr } = await supabase.storage.from(UPLOAD_BUCKET).upload(path, blob, { upsert: false });
+    setAttachments(a => a.map(x => x.id === id ? { ...x, status: upErr ? 'error' : 'done', path } : x));
+  };
+
   const addFiles = (files: FileList | null) => {
     if (!files) return;
-    const next = Array.from(files).slice(0, 5).map(f => ({
-      id: crypto.randomUUID(), name: f.name, size: f.size, kind: 'file' as const,
-    }));
-    setAttachments(a => [...a, ...next].slice(0, 5));
+    const room = Math.max(0, 5 - attachments.length);
+    for (const f of Array.from(files).slice(0, room)) {
+      const id = crypto.randomUUID();
+      setAttachments(a => [...a, { id, name: f.name, size: f.size, kind: 'file', status: 'uploading' }]);
+      void uploadBlob(id, f, f.name);
+    }
   };
 
   const startRecording = async () => {
@@ -204,7 +217,9 @@ const Automations = () => {
         stream.getTracks().forEach(t => t.stop());
         const blob = new Blob(chunks, { type: 'audio/webm' });
         const secs = Math.max(1, Math.round((Date.now() - recStartRef.current) / 1000));
-        setAttachments(a => [...a, { id: crypto.randomUUID(), name: `Voice note (${fmtDuration(secs)})`, size: blob.size, kind: 'voice' }].slice(0, 5));
+        const id = crypto.randomUUID();
+        setAttachments(a => [...a, { id, name: `Voice note (${fmtDuration(secs)})`, size: blob.size, kind: 'voice', status: 'uploading' }].slice(0, 5));
+        void uploadBlob(id, blob, 'voice.webm');
       };
       mr.start();
       mediaRef.current = mr;
@@ -223,11 +238,18 @@ const Automations = () => {
     if (recTimerRef.current) { clearInterval(recTimerRef.current); recTimerRef.current = null; }
   };
 
-  const removeAttachment = (id: string) => setAttachments(a => a.filter(x => x.id !== id));
+  const removeAttachment = (id: string) => {
+    setAttachments(a => {
+      const found = a.find(x => x.id === id);
+      if (found?.path) void supabase.storage.from(UPLOAD_BUCKET).remove([found.path]);
+      return a.filter(x => x.id !== id);
+    });
+  };
 
   const send = async (raw: string) => {
     const text = raw.trim();
     if ((!text && attachments.length === 0) || loading) return;
+    if (attachments.some(a => a.status === 'uploading')) return; // wait for uploads
 
     // Fold any attachments into the message as context for the assistant.
     const attachNote = attachments.length
@@ -259,12 +281,15 @@ const Automations = () => {
       setMessages(prev => [...prev, { role: 'assistant', text: data.reply }]);
       if (data.config) setConfig(data.config);
       if (Array.isArray(data.pending)) setPending(data.pending);
+      if (data.credits) setCredits(data.credits);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong.');
     } finally {
       setLoading(false);
     }
   };
+
+  const uploading = attachments.some(a => a.status === 'uploading');
 
   const applyPending = async () => {
     if (!pending.length || applying) return;
@@ -280,6 +305,7 @@ const Automations = () => {
         body: JSON.stringify({ apply: pending }),
       });
       const data = await res.json();
+      if (data.credits) setCredits(data.credits);
       if (!res.ok) throw new Error(data.error || 'Could not save.');
 
       if (data.config) setConfig(data.config);
@@ -429,8 +455,19 @@ const Automations = () => {
         {attachments.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-2">
             {attachments.map(a => (
-              <span key={a.id} className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card/60 pl-2 pr-1 py-1 text-xs text-foreground max-w-[16rem]">
-                {a.kind === 'voice' ? <AudioLines className="w-3.5 h-3.5 text-primary shrink-0" /> : <FileText className="w-3.5 h-3.5 text-muted-foreground shrink-0" />}
+              <span
+                key={a.id}
+                title={a.status === 'error' ? 'Upload failed' : undefined}
+                className={cn(
+                  'inline-flex items-center gap-1.5 rounded-lg border pl-2 pr-1 py-1 text-xs max-w-[16rem]',
+                  a.status === 'error' ? 'border-red-500/40 bg-red-500/10 text-red-600 dark:text-red-400' : 'border-border bg-card/60 text-foreground'
+                )}
+              >
+                {a.status === 'uploading'
+                  ? <Loader2 className="w-3.5 h-3.5 text-muted-foreground shrink-0 animate-spin" />
+                  : a.kind === 'voice'
+                    ? <AudioLines className="w-3.5 h-3.5 text-primary shrink-0" />
+                    : <FileText className="w-3.5 h-3.5 text-muted-foreground shrink-0" />}
                 <span className="truncate">{a.name}</span>
                 <button
                   onClick={() => removeAttachment(a.id)}
@@ -492,9 +529,10 @@ const Automations = () => {
 
           <button
             onClick={() => send(input)}
-            disabled={(!input.trim() && attachments.length === 0) || loading || recording}
+            disabled={(!input.trim() && attachments.length === 0) || loading || recording || uploading}
             className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-40 shrink-0"
             aria-label="Send"
+            title={uploading ? 'Waiting for uploads…' : 'Send'}
           >
             <Send className="w-4 h-4" />
           </button>
