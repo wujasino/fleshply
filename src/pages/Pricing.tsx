@@ -294,6 +294,17 @@ const Pricing = () => {
       </Dialog>
 
       <div className="pb-20 px-4 max-w-7xl mx-auto">
+        {/* Page header */}
+        <div className="text-center pt-10">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-primary/10 border border-primary/20 text-[11px] font-medium text-primary mb-4 uppercase tracking-wider">
+            Subscription
+          </span>
+          <h1 className="text-3xl sm:text-4xl font-display text-foreground mb-2">Subscription</h1>
+          <p className="text-sm text-muted-foreground max-w-lg mx-auto">
+            Choose the plan that fits — upgrade, downgrade or cancel anytime.
+          </p>
+        </div>
+
         {message && (
           <p className="mt-6 mb-2 text-center text-sm text-primary font-medium">{message}</p>
         )}

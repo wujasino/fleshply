@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Home, CreditCard, Code2, Zap, Users, FileText, Bot, Search } from 'lucide-react';
+import { Home, Code2, Zap, Users, FileText, Bot, Search } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
@@ -124,7 +124,6 @@ export const Sidebar = ({ collapsed = false, mobileOpen = false, onMobileClose }
           <NavItem to="/brand-visibility" icon={Search} label="Brand Scan" active={pathname === '/brand-visibility'} collapsed={effectiveCollapsed} onNavigate={handleNavigate} />
           <NavItem to="/automations" icon={Bot} label="Automations" active={pathname === '/automations'} collapsed={effectiveCollapsed} onNavigate={handleNavigate} />
           <NavItem to="/reports" icon={FileText} label="Raporty" active={pathname === '/reports'} collapsed={effectiveCollapsed} onNavigate={handleNavigate} />
-          <NavItem to="/pricing" icon={CreditCard} label="Pricing" active={pathname === '/pricing'} collapsed={effectiveCollapsed} onNavigate={handleNavigate} />
         </nav>
 
         {/* Bottom */}
@@ -150,21 +149,19 @@ export const Sidebar = ({ collapsed = false, mobileOpen = false, onMobileClose }
             </div>
           )}
 
-          {/* Upgrade CTA */}
-          {plan === 'Free' && (
-            <Link
-              to="/pricing"
-              onClick={handleNavigate}
-              title={effectiveCollapsed ? 'Upgrade plan' : undefined}
-              className={cn(
-                'flex items-center justify-center gap-2 w-full py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors',
-                effectiveCollapsed && 'w-8 h-8 p-0 rounded-lg'
-              )}
-            >
-              <Zap className="w-4 h-4 shrink-0" />
-              {!effectiveCollapsed && 'Upgrade plan'}
-            </Link>
-          )}
+          {/* Subscription / Upgrade CTA — the single entry point to plans */}
+          <Link
+            to="/pricing"
+            onClick={handleNavigate}
+            title={effectiveCollapsed ? 'Subscription' : undefined}
+            className={cn(
+              'flex items-center justify-center gap-2 w-full py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors',
+              effectiveCollapsed && 'w-8 h-8 p-0 rounded-lg'
+            )}
+          >
+            <Zap className="w-4 h-4 shrink-0" />
+            {!effectiveCollapsed && (plan === 'Free' ? 'Upgrade — Subscription' : 'Subscription')}
+          </Link>
         </div>
       </aside>
     </>
