@@ -11,6 +11,7 @@ import { registerUser } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 import { FloatingPathsBackground } from '@/components/ui/floating-paths';
 import { cn } from '@/lib/utils';
+import { Wordmark } from '@/components/Wordmark';
 
 // 6 individual digit inputs — paste-aware, auto-advancing
 const OtpInput = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => {
@@ -217,7 +218,7 @@ const Register = () => {
         className="hidden lg:flex lg:w-[46%] xl:w-[42%] flex-col justify-between p-10 border-r border-[hsl(var(--glass-border))] bg-card/30"
       >
         <Link to="/" className="flex items-center w-fit">
-          <img src="/landing-page-logo.png" alt="Perceply" className="h-7" />
+          <Wordmark className="text-xl" />
         </Link>
 
         <div className="space-y-8">
@@ -266,7 +267,7 @@ const Register = () => {
           {/* Top bar: mobile logo + back button */}
           <div className="flex items-center justify-between mb-2">
             <Link to="/" className="lg:hidden flex items-center">
-              <img src="/landing-page-logo.png" alt="Perceply" className="h-6" />
+              <Wordmark className="text-lg" />
             </Link>
             <Link
               to="/"

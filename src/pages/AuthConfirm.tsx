@@ -5,6 +5,7 @@ import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { FloatingPathsBackground } from '@/components/ui/floating-paths';
+import { Wordmark } from '@/components/Wordmark';
 
 type Status = 'loading' | 'success' | 'error';
 
@@ -56,7 +57,7 @@ export default function AuthConfirm() {
 
           {/* Logo */}
           <Link to="/" className="inline-block">
-            <img src="/landing-page-logo.png" alt="Perceply" className="h-7 mx-auto" />
+            <Wordmark className="text-xl block text-center" />
           </Link>
 
           {status === 'loading' && (

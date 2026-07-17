@@ -10,6 +10,7 @@ import { Eye, EyeOff, ArrowRight, Zap, BarChart3, Shield, Loader2, ArrowLeft, Ma
 import { getAuthUser, loginUser } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 import { FloatingPathsBackground } from '@/components/ui/floating-paths';
+import { Wordmark } from '@/components/Wordmark';
 
 
 const FEATURES = [
@@ -293,7 +294,7 @@ const Login = () => {
         className="hidden lg:flex lg:w-[46%] xl:w-[42%] flex-col justify-between p-10 border-r border-[hsl(var(--glass-border))] bg-card/30"
       >
         <Link to="/" className="flex items-center w-fit">
-          <img src="/landing-page-logo.png" alt="Perceply" height="28" className="h-7" />
+          <Wordmark className="text-xl" />
         </Link>
 
         <div className="space-y-8">
@@ -341,7 +342,7 @@ const Login = () => {
           {/* Top bar: mobile logo + back button */}
           <div className="flex items-center justify-between mb-6 lg:mb-4">
             <Link to="/" className="lg:hidden flex items-center">
-              <img src="/landing-page-logo.png" alt="Perceply" className="h-6" />
+              <Wordmark className="text-lg" />
             </Link>
             <Link
               to="/"

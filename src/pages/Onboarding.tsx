@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { supabase } from '@/lib/supabase';
 import { GradientMeshBg } from '@/components/ui/gradient-mesh-bg';
 import { cn } from '@/lib/utils';
+import { Wordmark } from '@/components/Wordmark';
 
 const GOALS = [
   { id: 'visibility',  icon: Zap,       label: 'AI Visibility',           desc: 'I want to know if AI mentions my brand' },
@@ -73,7 +74,7 @@ export default function Onboarding() {
 
         {/* Logo */}
         <div className="flex justify-center mb-10">
-          <img src="/landing-page-logo.png" alt="Perceply" className="h-8" />
+          <Wordmark className="text-2xl" />
         </div>
 
         {/* Progress bar */}

@@ -5,6 +5,7 @@ import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { GradientMeshBg } from '@/components/ui/gradient-mesh-bg';
+import { Wordmark } from '@/components/Wordmark';
 
 type Status = 'loading' | 'success' | 'error';
 
@@ -77,7 +78,7 @@ export default function GoogleCallback() {
       >
         <div className="rounded-2xl border border-[hsl(var(--glass-border))] bg-background/80 backdrop-blur-xl p-8 space-y-5">
           <Link to="/" className="inline-block">
-            <img src="/landing-page-logo.png" alt="Perceply" className="h-7 mx-auto" />
+            <Wordmark className="text-xl block text-center" />
           </Link>
 
           {status === 'loading' && (

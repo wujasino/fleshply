@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/lib/supabase';
 import { FloatingPathsBackground } from '@/components/ui/floating-paths';
+import { Wordmark } from '@/components/Wordmark';
 
 // Generate a readable backup code: XXXX-XXXX-XXXX-XXXX
 function generateBackupCode(): string {
@@ -116,7 +117,7 @@ export default function ResetPassword() {
         {/* Logo */}
         <div className="flex justify-center mb-8">
           <Link to="/">
-            <img src="/landing-page-logo.png" alt="Perceply" className="h-9" />
+            <Wordmark className="text-2xl" />
           </Link>
         </div>
 

@@ -1,10 +1,10 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Home, Code2, Zap, Users, FileText, Bot, Search } from 'lucide-react';
-import { useTheme } from 'next-themes';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Wordmark } from '@/components/Wordmark';
 
 interface NavItemProps {
   to: string;
@@ -53,9 +53,7 @@ interface SidebarProps {
 export const Sidebar = ({ collapsed = false, mobileOpen = false, onMobileClose }: SidebarProps) => {
   const { pathname } = useLocation();
   const [plan, setPlan] = useState('Free');
-  const { theme } = useTheme();
   const isMobile = useIsMobile();
-  const logoSrc = theme === 'dark' ? '/perceply-logo-cream.png' : '/perceply-logo.png';
 
   // On mobile the sidebar is a full drawer — never render icon-only mode
   const effectiveCollapsed = isMobile ? false : collapsed;
@@ -91,13 +89,12 @@ export const Sidebar = ({ collapsed = false, mobileOpen = false, onMobileClose }
         {/* Logo */}
         <div className={cn('flex items-center p-4 pb-4', effectiveCollapsed ? 'justify-center' : 'justify-start')}>
           {!effectiveCollapsed ? (
-            <Link to="/dashboard" onClick={handleNavigate} className="flex items-center gap-2">
-              <img src={logoSrc} alt="Perceply" className="h-6 w-auto" />
-              <span className="text-base font-display font-semibold text-foreground tracking-tight">Perceply</span>
+            <Link to="/dashboard" onClick={handleNavigate} className="flex items-center">
+              <Wordmark className="text-lg" />
             </Link>
           ) : (
             <Link to="/dashboard" onClick={handleNavigate} aria-label="Perceply">
-              <img src={logoSrc} alt="Perceply" className="h-5 w-auto" />
+              <span className="font-display font-semibold text-lg text-foreground">P</span>
             </Link>
           )}
         </div>

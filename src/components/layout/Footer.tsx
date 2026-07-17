@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ExternalLink, Github, Twitter, Linkedin } from 'lucide-react';
+import { Wordmark } from '@/components/Wordmark';
 
 export const Footer = () => {
 
@@ -16,7 +17,7 @@ export const Footer = () => {
           {/* Brand column — wider on lg */}
           <div className="col-span-2 sm:col-span-4 lg:col-span-2 flex flex-col gap-5">
             <Link to="/" className="flex items-center gap-2.5 w-fit">
-              <img src="/landing-page-logo.png" alt="Perceply" className="h-7 w-auto" />
+              <Wordmark className="text-xl" />
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
               The AI visibility platform for brands that want to be found.
