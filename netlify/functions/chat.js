@@ -69,9 +69,7 @@ const loadConfig = async (admin, userId) => {
   };
 };
 
-const saveConfig = async (admin, userId, patch) => {
-  const current = await loadConfig(admin, userId);
-  const next = { ...current, ...patch };
+const persistConfig = async (admin, userId, next) => {
   const { data, error } = await admin
     .from('brand_monitors')
     .upsert({ user_id: userId, ...next }, { onConflict: 'user_id' })
@@ -80,6 +78,68 @@ const saveConfig = async (admin, userId, patch) => {
   if (error) throw new Error(error.message);
   return data;
 };
+
+/* Pure config reducer — validates & clamps, never touches the DB.
+   Used both to preview staged changes and to apply confirmed ones. */
+export const reduceConfig = (cfg, name, input = {}) => {
+  const next = { ...cfg, competitors: [...(cfg.competitors || [])], models: [...(cfg.models || [])] };
+  switch (name) {
+    case 'set_brand':
+      next.brand = clampStr(input.brand);
+      break;
+    case 'add_competitor': {
+      const c = clampStr(input.name);
+      if (c && !next.competitors.some(x => x.toLowerCase() === c.toLowerCase())) {
+        next.competitors = [...next.competitors, c].slice(0, 10);
+      }
+      break;
+    }
+    case 'remove_competitor': {
+      const t = clampStr(input.name).toLowerCase();
+      next.competitors = next.competitors.filter(x => x.toLowerCase() !== t);
+      break;
+    }
+    case 'set_schedule':
+      next.frequency = ['daily', 'weekly', 'monthly'].includes(input.frequency) ? input.frequency : 'weekly';
+      break;
+    case 'set_alert': {
+      const metric = input.metric === null ? null : clampStr(input.metric);
+      if (metric === null) { next.alert_metric = null; next.alert_threshold = null; }
+      else if (['sentiment', 'visibility', 'mentions'].includes(metric)) {
+        next.alert_metric = metric;
+        next.alert_threshold = Math.max(0, Math.min(100, Math.round(Number(input.threshold ?? 60))));
+      }
+      break;
+    }
+    case 'select_models': {
+      const models = (Array.isArray(input.models) ? input.models : [])
+        .map(m => clampStr(m).toLowerCase())
+        .filter(m => KNOWN_MODELS.includes(m));
+      if (models.length) next.models = [...new Set(models)];
+      break;
+    }
+    default:
+      break;
+  }
+  return next;
+};
+
+/* Human-readable one-liner describing a proposed action. */
+export const labelFor = (name, input = {}) => {
+  switch (name) {
+    case 'set_brand':        return `Monitor brand: ${clampStr(input.brand)}`;
+    case 'add_competitor':   return `Add competitor: ${clampStr(input.name)}`;
+    case 'remove_competitor':return `Remove competitor: ${clampStr(input.name)}`;
+    case 'set_schedule':     return `Scan schedule: ${input.frequency}`;
+    case 'set_alert':        return input.metric === null
+                               ? 'Clear metric alert'
+                               : `Alert when ${clampStr(input.metric)} < ${Math.max(0, Math.min(100, Math.round(Number(input.threshold ?? 60))))}`;
+    case 'select_models':    return `Query models: ${(Array.isArray(input.models) ? input.models : []).map(m => clampStr(m)).join(', ')}`;
+    default:                 return name;
+  }
+};
+
+const WRITE_TOOLS = new Set(['set_brand', 'add_competitor', 'remove_competitor', 'set_schedule', 'set_alert', 'select_models']);
 
 /* ── Tool definitions exposed to Claude ──────────────────────────────── */
 
@@ -148,67 +208,18 @@ const TOOLS = [
   },
 ];
 
-/* ── Tool execution — every write is scoped to the verified user ─────── */
-
-const runTool = async (admin, userId, name, input) => {
-  switch (name) {
-    case 'get_config':
-      return await loadConfig(admin, userId);
-
-    case 'set_brand':
-      return await saveConfig(admin, userId, { brand: clampStr(input.brand) });
-
-    case 'add_competitor': {
-      const cfg = await loadConfig(admin, userId);
-      const name2 = clampStr(input.name);
-      if (!name2) return { error: 'Empty competitor name.' };
-      const set = new Set([...(cfg.competitors || []), name2]);
-      return await saveConfig(admin, userId, { competitors: [...set].slice(0, 10) });
-    }
-
-    case 'remove_competitor': {
-      const cfg = await loadConfig(admin, userId);
-      const target = clampStr(input.name).toLowerCase();
-      return await saveConfig(admin, userId, {
-        competitors: (cfg.competitors || []).filter(c => c.toLowerCase() !== target),
-      });
-    }
-
-    case 'set_schedule':
-      return await saveConfig(admin, userId, {
-        frequency: ['daily', 'weekly', 'monthly'].includes(input.frequency) ? input.frequency : 'weekly',
-      });
-
-    case 'set_alert': {
-      const metric = input.metric === null ? null : clampStr(input.metric);
-      const valid = metric === null || ['sentiment', 'visibility', 'mentions'].includes(metric);
-      if (!valid) return { error: 'Unknown metric.' };
-      let threshold = metric === null ? null : Math.max(0, Math.min(100, Math.round(Number(input.threshold ?? 60))));
-      return await saveConfig(admin, userId, { alert_metric: metric, alert_threshold: threshold });
-    }
-
-    case 'select_models': {
-      const models = (Array.isArray(input.models) ? input.models : [])
-        .map(m => clampStr(m).toLowerCase())
-        .filter(m => KNOWN_MODELS.includes(m));
-      if (!models.length) return { error: 'No valid models. Valid: ' + KNOWN_MODELS.join(', ') };
-      return await saveConfig(admin, userId, { models: [...new Set(models)] });
-    }
-
-    default:
-      return { error: `Unknown tool: ${name}` };
-  }
-};
-
 const SYSTEM_PROMPT = `You are Perceply's setup assistant. You help brand owners and marketers configure their AI-visibility monitoring entirely through chat — no forms.
 
 You can set the primary brand, add/remove competitors, set the scan schedule (daily/weekly/monthly), choose which AI models to query, and set a drop alert on a metric (sentiment/visibility/mentions).
 
-Guidelines:
+IMPORTANT — nothing you configure is saved immediately. Your write tool calls are staged as a proposal that the user must confirm with an "Apply" button. So:
+- When the user asks for changes, make all the needed tool calls to build the full proposal.
+- Then describe what you're PROPOSING (not what you "did" or "saved") in one or two plain sentences, and tell them to review and hit Apply to confirm.
+- Read the current state with get_config when you need it.
+
+Other guidelines:
 - Be warm, concise and plain-spoken. These are marketers, not engineers.
-- When the user asks for several things at once, make all the needed tool calls.
-- After changing configuration, briefly confirm in one or two sentences exactly what you set, and suggest a sensible next step.
-- If a request is ambiguous (e.g. an alert without a threshold), pick a sensible default (threshold 60) and say what you chose so they can adjust.
+- If a request is ambiguous (e.g. an alert without a threshold), pick a sensible default (threshold 60) and say what you chose so they can adjust before applying.
 - Never invent competitors or brands the user did not mention.
 - You only configure monitoring. You do not run scans, change billing, or promise features that don't exist.`;
 
@@ -260,6 +271,31 @@ export const handler = async (event) => {
     return { statusCode: 500, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'Authentication failed. Please try again.' }) };
   }
 
+  // ── Apply mode: persist a proposal the user just confirmed ──────────
+  // The client sends back the staged actions; we re-validate every one
+  // server-side (never trusting the client) before a single upsert.
+  try {
+    const parsed = JSON.parse(event.body || '{}');
+    if (Array.isArray(parsed.apply)) {
+      const actions = parsed.apply.slice(0, 20);
+      let next = await loadConfig(admin, authedUser.id);
+      for (const a of actions) {
+        if (a && WRITE_TOOLS.has(a.name)) {
+          next = reduceConfig(next, a.name, a.input || {});
+        }
+      }
+      const config = await persistConfig(admin, authedUser.id, next);
+      return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ applied: true, config }),
+      };
+    }
+  } catch (err) {
+    console.error('chat apply error:', err.message);
+    return { statusCode: 500, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'Could not save your changes. Please try again.' }) };
+  }
+
   // Graceful degradation when the model key is not configured.
   if (!process.env.ANTHROPIC_API_KEY) {
     const config = await loadConfig(admin, authedUser.id).catch(() => null);
@@ -287,6 +323,12 @@ export const handler = async (event) => {
       return { statusCode: 400, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'A user message is required.' }) };
     }
 
+    // The saved state, plus a working copy that accumulates *staged* changes.
+    // Nothing here is written to the DB — write tools only preview.
+    const savedConfig = await loadConfig(admin, authedUser.id);
+    let workingConfig = { ...savedConfig };
+    const pending = [];
+
     let finalText = '';
     for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
       const res = await callAnthropic(messages);
@@ -303,31 +345,36 @@ export const handler = async (event) => {
 
       if (data.stop_reason !== 'tool_use') break;
 
-      // Execute each requested tool and feed results back.
       messages.push({ role: 'assistant', content });
       const toolResults = [];
       for (const block of content) {
         if (block.type !== 'tool_use') continue;
         let result;
-        try {
-          result = await runTool(admin, authedUser.id, block.name, block.input || {});
-        } catch (err) {
-          result = { error: String(err.message || 'tool failed').slice(0, 200) };
+        if (block.name === 'get_config') {
+          // Read tool reflects the working (staged) state so Claude reasons correctly.
+          result = workingConfig;
+        } else if (WRITE_TOOLS.has(block.name)) {
+          // Stage — do not persist. Preview the resulting config and queue the action.
+          workingConfig = reduceConfig(workingConfig, block.name, block.input || {});
+          pending.push({ name: block.name, input: block.input || {}, label: labelFor(block.name, block.input || {}) });
+          result = { staged: true, resulting_config: workingConfig };
+        } else {
+          result = { error: `Unknown tool: ${block.name}` };
         }
-        toolResults.push({
-          type: 'tool_result',
-          tool_use_id: block.id,
-          content: JSON.stringify(result),
-        });
+        toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: JSON.stringify(result) });
       }
       messages.push({ role: 'user', content: toolResults });
     }
 
-    const config = await loadConfig(admin, authedUser.id).catch(() => null);
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reply: finalText || 'Done.', config }),
+      body: JSON.stringify({
+        reply: finalText || 'Done.',
+        config: savedConfig,          // what's currently saved
+        pending,                      // proposed actions awaiting confirmation
+        preview: pending.length ? workingConfig : null, // resulting config if applied
+      }),
     };
   } catch (error) {
     console.error('chat handler error:', error.message);
