@@ -137,7 +137,7 @@ const Landing = () => {
               <BrandScanInput
                 placeholder="e.g. Tesla, Apple, Nike…"
                 suggestions={['Tesla', 'Apple', 'Nike']}
-                onSubmit={(brand) => navigate(`/dashboard?brand=${encodeURIComponent(brand)}`)}
+                onSubmit={(brand) => navigate(`/brand-visibility?brand=${encodeURIComponent(brand)}`)}
               />
             </motion.div>
 

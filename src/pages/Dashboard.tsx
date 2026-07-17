@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { useSearchParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Sparkles, TrendingUp, TrendingDown, Activity, Layers, Target, RefreshCw, Search, Lock, FileDown, Swords, X, Volume2, Square, Loader2 } from 'lucide-react';
+import { ArrowLeft, Sparkles, TrendingUp, TrendingDown, Activity, Layers, Target, RefreshCw, Search, Lock, FileDown, Swords, X, Volume2, Square, Loader2, Bot, FileText, ArrowRight } from 'lucide-react';
 import { useTranslation } from '@/lib/locale';
 import { BrewingProgress } from '@/components/BrewingState';
 import { RadarChartCard } from '@/components/charts/RadarChartCard';
@@ -316,9 +316,59 @@ const LiveSignal = ({ label }: { label: string }) => (
   </div>
 );
 
+/* Home landing hub — points to the tools instead of leading with the scanner. */
+const HOME_TOOLS = [
+  { to: '/brand-visibility', icon: Search, title: 'Brand Scan', desc: 'See how AI models describe and recommend your brand.' },
+  { to: '/automations',      icon: Bot,    title: 'Automations', desc: 'Set up monitoring and alerts by chat — no forms.' },
+  { to: '/reports',          icon: FileText, title: 'Reports', desc: 'Revisit your past analyses and track changes over time.' },
+];
+
+const HomeHub = () => (
+  <div className="min-h-screen bg-background flex flex-col">
+    <div className="flex-1 flex justify-center px-4 pt-16 sm:pt-24">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-3xl"
+      >
+        <div className="text-center mb-10">
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-6">
+            <Sparkles className="w-6 h-6 text-primary" />
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-display text-foreground mb-2">Welcome to Perceply</h1>
+          <p className="text-muted-foreground text-sm">Pick a tool to get started.</p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {HOME_TOOLS.map(tool => (
+            <Link
+              key={tool.to}
+              to={tool.to}
+              className="group flex flex-col gap-3 p-5 rounded-2xl border border-[hsl(var(--glass-border))] bg-card/50 hover:border-primary/40 hover:bg-primary/5 transition-colors"
+            >
+              <div className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-primary/10">
+                <tool.icon className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-foreground mb-1 flex items-center gap-1">
+                  {tool.title}
+                  <ArrowRight className="w-3.5 h-3.5 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-primary" />
+                </h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">{tool.desc}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </motion.div>
+    </div>
+  </div>
+);
+
 const Dashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const onScanRoute = location.pathname === '/brand-visibility';
   const t = useTranslation().t;
   const analysisId = searchParams.get('id');
   const brandFromUrl = searchParams.get('brand') || '';
@@ -409,6 +459,8 @@ const Dashboard = () => {
   };
 
   if (isIdle) {
+    // On Home, show a tool hub; the scanner lives in its own Tools section.
+    if (!onScanRoute) return <HomeHub />;
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <div className="flex-1 flex justify-center px-4 pt-16 sm:pt-24">

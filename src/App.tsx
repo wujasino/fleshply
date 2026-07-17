@@ -44,6 +44,7 @@ const queryClient = new QueryClient({
 const PAGE_TITLES: Record<string, string> = {
   '/':           'Perceply — AI Brand Visibility Scanner',
   '/dashboard':  'Dashboard | Perceply',
+  '/brand-visibility': 'Brand Scan | Perceply',
   '/automations':'Automations | Perceply',
   '/pricing':    'Pricing | Perceply',
   '/profile':    'Profile | Perceply',
@@ -79,6 +80,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/dashboard" element={<AppShell><Dashboard /></AppShell>} />
+            <Route path="/brand-visibility" element={<AppShell><Dashboard /></AppShell>} />
             <Route
               path="/automations"
               element={

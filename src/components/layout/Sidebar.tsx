@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Home, CreditCard, Code2, Zap, Users, FileText, Bot } from 'lucide-react';
+import { Home, CreditCard, Code2, Zap, Users, FileText, Bot, Search } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
@@ -121,6 +121,7 @@ export const Sidebar = ({ collapsed = false, mobileOpen = false, onMobileClose }
 
           <SectionLabel label="Tools" collapsed={effectiveCollapsed} />
 
+          <NavItem to="/brand-visibility" icon={Search} label="Brand Scan" active={pathname === '/brand-visibility'} collapsed={effectiveCollapsed} onNavigate={handleNavigate} />
           <NavItem to="/automations" icon={Bot} label="Automations" active={pathname === '/automations'} collapsed={effectiveCollapsed} onNavigate={handleNavigate} />
           <NavItem to="/reports" icon={FileText} label="Raporty" active={pathname === '/reports'} collapsed={effectiveCollapsed} onNavigate={handleNavigate} />
           <NavItem to="/pricing" icon={CreditCard} label="Pricing" active={pathname === '/pricing'} collapsed={effectiveCollapsed} onNavigate={handleNavigate} />

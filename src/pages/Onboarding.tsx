@@ -55,7 +55,7 @@ export default function Onboarding() {
     } finally {
       setSaving(false);
       const dest = brand.trim()
-        ? `/dashboard?brand=${encodeURIComponent(brand.trim())}`
+        ? `/brand-visibility?brand=${encodeURIComponent(brand.trim())}`
         : '/dashboard';
       navigate(dest, { replace: true });
     }

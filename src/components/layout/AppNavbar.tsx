@@ -30,6 +30,8 @@ const DropdownLink = ({ to, icon: Icon, label, onClick }: { to: string; icon: Re
 
 const SECTION_TITLES: Record<string, string> = {
   '/dashboard':  'Home',
+  '/brand-visibility': 'Brand Scan',
+  '/automations': 'Automations',
   '/pricing':    'Pricing',
   '/reports':    'Raporty',
   '/profile':    'Profile',
