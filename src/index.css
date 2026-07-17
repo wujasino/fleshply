@@ -239,3 +239,18 @@
     font-family: 'Courier New', monospace;
   }
 }
+
+/* ── Marquee (infinite horizontal scroll) ─────────────────────────── */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-100%); }
+}
+.animate-marquee {
+  animation: marquee var(--marquee-duration, 40s) linear infinite;
+}
+.animate-marquee[data-reverse="true"] {
+  animation-direction: reverse;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee { animation: none; }
+}

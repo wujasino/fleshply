@@ -11,7 +11,18 @@ import { CookiePanel } from '@/components/ui/cookie-banner-1';
 import { NewsletterSignup } from '@/components/ui/newsletter-signup';
 import { GradientMeshBg } from '@/components/ui/gradient-mesh-bg';
 import { ContactForm } from '@/components/ui/contact-form';
+import { Marquee } from '@/components/ui/marquee';
 import { FAQ_EN } from '@/lib/faq';
+
+/* ── Languages we analyze in (native names) ───────────────────────── */
+const LANGUAGES_A = [
+  'English', 'Polski', 'Deutsch', 'Français', 'Español', 'Italiano', 'Português',
+  'Nederlands', 'Svenska', 'Norsk', 'Suomi', 'Dansk', 'Čeština', 'Română', 'Magyar',
+];
+const LANGUAGES_B = [
+  '中文', '日本語', '한국어', 'Русский', 'Українська', 'العربية', 'עברית', 'हिन्दी',
+  'Türkçe', 'Ελληνικά', 'Tiếng Việt', 'ไทย', 'Bahasa Indonesia', 'Slovenčina', 'Hrvatski',
+];
 
 /* ── Integration logos (text-based, gray) ─────────────────────────── */
 const INTEGRATIONS = [
@@ -875,6 +886,28 @@ const Landing = () => {
               + more via API →
             </Link>
           </motion.div>
+        </div>
+      </section>
+
+      {/* ── Languages marquee ─────────────────────────────────────── */}
+      <section className="py-16 border-t border-[hsl(var(--glass-border))] overflow-hidden">
+        <div className="max-w-4xl mx-auto text-center px-4 mb-8">
+          <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs badge rounded-lg mb-4 font-data uppercase tracking-wider">
+              <Globe className="w-3 h-3" /> Any language
+            </span>
+            <h3 className="text-2xl sm:text-3xl font-display text-foreground mb-2">
+              We analyze your brand in your customers' language
+            </h3>
+            <p className="text-sm text-muted-foreground max-w-xl mx-auto">
+              AI answers people in the language they ask in. Perceply scans your visibility across 30+ languages — not just English.
+            </p>
+          </motion.div>
+        </div>
+
+        <div className="space-y-3">
+          <Marquee items={LANGUAGES_A} duration={45} />
+          <Marquee items={LANGUAGES_B} duration={50} reverse />
         </div>
       </section>
 
