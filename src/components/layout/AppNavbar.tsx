@@ -1,6 +1,6 @@
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { LogOut, Settings, User, Code2, CreditCard, MessageSquare, Send, X, Bot, PanelLeftClose, PanelLeftOpen, Menu, Crown } from 'lucide-react';
+import { LogOut, Settings, User, Code2, CreditCard, MessageSquare, Send, X, Bot, PanelLeftClose, PanelLeftOpen, Menu } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { logout } from '@/lib/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -130,17 +130,6 @@ export const AppNavbar = ({ collapsed = false, onToggle, onMobileToggle, chatOpe
       <span className="text-sm font-semibold text-foreground truncate min-w-0">{sectionTitle}</span>
 
       <div className="flex-1" />
-
-      {plan === 'Free' && (
-        <Link
-          to="/pricing"
-          title="Upgrade plan"
-          className="inline-flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg border border-primary/30 text-primary text-xs font-medium hover:bg-primary/10 transition-colors shrink-0"
-        >
-          <Crown className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Upgrade</span>
-        </Link>
-      )}
 
       {/* Feedback */}
       <Popover open={feedbackOpen} onOpenChange={setFeedbackOpen}>
