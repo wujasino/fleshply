@@ -277,9 +277,11 @@ const ScoreHero = ({ result, t }: { result: AnalysisResult; t: (k: string) => st
                     : 'AI recommends your competitors — not you'}
                 </p>
                 <p className="text-xs text-red-700/80 dark:text-red-300/70 leading-relaxed">
-                  {t('dashboard_low_score_alert_body') !== 'dashboard_low_score_alert_body'
-                    ? t('dashboard_low_score_alert_body')
-                    : `A score of ${score}% means that when someone asks ChatGPT or Gemini for a solution in your category, the models recommend competitors. Your brand is invisible in AI — this is a direct loss of customers.`}
+                  {result.competitorInsight
+                    ? result.competitorInsight
+                    : t('dashboard_low_score_alert_body') !== 'dashboard_low_score_alert_body'
+                      ? t('dashboard_low_score_alert_body')
+                      : `A score of ${score}% means that when someone asks ChatGPT or Gemini for a solution in your category, the models recommend competitors. Your brand is invisible in AI — this is a direct loss of customers.`}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {result.sources?.slice(0, 3).map((s, i) => (

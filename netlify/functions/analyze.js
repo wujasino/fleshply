@@ -185,7 +185,14 @@ ${brandContext || '(no stored knowledge for this brand)'}
             system: systemPrompt,
             messages: [{
               role: 'user',
-              content: `Analyze this website or brand: ${target}. Use the brand_context above when relevant. Rate it from 0-100 on these 5 dimensions (authority, sentiment, recency, mentions, accuracy) and provide a trustScore. Also write a "verdict": 2-3 plain-English sentences addressed to the brand owner ("you") telling the story of how AI models currently see this brand — specific, vivid, no jargon, no hedging; name the strongest signal and the one thing costing them recommendations. Respond ONLY with a raw JSON object, no markdown, no backticks, just JSON.`
+              content: `Analyze this website or brand: ${target}. Use the brand_context above when relevant. Rate it from 0-100 on these 5 dimensions (authority, sentiment, recency, mentions, accuracy) and provide a trustScore.
+
+Also include these fields:
+- "verdict": 2-3 plain-English sentences addressed to the brand owner ("you") telling the story of how AI models currently see this brand — specific, vivid, no jargon, no hedging; name the strongest signal and the one thing costing them recommendations.
+- "competitorInsight": 1-2 sentences on what a customer asking ChatGPT/Gemini in this category would hear, and where competitors get recommended instead. Concrete, addressed to "you".
+- "actionPlan": an array of exactly 3 objects, each { "title": short imperative action (e.g. "Publish a comparison page"), "impact": one of "High"|"Medium"|"Low", "desc": one plain-English sentence on why it moves AI to recommend you }. Order by impact, highest first.
+
+Respond ONLY with a raw JSON object, no markdown, no backticks, just JSON.`
             }]
           })
         });

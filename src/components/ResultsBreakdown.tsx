@@ -133,6 +133,39 @@ const ActionPlan = ({ ranked }: { ranked: { dim: DimKey; score: number }[] }) =>
   );
 };
 
+// ── Model-written action plan (preferred when the analysis provides one) ────
+const IMPACT_STYLE: Record<string, string> = {
+  High:   'bg-primary/10 text-primary border-primary/20',
+  Medium: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20',
+  Low:    'bg-muted text-muted-foreground border-border',
+};
+const ModelActionPlan = ({ items }: { items: NonNullable<AnalysisResult['actionPlan']> }) => (
+  <div className="space-y-2.5">
+    {items.map((item, i) => (
+      <motion.div
+        key={i}
+        initial={{ opacity: 0, x: -8 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.15 + i * 0.08, duration: 0.35 }}
+        className="rounded-xl border border-border bg-card/60 p-4 flex items-start gap-3"
+      >
+        <div className="shrink-0 w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center mt-0.5 text-xs font-display font-semibold text-primary">
+          {i + 1}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+            <p className="text-sm font-semibold text-foreground">{item.title}</p>
+            <span className={cn('inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border', IMPACT_STYLE[item.impact] ?? IMPACT_STYLE.Medium)}>
+              {item.impact} impact
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+        </div>
+      </motion.div>
+    ))}
+  </div>
+);
+
 interface ResultsBreakdownProps {
   result: AnalysisResult;
 }
@@ -178,7 +211,9 @@ export const ResultsBreakdown = memo(function ResultsBreakdown({ result }: Resul
           <Sparkles className="w-3 h-3 text-primary/70" />
           {t('results_action_subtitle')}
         </p>
-        <ActionPlan ranked={ranked} />
+        {result.actionPlan?.length
+          ? <ModelActionPlan items={result.actionPlan} />
+          : <ActionPlan ranked={ranked} />}
       </div>
     </div>
   );

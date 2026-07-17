@@ -1,7 +1,28 @@
 import { useState, useCallback } from 'react';
-import { AnalysisResult, SourceResult } from '@/types/analysis';
+import { AnalysisResult, SourceResult, ActionItem } from '@/types/analysis';
 import { supabase } from '@/lib/supabase';
 import { useTranslation } from '@/lib/locale';
+
+/* ── Narrative fields from the model (defensive parsing) ─────────────── */
+const cleanText = (v: unknown, max: number): string | undefined =>
+  typeof v === 'string' && v.trim() ? v.trim().slice(0, max) : undefined;
+
+const parseActionPlan = (v: unknown): ActionItem[] | undefined => {
+  if (!Array.isArray(v)) return undefined;
+  const items = v
+    .filter((x): x is Record<string, unknown> => !!x && typeof x === 'object')
+    .map((x) => {
+      const impactRaw = String(x.impact ?? 'Medium').toLowerCase();
+      const impact: ActionItem['impact'] = impactRaw.startsWith('h') ? 'High' : impactRaw.startsWith('l') ? 'Low' : 'Medium';
+      return {
+        title: String(x.title ?? '').trim().slice(0, 120),
+        impact,
+        desc: String(x.desc ?? '').trim().slice(0, 300),
+      };
+    })
+    .filter((x) => x.title);
+  return items.length ? items.slice(0, 3) : undefined;
+};
 
 type StoredDimensions = {
   authority: number;
@@ -16,6 +37,7 @@ const buildViewFromStored = (
   dims: StoredDimensions,
   trustScore: number,
   createdAt?: string,
+  narrative?: { verdict?: unknown; competitorInsight?: unknown; actionPlan?: unknown },
 ): AnalysisResult => {
   const sentimentTrend = Array.from({ length: 7 }).map((_, i) => ({
     date: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000).toLocaleDateString(),
@@ -41,6 +63,9 @@ const buildViewFromStored = (
     sentimentTrend,
     sourceBreakdown,
     status: 'completed',
+    verdict: cleanText(narrative?.verdict, 600),
+    competitorInsight: cleanText(narrative?.competitorInsight, 400),
+    actionPlan: parseActionPlan(narrative?.actionPlan),
   };
 };
 
@@ -256,9 +281,9 @@ export function useBrewing() {
         sentimentTrend: sentimentTrendData,
         sourceBreakdown: sourceBreakdownData,
         status: 'completed',
-        verdict: typeof data.verdict === 'string' && data.verdict.trim()
-          ? data.verdict.trim().slice(0, 600)
-          : undefined
+        verdict: cleanText(data.verdict, 600),
+        competitorInsight: cleanText(data.competitorInsight, 400),
+        actionPlan: parseActionPlan(data.actionPlan)
       };
 
       // Zapisz do Supabase
@@ -273,7 +298,10 @@ export function useBrewing() {
             sentiment: analysisResult.dimensions.sentiment,
             recency: analysisResult.dimensions.recency,
             mentions: analysisResult.dimensions.mentions,
-            accuracy: analysisResult.dimensions.accuracy
+            accuracy: analysisResult.dimensions.accuracy,
+            verdict: analysisResult.verdict ?? null,
+            competitor_insight: analysisResult.competitorInsight ?? null,
+            action_plan: analysisResult.actionPlan ?? null
           });
 
           if (dbError) {
@@ -396,6 +424,7 @@ export function useBrewing() {
       },
       data.trust_score,
       data.created_at,
+      { verdict: data.verdict, competitorInsight: data.competitor_insight, actionPlan: data.action_plan },
     );
     setProgress(100);
     setResult(view);

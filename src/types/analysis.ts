@@ -16,6 +16,16 @@ export interface AnalysisResult {
   status: 'brewing' | 'completed' | 'failed';
   /** Model-written narrative verdict; falls back to canned locale copy when absent. */
   verdict?: string;
+  /** Model-written competitor insight for the low-score banner. */
+  competitorInsight?: string;
+  /** Model-written, prioritised action plan; falls back to dimension-derived actions. */
+  actionPlan?: ActionItem[];
+}
+
+export interface ActionItem {
+  title: string;
+  impact: 'High' | 'Medium' | 'Low';
+  desc: string;
 }
 
 export interface SourceResult {
