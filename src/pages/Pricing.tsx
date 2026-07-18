@@ -91,12 +91,21 @@ const Pricing = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { window.location.href = '/register?plan=' + planId; return; }
 
-      const priceMap: Record<string, string | undefined> = {
-        starter: import.meta.env.VITE_STRIPE_STARTER_PRICE_ID,
-        solo: import.meta.env.VITE_STRIPE_SOLO_PRICE_ID,
-        growth: import.meta.env.VITE_STRIPE_GROWTH_PRICE_ID,
+      const priceMap: Record<string, { monthly?: string; yearly?: string }> = {
+        starter: {
+          monthly: import.meta.env.VITE_STRIPE_STARTER_PRICE_ID,
+          yearly: import.meta.env.VITE_STRIPE_STARTER_YEARLY_PRICE_ID,
+        },
+        solo: {
+          monthly: import.meta.env.VITE_STRIPE_SOLO_PRICE_ID,
+          yearly: import.meta.env.VITE_STRIPE_SOLO_YEARLY_PRICE_ID,
+        },
+        growth: {
+          monthly: import.meta.env.VITE_STRIPE_GROWTH_PRICE_ID,
+          yearly: import.meta.env.VITE_STRIPE_GROWTH_YEARLY_PRICE_ID,
+        },
       };
-      const priceId = priceMap[planId];
+      const priceId = priceMap[planId]?.[billingCycle];
 
       if (!priceId) { setMessage('Stripe nie jest skonfigurowany. Skontaktuj się z pomocą.'); return; }
 
@@ -329,14 +338,9 @@ const Pricing = () => {
 
         {/* Control bar — left: billing-cycle toggle, right: usage + billing */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pt-8 pb-8">
-          {/* Left: billing cycle.
-              Yearly is hidden — there are no yearly Stripe Price IDs configured
-              anywhere (checkout always used the monthly price regardless of
-              this toggle, so customers seeing "470 zł/rok" would be charged
-              the monthly amount instead). Re-enable once yearly prices exist
-              and handlePlanSelect actually selects them per billingCycle. */}
+          {/* Left: billing cycle */}
           <div className="flex items-center gap-1 p-1 rounded-lg border border-[hsl(var(--glass-border))] bg-muted/40 w-fit">
-            {(['monthly'] as const).map(cycle => (
+            {(['monthly', 'yearly'] as const).map(cycle => (
               <button
                 key={cycle}
                 onClick={() => setBillingCycle(cycle)}
@@ -346,7 +350,10 @@ const Pricing = () => {
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                Miesięcznie
+                {cycle === 'monthly' ? 'Miesięcznie' : 'Rocznie'}
+                {cycle === 'yearly' && (
+                  <span className="ml-1.5 text-[10px] font-semibold text-primary">−20%</span>
+                )}
               </button>
             ))}
           </div>

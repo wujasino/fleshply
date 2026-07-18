@@ -52,9 +52,17 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { window.location.href = '/register?plan=' + planId; return; }
-      const priceId = planId === 'solo'
-        ? import.meta.env.VITE_STRIPE_SOLO_PRICE_ID
-        : import.meta.env.VITE_STRIPE_GROWTH_PRICE_ID;
+      const priceMap: Record<string, { monthly?: string; yearly?: string }> = {
+        solo: {
+          monthly: import.meta.env.VITE_STRIPE_SOLO_PRICE_ID,
+          yearly: import.meta.env.VITE_STRIPE_SOLO_YEARLY_PRICE_ID,
+        },
+        growth: {
+          monthly: import.meta.env.VITE_STRIPE_GROWTH_PRICE_ID,
+          yearly: import.meta.env.VITE_STRIPE_GROWTH_YEARLY_PRICE_ID,
+        },
+      };
+      const priceId = priceMap[planId]?.[billingCycle];
       if (!priceId) { setMessage('Stripe is not configured. Please contact support.'); return; }
       const res = await fetch('/.netlify/functions/create-checkout', {
         method: 'POST',
@@ -241,16 +249,12 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
                   </div>
                 </div>
 
-                {/* Yearly billing toggle hidden — no yearly Stripe Price IDs are
-                    configured, so handlePlanSelect always checks out at the
-                    monthly price regardless of this cycle. */}
                 <PricingCards
                   plans={plans}
                   billingCycle={billingCycle}
                   onCycleChange={setBillingCycle}
                   onPlanSelect={(planId) => handlePlanSelect(planId)}
                   loadingPlan={loading}
-                  showBillingToggle={false}
                 />
               </motion.div>
             )}

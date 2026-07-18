@@ -5,9 +5,12 @@
 // `priceId === SOLO ? 'solo' : 'growth'` ternary that silently mis-assigned
 // every other price — including Starter — to the most expensive plan.
 export const PLAN_BY_PRICE_ID = {
-  ...(process.env.VITE_STRIPE_STARTER_PRICE_ID ? { [process.env.VITE_STRIPE_STARTER_PRICE_ID]: 'starter' } : {}),
-  ...(process.env.VITE_STRIPE_SOLO_PRICE_ID    ? { [process.env.VITE_STRIPE_SOLO_PRICE_ID]:    'solo'    } : {}),
-  ...(process.env.VITE_STRIPE_GROWTH_PRICE_ID  ? { [process.env.VITE_STRIPE_GROWTH_PRICE_ID]:  'growth'  } : {}),
+  ...(process.env.VITE_STRIPE_STARTER_PRICE_ID        ? { [process.env.VITE_STRIPE_STARTER_PRICE_ID]:        'starter' } : {}),
+  ...(process.env.VITE_STRIPE_STARTER_YEARLY_PRICE_ID ? { [process.env.VITE_STRIPE_STARTER_YEARLY_PRICE_ID]: 'starter' } : {}),
+  ...(process.env.VITE_STRIPE_SOLO_PRICE_ID           ? { [process.env.VITE_STRIPE_SOLO_PRICE_ID]:           'solo'    } : {}),
+  ...(process.env.VITE_STRIPE_SOLO_YEARLY_PRICE_ID    ? { [process.env.VITE_STRIPE_SOLO_YEARLY_PRICE_ID]:    'solo'    } : {}),
+  ...(process.env.VITE_STRIPE_GROWTH_PRICE_ID         ? { [process.env.VITE_STRIPE_GROWTH_PRICE_ID]:         'growth'  } : {}),
+  ...(process.env.VITE_STRIPE_GROWTH_YEARLY_PRICE_ID  ? { [process.env.VITE_STRIPE_GROWTH_YEARLY_PRICE_ID]:  'growth'  } : {}),
 };
 
 export const planForPriceId = (priceId) => PLAN_BY_PRICE_ID[priceId] || null;
