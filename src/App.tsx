@@ -5,6 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { applySeo } from "@/hooks/useSeo";
 
 // AppShell (sidebar, app navbar, AI chat) is only used on authenticated app routes —
 // code-split it so it stays out of the initial bundle served on landing/login/register.
@@ -42,25 +43,10 @@ const queryClient = new QueryClient({
   },
 });
 
-const PAGE_TITLES: Record<string, string> = {
-  '/':           'Perceply — AI Brand Visibility Scanner',
-  '/dashboard':  'Dashboard | Perceply',
-  '/brand-visibility': 'Brand Scan | Perceply',
-  '/automations':'Automations | Perceply',
-  '/changelog':  "What's new | Perceply",
-  '/pricing':    'Pricing | Perceply',
-  '/profile':    'Profile | Perceply',
-  '/settings':   'Settings | Perceply',
-  '/developers': 'Developers | Perceply',
-  '/login':      'Sign In | Perceply',
-  '/register':   'Sign Up | Perceply',
-  '/docs/api':   'API Docs | Perceply',
-};
-
 const PageTitle = () => {
   const { pathname } = useLocation();
   useEffect(() => {
-    document.title = PAGE_TITLES[pathname] ?? 'Perceply';
+    applySeo(pathname);
   }, [pathname]);
   return null;
 };
