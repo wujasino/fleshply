@@ -68,7 +68,6 @@ const LOCKED_MODELS = ['Perplexity', 'Mistral', 'Llama 3'];
 
 const HomeHub = () => {
   const navigate = useNavigate();
-  const [scanInput, setScanInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
 
@@ -105,37 +104,6 @@ const HomeHub = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-
-        {/* ── Hero scan input ─────────────────────────────────────── */}
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <h1 className="text-2xl sm:text-3xl font-display text-foreground mb-1">
-            How does AI describe your brand?
-          </h1>
-          <p className="text-sm text-muted-foreground mb-5">
-            Enter a brand or domain and run a fresh visibility scan.
-          </p>
-          <form
-            onSubmit={(e) => { e.preventDefault(); runScan(scanInput); }}
-            className="flex items-center gap-2 max-w-xl"
-          >
-            <div className="relative flex-1">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-              <input
-                value={scanInput}
-                onChange={e => setScanInput(e.target.value)}
-                placeholder="yourbrand.com"
-                className="w-full h-11 rounded-xl border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground pl-10 pr-3 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors"
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={!scanInput.trim()}
-              className="h-11 px-5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-40 whitespace-nowrap"
-            >
-              Run scan
-            </button>
-          </form>
-        </motion.div>
 
         {/* ── State: loading / empty / populated ──────────────────── */}
         {loading ? (
