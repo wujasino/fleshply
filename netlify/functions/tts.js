@@ -1,8 +1,87 @@
+import { createClient } from '@supabase/supabase-js';
+import ws from 'ws';
+
+if (!globalThis.WebSocket) {
+  globalThis.WebSocket = ws;
+}
+
+const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const MAX_REQUESTS_PER_WINDOW = 10;
+const MAX_REQUESTS_PER_DAY = 100;
+
+// In-memory store: secondary defense only — primary rate limiting is per user ID (verified via JWT)
+const requestStore = new Map();
+const now = () => Date.now();
+
+const shouldRateLimit = (key) => {
+  const current = now();
+  const entry = requestStore.get(key) || {
+    count: 0, windowStart: current, dailyCount: 0,
+    dailyReset: current + 24 * 60 * 60 * 1000,
+  };
+  if (current > entry.dailyReset) {
+    entry.dailyCount = 0; entry.dailyReset = current + 24 * 60 * 60 * 1000;
+    entry.windowStart = current; entry.count = 0;
+  }
+  if (current - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
+    entry.windowStart = current; entry.count = 0;
+  }
+  entry.count += 1; entry.dailyCount += 1;
+  requestStore.set(key, entry);
+  return entry.count > MAX_REQUESTS_PER_WINDOW || entry.dailyCount > MAX_REQUESTS_PER_DAY;
+};
+
+const createAdminClient = () => {
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('Missing Supabase service role configuration');
+  }
+  return createClient(supabaseUrl, supabaseServiceKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+    realtime: { params: { eventsPerSecond: 0 } },
+  });
+};
+
 export const handler = async (event) => {
   if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method Not Allowed' };
 
-  const { text, voiceId = 'EXAVITQu4vr4xnSDxMaL' } = JSON.parse(event.body || '{}');
-  if (!text) return { statusCode: 400, body: JSON.stringify({ error: 'text required' }) };
+  if (event.body && event.body.length > 8 * 1024) {
+    return { statusCode: 413, body: JSON.stringify({ error: 'Payload too large' }) };
+  }
+
+  // This endpoint calls a metered, paid third-party API (ElevenLabs) —
+  // require a verified account so it can't be used as a free, unlimited proxy.
+  const authHeader = event.headers.authorization || event.headers.Authorization || '';
+  const token = authHeader.toString().replace(/^Bearer\s+/i, '');
+  if (!token) {
+    return { statusCode: 401, body: JSON.stringify({ error: 'Unauthorized' }) };
+  }
+
+  let admin;
+  try {
+    admin = createAdminClient();
+    const { data: { user }, error: authError } = await admin.auth.getUser(token);
+    if (authError || !user) {
+      return { statusCode: 401, body: JSON.stringify({ error: 'Unauthorized' }) };
+    }
+    if (shouldRateLimit(`user:${user.id}`)) {
+      return { statusCode: 429, body: JSON.stringify({ error: 'Too many requests. Please try again in a moment.' }) };
+    }
+  } catch (err) {
+    console.error('Auth error in tts function:', err.message);
+    return { statusCode: 500, body: JSON.stringify({ error: 'Authentication failed. Please try again.' }) };
+  }
+
+  let text, voiceId;
+  try {
+    ({ text, voiceId = 'EXAVITQu4vr4xnSDxMaL' } = JSON.parse(event.body || '{}'));
+  } catch {
+    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON' }) };
+  }
+  if (!text || typeof text !== 'string') {
+    return { statusCode: 400, body: JSON.stringify({ error: 'text required' }) };
+  }
 
   const apiKey = process.env.ELEVENLABS_API_KEY;
   if (!apiKey) return { statusCode: 503, body: JSON.stringify({ error: 'TTS not configured' }) };
@@ -20,12 +99,13 @@ export const handler = async (event) => {
       signal: AbortSignal.timeout(20_000),
     });
   } catch (e) {
-    return { statusCode: 502, body: JSON.stringify({ error: String(e) }) };
+    console.error('TTS fetch error:', e.message);
+    return { statusCode: 502, body: JSON.stringify({ error: 'TTS request failed' }) };
   }
 
   if (!res.ok) {
-    const err = await res.text();
-    return { statusCode: res.status, body: JSON.stringify({ error: err }) };
+    console.error('ElevenLabs error:', res.status, await res.text().catch(() => ''));
+    return { statusCode: 502, body: JSON.stringify({ error: 'TTS provider error' }) };
   }
 
   const buffer = await res.arrayBuffer();

@@ -16,6 +16,25 @@ const supabase = createClient(
 const ALLOWED_ORIGINS = new Set(['https://bitbrew.pl', 'https://www.bitbrew.pl']);
 const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,253}\.[a-zA-Z]{2,}$/;
 
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+const MAX_REQUESTS_PER_WINDOW = 5;
+const requestStore = new Map();
+const getIp = (event) =>
+  event.headers['x-nf-client-connection-ip'] ||
+  event.headers['x-forwarded-for']?.split(',').pop()?.trim() ||
+  'unknown';
+const shouldRateLimit = (key) => {
+  const current = Date.now();
+  const entry = requestStore.get(key) || { count: 0, windowStart: current };
+  if (current - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
+    entry.windowStart = current;
+    entry.count = 0;
+  }
+  entry.count += 1;
+  requestStore.set(key, entry);
+  return entry.count > MAX_REQUESTS_PER_WINDOW;
+};
+
 const corsHeaders = (origin) => ({
   'Access-Control-Allow-Origin': ALLOWED_ORIGINS.has(origin) ? origin : 'https://bitbrew.pl',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -31,6 +50,9 @@ exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers };
   if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
   if (event.body && event.body.length > 8 * 1024) return { statusCode: 413, headers, body: JSON.stringify({ error: 'Payload too large' }) };
+  if (shouldRateLimit(getIp(event))) {
+    return { statusCode: 429, headers, body: JSON.stringify({ error: 'Too many requests. Please try again later.' }) };
+  }
 
   let name, email, subject, message;
   try {
