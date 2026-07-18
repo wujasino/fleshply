@@ -42,7 +42,7 @@ const Privacy = () => {
   <section style="margin-bottom:2em;">
     <h2 style="font-size:1.1em; margin-top:1.5em;">ADMINISTRATOR DANYCH OSOBOWYCH</h2>
     <p>Patryk Rybacki<br>działalność nierejestrowana<br>Biskupia 7/2</p>
-    <p>Jeśli chcesz skontaktować się z nami w związku z przetwarzaniem przez nas Twoich danych osobowych, napisz do nas na adres e-mail: <strong>bitbrew.poland@gmail.com</strong>.</p>
+    <p>Jeśli chcesz skontaktować się z nami w związku z przetwarzaniem przez nas Twoich danych osobowych, napisz do nas na adres e-mail: <strong>perceply.poland@gmail.com</strong>.</p>
   </section>
 
   <section style="margin-bottom:2em;">

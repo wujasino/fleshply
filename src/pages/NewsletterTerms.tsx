@@ -52,7 +52,7 @@ const NewsletterTerms = () => {
   <h2 style="font-size:1.1em; margin-top:1.8em;">§ 2 KONTAKT Z USŁUGODAWCĄ</h2>
   <ol style="margin-bottom:1em;">
     <li>Adres pocztowy: Biskupia 7/2</li>
-    <li>Adres e-mail: <strong>bitbrew.poland@gmail.com</strong></li>
+    <li>Adres e-mail: <strong>perceply.poland@gmail.com</strong></li>
     <li>Telefon: 733 555 642</li>
     <li>Koszt połączenia telefonicznego lub transmisji danych wykonywanych przez Usługobiorcę wynika z podstawowej taryfy operatora telekomunikacyjnego lub dostawcy usług internetowych, z którego usług korzysta Usługobiorca.</li>
   </ol>
@@ -210,7 +210,7 @@ const NewsletterTerms = () => {
     <p>
       Patryk Rybacki, działalność nierejestrowana<br>
       Biskupia 7/2<br>
-      adres e-mail: bitbrew.poland@gmail.com
+      adres e-mail: perceply.poland@gmail.com
     </p>
 
     <p>

@@ -25,9 +25,9 @@ export const Footer = () => {
             {/* Social icons */}
             <div className="flex items-center gap-3">
               {[
-                { href: 'https://twitter.com/bitbrew_ai', Icon: Twitter, label: 'Twitter/X' },
-                { href: 'https://linkedin.com/company/bitbrew', Icon: Linkedin, label: 'LinkedIn' },
-                { href: 'https://github.com/bitbrew-ai', Icon: Github, label: 'GitHub' },
+                { href: 'https://twitter.com/perceply_ai', Icon: Twitter, label: 'Twitter/X' },
+                { href: 'https://linkedin.com/company/perceply', Icon: Linkedin, label: 'LinkedIn' },
+                { href: 'https://github.com/perceply-ai', Icon: Github, label: 'GitHub' },
               ].map(({ href, Icon, label }) => (
                 <a
                   key={label}
@@ -90,7 +90,7 @@ export const Footer = () => {
                 { label: 'About',    to: '#' },
                 { label: 'Blog',     to: '#' },
                 { label: 'Careers',  to: '#', badge: 'Hiring' },
-                { label: 'Contact',  href: 'mailto:kontakt@bitbrew.pl' },
+                { label: 'Contact',  href: 'mailto:kontakt@perceply.pl' },
               ].map((item) => (
                 <li key={item.label}>
                   {item.href ? (

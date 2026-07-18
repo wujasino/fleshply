@@ -67,7 +67,7 @@ export default function Settings() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       const userEmail = user?.email ?? email;
-      const body = `FORMULARZ ODSTAPIENIA OD UMOWY\n\nAdresat: Patryk Rybacki\nE-mail: kontakt@bitbrew.pl\n\nJa, niniejszym informuje o moim odstąpieniu od umowy o swiadczenie nastepujacej uslugi:\n${withdrawalService}\n\nData zawarcia umowy: ${withdrawalDate}\n\nImię i nazwisko / e-mail konsumenta: ${userEmail}\n\nData złożenia oswiadczenia: ${new Date().toLocaleDateString('pl-PL')}`;
+      const body = `FORMULARZ ODSTAPIENIA OD UMOWY\n\nAdresat: Patryk Rybacki\nE-mail: kontakt@perceply.pl\n\nJa, niniejszym informuje o moim odstąpieniu od umowy o swiadczenie nastepujacej uslugi:\n${withdrawalService}\n\nData zawarcia umowy: ${withdrawalDate}\n\nImię i nazwisko / e-mail konsumenta: ${userEmail}\n\nData złożenia oswiadczenia: ${new Date().toLocaleDateString('pl-PL')}`;
       const res = await fetch('/.netlify/functions/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -951,7 +951,7 @@ export default function Settings() {
                     {showWithdrawal && withdrawalStatus !== 'sent' && (
                       <div className="space-y-3 p-4 rounded-xl border border-[hsl(var(--glass-border))] bg-muted/20">
                         <p className="text-xs text-muted-foreground leading-relaxed">
-                          Fill in the form below. The declaration will be sent to <strong>kontakt@bitbrew.pl</strong>.
+                          Fill in the form below. The declaration will be sent to <strong>kontakt@perceply.pl</strong>.
                         </p>
                         <div className="space-y-1.5">
                           <label className="text-xs text-muted-foreground">Name of service you are withdrawing from *</label>
@@ -962,7 +962,7 @@ export default function Settings() {
                           <Input type="date" value={withdrawalDate} onChange={e => setWithdrawalDate(e.target.value)} className="text-sm" />
                         </div>
                         {withdrawalStatus === 'error' && (
-                          <p className="text-xs text-destructive">An error occurred while sending. Try again or write directly to <strong>kontakt@bitbrew.pl</strong>.</p>
+                          <p className="text-xs text-destructive">An error occurred while sending. Try again or write directly to <strong>kontakt@perceply.pl</strong>.</p>
                         )}
                         <Button size="sm" onClick={handleWithdrawal} disabled={!withdrawalService.trim() || !withdrawalDate || withdrawalStatus === 'sending'} className="w-full gap-1.5">
                           {withdrawalStatus === 'sending'

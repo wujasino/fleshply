@@ -125,7 +125,7 @@ export const handler = async (event) => {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: process.env.RESEND_FROM || 'noreply@bitbrew.pl',
+      from: process.env.RESEND_FROM || 'noreply@perceply.pl',
       to: normalizedEmail,
       subject: `${otp} — kod resetowania hasła Perceply`,
       html: buildEmail(otp),

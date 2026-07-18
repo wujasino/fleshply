@@ -1280,7 +1280,7 @@ const Landing = () => {
               <p className="text-sm text-foreground font-medium">Still have questions?</p>
             </div>
             <a
-              href="mailto:kontakt@bitbrew.pl"
+              href="mailto:kontakt@perceply.pl"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity whitespace-nowrap"
             >
               Contact us
