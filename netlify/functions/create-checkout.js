@@ -1,10 +1,9 @@
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
-const ALLOWED_PRICE_IDS = new Set([
-  process.env.VITE_STRIPE_SOLO_PRICE_ID,
-  process.env.VITE_STRIPE_GROWTH_PRICE_ID,
-].filter(Boolean));
+import { PLAN_BY_PRICE_ID } from './_lib/stripePlans.js';
+
+const ALLOWED_PRICE_IDS = new Set(Object.keys(PLAN_BY_PRICE_ID));
 
 export const handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -68,18 +67,45 @@ export const handler = async (event) => {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
   try {
-    const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
-      payment_method_types: ['card'],
-      line_items: [{ price: priceId, quantity: 1 }],
-      customer_email: user.email,
-      metadata: {
-        userId: user.id,
-        priceId,
+    // Reuse the existing Stripe Customer if this user already has one —
+    // otherwise `customer_email` makes Stripe mint a new Customer object on
+    // every checkout, fragmenting one person's history across duplicates.
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('stripe_customer_id')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    const customerParams = profile?.stripe_customer_id
+      ? { customer: profile.stripe_customer_id }
+      : { customer_email: user.email };
+
+    // Idempotency key derived from the business operation (who, what price,
+    // coarse time window) rather than a fresh random value per call — a
+    // double-click or network retry within the window resolves to the same
+    // Checkout Session instead of creating a duplicate one.
+    const idempotencyBucket = Math.floor(Date.now() / (2 * 60 * 1000));
+    const idempotencyKey = `checkout-${user.id}-${priceId}-${idempotencyBucket}`;
+
+    const session = await stripe.checkout.sessions.create(
+      {
+        mode: 'subscription',
+        payment_method_types: ['card'],
+        line_items: [{ price: priceId, quantity: 1 }],
+        ...customerParams,
+        client_reference_id: user.id,
+        metadata: {
+          userId: user.id,
+          priceId,
+        },
+        subscription_data: {
+          metadata: { userId: user.id, priceId },
+        },
+        success_url: `${origin}/pricing?success=true&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/pricing?canceled=true`,
       },
-      success_url: `${origin}/pricing?success=true&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/pricing?canceled=true`,
-    });
+      { idempotencyKey }
+    );
 
     return {
       statusCode: 200,

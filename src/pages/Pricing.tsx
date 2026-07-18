@@ -34,6 +34,7 @@ const Pricing = () => {
   const [message, setMessage] = useState<string>('');
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [showDowngradeDialog, setShowDowngradeDialog] = useState(false);
+  const [downgrading, setDowngrading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
   const prices = PLN;
@@ -50,9 +51,26 @@ const Pricing = () => {
     if (params.get('canceled')) setMessage('Płatność została anulowana.');
   }, []);
 
-  const confirmDowngrade = () => {
-    setShowDowngradeDialog(false);
-    window.location.href = '/dashboard';
+  const confirmDowngrade = async () => {
+    setDowngrading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const res = await fetch('/.netlify/functions/manage-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ action: 'cancel' }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMessage(data?.error || 'Nie udało się anulować subskrypcji. Spróbuj ponownie.');
+        return;
+      }
+      setShowDowngradeDialog(false);
+      window.location.href = '/dashboard';
+    } finally {
+      setDowngrading(false);
+    }
   };
 
   const handlePlanSelect = async (planId: string) => {
@@ -283,11 +301,11 @@ const Pricing = () => {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex gap-2 mt-2">
-            <Button variant="outline" className="flex-1" onClick={() => setShowDowngradeDialog(false)}>
+            <Button variant="outline" className="flex-1" disabled={downgrading} onClick={() => setShowDowngradeDialog(false)}>
               Zostań na obecnym planie
             </Button>
-            <Button variant="destructive" className="flex-1" onClick={confirmDowngrade}>
-              Tak, przejdź na Free
+            <Button variant="destructive" className="flex-1" disabled={downgrading} onClick={confirmDowngrade}>
+              {downgrading ? 'Anulowanie...' : 'Tak, przejdź na Free'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -311,9 +329,14 @@ const Pricing = () => {
 
         {/* Control bar — left: billing-cycle toggle, right: usage + billing */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pt-8 pb-8">
-          {/* Left: billing cycle */}
+          {/* Left: billing cycle.
+              Yearly is hidden — there are no yearly Stripe Price IDs configured
+              anywhere (checkout always used the monthly price regardless of
+              this toggle, so customers seeing "470 zł/rok" would be charged
+              the monthly amount instead). Re-enable once yearly prices exist
+              and handlePlanSelect actually selects them per billingCycle. */}
           <div className="flex items-center gap-1 p-1 rounded-lg border border-[hsl(var(--glass-border))] bg-muted/40 w-fit">
-            {(['monthly', 'yearly'] as const).map(cycle => (
+            {(['monthly'] as const).map(cycle => (
               <button
                 key={cycle}
                 onClick={() => setBillingCycle(cycle)}
@@ -323,10 +346,7 @@ const Pricing = () => {
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                {cycle === 'monthly' ? 'Miesięcznie' : 'Rocznie'}
-                {cycle === 'yearly' && (
-                  <span className="ml-1.5 text-[10px] font-semibold text-primary">−20%</span>
-                )}
+                Miesięcznie
               </button>
             ))}
           </div>

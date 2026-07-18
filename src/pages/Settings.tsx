@@ -32,10 +32,15 @@ export default function Settings() {
   });
   const [voicePrefs, setVoicePrefs] = useState<VoicePrefs>(loadVoicePrefs);
 
-  // Billing / subscription
-  const [subStatus, setSubStatus] = useState<'active' | 'paused' | 'cancelled'>('active');
-  const [subHistory, setSubHistory] = useState<Array<{ status: 'active' | 'paused' | 'cancelled'; label: string; timestamp: string }>>([]);
+  // Billing / subscription — synced from `profiles` (kept up to date by
+  // stripe-webhook.js) and mutated only through manage-subscription.js,
+  // which is the one place that actually calls the Stripe API.
+  const [subStatus, setSubStatus] = useState<'active' | 'paused' | 'cancelled' | 'inactive' | 'past_due'>('inactive');
+  const [currentPeriodEnd, setCurrentPeriodEnd] = useState<string | null>(null);
+  const [subHistory, setSubHistory] = useState<Array<{ status: typeof subStatus; label: string; timestamp: string }>>([]);
   const [exportFormat, setExportFormat] = useState<'csv' | 'json'>('csv');
+  const [subActionLoading, setSubActionLoading] = useState(false);
+  const [subError, setSubError] = useState('');
 
   const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -123,22 +128,26 @@ export default function Settings() {
   const [emailError, setEmailError] = useState('');
 
   useEffect(() => {
-    const stored = localStorage.getItem('subscriptionStatus') as typeof subStatus | null;
-    if (stored) setSubStatus(stored);
     const storedHist = localStorage.getItem('subscriptionHistory');
     if (storedHist) {
       try { setSubHistory(JSON.parse(storedHist)); } catch { /* noop */ }
-    } else {
-      const init = [{ status: 'active' as const, label: 'Active', timestamp: new Date().toISOString() }];
-      setSubHistory(init);
-      localStorage.setItem('subscriptionHistory', JSON.stringify(init));
     }
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) { navigate('/login'); return; }
       setUserId(user.id);
       setEmail(user.email ?? '');
       setDisplayName(user.user_metadata?.full_name ?? '');
       setAvatarUrl(user.user_metadata?.avatar_url ?? null);
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('subscription_status, current_period_end')
+        .eq('id', user.id)
+        .maybeSingle();
+      if (profile?.subscription_status) {
+        setSubStatus(profile.subscription_status as typeof subStatus);
+      }
+      setCurrentPeriodEnd(profile?.current_period_end ?? null);
     });
   }, [navigate]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -146,17 +155,44 @@ export default function Settings() {
     active: 'bg-emerald-400 ring-emerald-400/30',
     paused: 'bg-amber-400 ring-amber-400/30',
     cancelled: 'bg-red-500 ring-red-500/30',
+    inactive: 'bg-muted-foreground/40 ring-muted-foreground/10',
+    past_due: 'bg-red-500 ring-red-500/30',
   } as const;
-  const SUB_STATUS_LABEL = { active: 'Active', paused: 'Paused', cancelled: 'Cancelled' } as const;
+  const SUB_STATUS_LABEL = {
+    active: 'Active', paused: 'Paused', cancelled: 'Cancels at period end',
+    inactive: 'No active subscription', past_due: 'Payment failed — update your card',
+  } as const;
 
-  const updateSub = (status: typeof subStatus) => {
-    if (status === subStatus) return;
-    setSubStatus(status);
-    localStorage.setItem('subscriptionStatus', status);
-    const label = SUB_STATUS_LABEL[status];
-    const next = [{ status, label, timestamp: new Date().toISOString() }, ...subHistory].slice(0, 20);
-    setSubHistory(next);
-    localStorage.setItem('subscriptionHistory', JSON.stringify(next));
+  const updateSub = async (action: 'cancel' | 'resume' | 'pause' | 'unpause') => {
+    setSubActionLoading(true);
+    setSubError('');
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const res = await fetch('/.netlify/functions/manage-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ action }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setSubError(data?.error || 'Could not update your subscription.');
+        return;
+      }
+
+      const nextStatus: typeof subStatus = data.paused ? 'paused' : data.cancel_at_period_end ? 'cancelled' : data.status;
+      setSubStatus(nextStatus);
+      setCurrentPeriodEnd(data.current_period_end ?? null);
+
+      const label = SUB_STATUS_LABEL[nextStatus] ?? nextStatus;
+      const next = [{ status: nextStatus, label, timestamp: new Date().toISOString() }, ...subHistory].slice(0, 20);
+      setSubHistory(next);
+      localStorage.setItem('subscriptionHistory', JSON.stringify(next));
+    } catch {
+      setSubError('Connection error. Please try again.');
+    } finally {
+      setSubActionLoading(false);
+    }
   };
 
   const downloadHistory = () => {
@@ -865,29 +901,42 @@ export default function Settings() {
               {/* BILLING */}
               {activeTab === 'billing' && (
                 <div className="space-y-5">
+                  {subError && (
+                    <p className="text-sm text-destructive">{subError}</p>
+                  )}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-[hsl(var(--glass-border))] bg-card/40">
                     <div className="flex items-center gap-3">
                       <span className={`inline-flex h-2.5 w-2.5 rounded-full ring-2 ${SUB_DOT[subStatus]} animate-pulse`} />
                       <div>
                         <p className="text-sm font-medium text-foreground">{SUB_STATUS_LABEL[subStatus]}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">Pause or cancel anytime — no contracts.</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {subStatus === 'cancelled' && currentPeriodEnd
+                            ? `Access continues until ${new Date(currentPeriodEnd).toLocaleDateString()}.`
+                            : 'Pause or cancel anytime — no contracts.'}
+                        </p>
                       </div>
                     </div>
                     <div className="flex gap-2 flex-wrap">
                       {subStatus === 'active' && (
                         <>
-                          <Button size="sm" variant="outline" onClick={() => updateSub('paused')}>Pause</Button>
-                          <Button size="sm" variant="outline" onClick={() => updateSub('cancelled')}>Cancel</Button>
+                          <Button size="sm" variant="outline" disabled={subActionLoading} onClick={() => updateSub('pause')}>Pause</Button>
+                          <Button size="sm" variant="outline" disabled={subActionLoading} onClick={() => updateSub('cancel')}>Cancel</Button>
                         </>
+                      )}
+                      {subStatus === 'past_due' && (
+                        <Button size="sm" variant="outline" disabled={subActionLoading} onClick={() => updateSub('cancel')}>Cancel</Button>
                       )}
                       {subStatus === 'paused' && (
                         <>
-                          <Button size="sm" onClick={() => updateSub('active')}>Resume</Button>
-                          <Button size="sm" variant="outline" onClick={() => updateSub('cancelled')}>Cancel</Button>
+                          <Button size="sm" disabled={subActionLoading} onClick={() => updateSub('unpause')}>Resume</Button>
+                          <Button size="sm" variant="outline" disabled={subActionLoading} onClick={() => updateSub('cancel')}>Cancel</Button>
                         </>
                       )}
                       {subStatus === 'cancelled' && (
-                        <Button size="sm" onClick={() => updateSub('active')}>Resume</Button>
+                        <Button size="sm" disabled={subActionLoading} onClick={() => updateSub('resume')}>Resume</Button>
+                      )}
+                      {subStatus === 'inactive' && (
+                        <Button size="sm" onClick={() => navigate('/pricing')}>View plans</Button>
                       )}
                     </div>
                   </div>
