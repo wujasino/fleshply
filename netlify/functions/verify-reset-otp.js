@@ -34,6 +34,10 @@ async function sha256(text) {
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+// A 6-digit code has 1,000,000 combinations — without a cap on verification
+// attempts it can be brute-forced well within its 10-minute validity window.
+const MAX_VERIFY_ATTEMPTS = 8;
+
 export const handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: corsHeaders(event) };
   if (event.httpMethod !== 'POST') return json(405, { error: 'Method not allowed' }, event);
@@ -61,6 +65,20 @@ export const handler = async (event) => {
 
   const normalizedEmail = email.trim().toLowerCase();
   const codeHash = await sha256(code);
+
+  // Register this attempt before checking the code — caps brute-force
+  // guessing regardless of which specific code was tried.
+  const { data: totalAttempts, error: attemptError } = await supabase
+    .rpc('register_otp_attempt', { p_email: normalizedEmail });
+
+  if (attemptError) {
+    console.error('OTP attempt tracking error:', attemptError.message);
+    return json(500, { error: 'Błąd serwera.' }, event);
+  }
+
+  if ((totalAttempts ?? 0) > MAX_VERIFY_ATTEMPTS) {
+    return json(429, { error: 'Zbyt wiele prób. Wyślij nowy kod.' }, event);
+  }
 
   // Find a valid, unused OTP for this email
   const { data: rows, error: dbError } = await supabase

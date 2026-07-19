@@ -8,10 +8,12 @@ import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/locale';
 import { Eye, EyeOff, ArrowRight, CheckCircle2, Circle, Mail, ArrowLeft, KeyRound, Loader2, Lock, Sparkles } from 'lucide-react';
 import { registerUser } from '@/lib/auth';
+import { signInWithGoogle } from '@/lib/googleAuth';
 import { supabase } from '@/lib/supabase';
 import { FloatingPathsBackground } from '@/components/ui/floating-paths';
 import { cn } from '@/lib/utils';
 import { Wordmark } from '@/components/Wordmark';
+import { GoogleIcon } from '@/components/ui/google-icon';
 
 // 6 individual digit inputs — paste-aware, auto-advancing
 const OtpInput = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => {
@@ -179,6 +181,7 @@ const Register = () => {
   const [error, setError]       = useState('');
   const [loading, setLoading]   = useState(false);
   const [success, setSuccess]   = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const strength = useMemo(() => getStrength(password), [password]);
 
@@ -207,6 +210,17 @@ const Register = () => {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setError('');
+    setGoogleLoading(true);
+    try {
+      await signInWithGoogle();
+      // signInWithGoogle redirects the browser away — this only resolves on failure.
+    } catch {
+      setError(t('google_signin_failed'));
+      setGoogleLoading(false);
+    }
+  };
 
   if (success) return <SuccessScreen email={email} />;
 
@@ -253,7 +267,7 @@ const Register = () => {
           </ol>
         </div>
 
-        <p className="text-[11px] text-muted-foreground/50">© 2024 Perceply</p>
+        <p className="text-[11px] text-muted-foreground/50">© {new Date().getFullYear()} Perceply</p>
       </FloatingPathsBackground>
 
       {/* ── Right panel (form) ── */}
@@ -426,6 +440,25 @@ const Register = () => {
                   <ArrowRight className="w-3.5 h-3.5" />
                 </>
               )}
+            </Button>
+
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-[hsl(var(--glass-border))]" />
+              <span className="text-[11px] uppercase tracking-wider text-muted-foreground/60">or</span>
+              <div className="h-px flex-1 bg-[hsl(var(--glass-border))]" />
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full h-11 gap-2.5"
+              onClick={handleGoogleSignIn}
+              disabled={googleLoading}
+            >
+              {googleLoading
+                ? <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                : <GoogleIcon className="w-4 h-4" />}
+              {t('sign_in_with_google')}
             </Button>
 
             <p className="flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground/70">

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 
 const VOICE_PREFS_KEY = 'bb_voice_prefs';
 
@@ -52,9 +53,15 @@ export function useTTS() {
     setLoading(true);
     setError(null);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (session?.access_token) {
+        headers.Authorization = `Bearer ${session.access_token}`;
+      }
+
       const res = await fetch('/.netlify/functions/tts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ text, voiceId: voiceId ?? prefs.voiceId }),
       });
       if (!res.ok) throw new Error(await res.text());

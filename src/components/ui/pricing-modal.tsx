@@ -32,6 +32,7 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
   const [loadingCredits, setLoadingCredits] = useState<string | null>(null);
   const [message, setMessage] = useState('');
   const [showDowngrade, setShowDowngrade] = useState(false);
+  const [downgrading, setDowngrading] = useState(false);
 
   useEffect(() => { if (!open) setMessage(''); }, [open]);
 
@@ -51,9 +52,17 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { window.location.href = '/register?plan=' + planId; return; }
-      const priceId = planId === 'solo'
-        ? import.meta.env.VITE_STRIPE_SOLO_PRICE_ID
-        : import.meta.env.VITE_STRIPE_GROWTH_PRICE_ID;
+      const priceMap: Record<string, { monthly?: string; yearly?: string }> = {
+        solo: {
+          monthly: import.meta.env.VITE_STRIPE_SOLO_PRICE_ID,
+          yearly: import.meta.env.VITE_STRIPE_SOLO_YEARLY_PRICE_ID,
+        },
+        growth: {
+          monthly: import.meta.env.VITE_STRIPE_GROWTH_PRICE_ID,
+          yearly: import.meta.env.VITE_STRIPE_GROWTH_YEARLY_PRICE_ID,
+        },
+      };
+      const priceId = priceMap[planId]?.[billingCycle];
       if (!priceId) { setMessage('Stripe is not configured. Please contact support.'); return; }
       const res = await fetch('/.netlify/functions/create-checkout', {
         method: 'POST',
@@ -66,6 +75,29 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
       window.location.href = data.url;
     } catch { setMessage('Connection error. Please try again.'); }
     finally { setLoading(null); }
+  };
+
+  const confirmDowngrade = async () => {
+    setDowngrading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const res = await fetch('/.netlify/functions/manage-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ action: 'cancel' }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMessage(data?.error || 'Could not cancel your subscription. Please try again.');
+        return;
+      }
+      setShowDowngrade(false);
+      onClose();
+      window.location.href = '/dashboard';
+    } finally {
+      setDowngrading(false);
+    }
   };
 
   const handleCreditsBuy = async (packId: string) => {
@@ -296,15 +328,16 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
               <DialogTitle>Switch to Free plan</DialogTitle>
             </div>
             <DialogDescription className="text-sm text-muted-foreground leading-relaxed">
-              Are you sure you want to switch to the Free plan?
+              Are you sure you want to switch to the Free plan? Your subscription will be canceled —
+              access continues until the end of the current billing period.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex gap-2 mt-2">
-            <Button variant="outline" className="flex-1" onClick={() => setShowDowngrade(false)}>
+            <Button variant="outline" className="flex-1" disabled={downgrading} onClick={() => setShowDowngrade(false)}>
               Stay on current plan
             </Button>
-            <Button variant="destructive" className="flex-1" onClick={() => { setShowDowngrade(false); onClose(); window.location.href = '/dashboard'; }}>
-              Yes, switch to Free
+            <Button variant="destructive" className="flex-1" disabled={downgrading} onClick={confirmDowngrade}>
+              {downgrading ? 'Canceling...' : 'Yes, switch to Free'}
             </Button>
           </DialogFooter>
         </DialogContent>

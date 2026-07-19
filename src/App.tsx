@@ -5,6 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { applySeo } from "@/hooks/useSeo";
 
 // AppShell (sidebar, app navbar, AI chat) is only used on authenticated app routes —
 // code-split it so it stays out of the initial bundle served on landing/login/register.
@@ -32,6 +33,7 @@ const NotFound       = lazy(() => import("./pages/NotFound"));
 const ResetPassword  = lazy(() => import("./pages/ResetPassword"));
 const AuthConfirm    = lazy(() => import("./pages/AuthConfirm"));
 const Onboarding     = lazy(() => import("./pages/Onboarding"));
+const GoogleCallback = lazy(() => import("./pages/GoogleCallback"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,25 +44,10 @@ const queryClient = new QueryClient({
   },
 });
 
-const PAGE_TITLES: Record<string, string> = {
-  '/':           'Perceply — AI Brand Visibility Scanner',
-  '/dashboard':  'Dashboard | Perceply',
-  '/brand-visibility': 'Brand Scan | Perceply',
-  '/automations':'Automations | Perceply',
-  '/changelog':  "What's new | Perceply",
-  '/pricing':    'Pricing | Perceply',
-  '/profile':    'Profile | Perceply',
-  '/settings':   'Settings | Perceply',
-  '/developers': 'Developers | Perceply',
-  '/login':      'Sign In | Perceply',
-  '/register':   'Sign Up | Perceply',
-  '/docs/api':   'API Docs | Perceply',
-};
-
 const PageTitle = () => {
   const { pathname } = useLocation();
   useEffect(() => {
-    document.title = PAGE_TITLES[pathname] ?? 'Perceply';
+    applySeo(pathname);
   }, [pathname]);
   return null;
 };
@@ -140,6 +127,7 @@ const App = () => (
             <Route path="/docs/api" element={<ApiDocs />} />
             <Route path="/reset-password"        element={<ResetPassword />} />
             <Route path="/auth/confirm"          element={<AuthConfirm />} />
+            <Route path="/auth/google/callback"  element={<GoogleCallback />} />
             <Route path="/onboarding"            element={<Onboarding />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

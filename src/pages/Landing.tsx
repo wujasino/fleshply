@@ -57,22 +57,16 @@ const Landing = () => {
       <Navbar />
 
       {/* ── Urgency strip ─────────────────────────────────────────── */}
-      <div className="w-full bg-primary/10 border-b border-primary/20 px-4 py-2.5 flex items-center justify-center gap-3 text-center">
+      <div className="w-full bg-primary/10 border-b border-primary/20 px-4 py-2.5 flex items-center justify-center gap-2 text-center">
         <TrendingUp className="w-3.5 h-3.5 text-primary shrink-0" />
         <p className="text-xs text-foreground/80">
           AI models are already shaping brand reputations. Is yours represented accurately?
         </p>
-        <button
-          onClick={() => document.getElementById('hero-input')?.scrollIntoView({ behavior: 'smooth' })}
-          className="text-xs text-primary font-medium whitespace-nowrap hover:underline shrink-0"
-        >
-          Check now →
-        </button>
       </div>
 
       {/* ── Hero + Why (shared animated background) ───────────────── */}
       <GradientMeshBg className="relative">
-        <section className="hero pt-28 pb-16 px-4">
+        <section className="hero pt-16 sm:pt-28 pb-16 px-4">
           <div className="max-w-4xl mx-auto text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -84,7 +78,7 @@ const Landing = () => {
               </span>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display text-foreground mb-6 leading-[1.1]">
                 Be the brand{' '}
-                <span className="bg-gradient-to-r from-[#f5a623] via-[#ffe066] to-[#f5a623] bg-[length:200%] bg-clip-text text-transparent animate-shimmer">
+                <span className="bg-gradient-to-r from-[#b87800] via-[#f5a623] to-[#b87800] dark:from-[#f5a623] dark:via-[#ffe066] dark:to-[#f5a623] bg-[length:200%] bg-clip-text text-transparent animate-shimmer">
                   AI recommends
                 </span>
               </h1>
@@ -101,7 +95,7 @@ const Landing = () => {
               className="max-w-xl mx-auto"
             >
               <BrandScanInput
-                placeholder="e.g. Tesla, Apple, Nike…"
+                placeholder="yourbrand.com"
                 suggestions={['Tesla', 'Apple', 'Nike']}
                 onSubmit={(brand) => navigate(`/brand-visibility?brand=${encodeURIComponent(brand)}`)}
               />
@@ -161,33 +155,45 @@ const Landing = () => {
 
 
             {/* ── How it works ────────────────────────────────────── */}
-            <section className="mt-16 max-w-4xl mx-auto">
-              <h3 className="text-center text-sm text-muted-foreground mb-6">How it works</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <section className="mt-10 sm:mt-16 max-w-4xl mx-auto">
+              <h2 className="text-center text-sm text-muted-foreground mb-5 sm:mb-6">How it works</h2>
+              <div className="grid grid-cols-3 gap-2 sm:gap-4">
                 {[
                   { title: 'Enter your brand', desc: 'Type a brand name or URL — any niche, any language.' },
                   { title: 'Models are queried', desc: 'GPT-4o, Claude, Gemini and more receive structured prompts in parallel.' },
                   { title: 'Get your score', desc: 'Receive a visibility score, per-model breakdown, and ranked action items.' },
                 ].map((step, idx) => (
-                  <div key={idx} className="flex flex-col items-center text-center p-4">
-                    <div className="w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center mb-3 text-2xl font-display shadow-lg shadow-primary/20">
+                  <div key={idx} className="flex flex-col items-center text-center p-2 sm:p-4">
+                    <div className="w-9 h-9 sm:w-14 sm:h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center mb-2 sm:mb-3 text-sm sm:text-2xl font-display shadow-lg shadow-primary/20">
                       {idx + 1}
                     </div>
-                    <div className="font-medium text-foreground">{step.title}</div>
-                    <div className="text-xs text-muted-foreground mt-1">{step.desc}</div>
+                    <div className="text-xs sm:text-base font-medium text-foreground">{step.title}</div>
+                    <div className="hidden sm:block text-xs text-muted-foreground mt-1">{step.desc}</div>
                   </div>
                 ))}
               </div>
             </section>
 
+            {/* ── Proof teaser: shows the actual output, not just a promise ── */}
             <motion.button
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
               onClick={() => document.getElementById('sample-report')?.scrollIntoView({ behavior: 'smooth' })}
-              className="text-xs text-muted-foreground/70 hover:text-primary transition-colors mt-4 underline underline-offset-4 decoration-dotted"
+              className="group mt-8 mx-auto flex items-center gap-3 sm:gap-4 rounded-2xl border border-[hsl(var(--glass-border))] bg-card/60 backdrop-blur-xl px-4 py-3 sm:px-5 sm:py-3.5 shadow-sm hover:border-primary/40 hover:bg-card/80 transition-colors text-left"
             >
-              See what results you get →
+              <span className="shrink-0 inline-flex flex-col items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                <span className="text-base sm:text-lg font-display font-semibold text-emerald-600 dark:text-emerald-400 leading-none">78</span>
+                <span className="text-[8px] uppercase tracking-wider text-emerald-600/70 dark:text-emerald-400/70 leading-none mt-0.5">/100</span>
+              </span>
+              <span className="min-w-0">
+                <span className="block text-xs sm:text-sm font-medium text-foreground">
+                  Sample: Tesla scored 78 — recommended by GPT-4o &amp; Claude
+                </span>
+                <span className="inline-flex items-center gap-1 text-xs text-primary group-hover:gap-1.5 transition-all mt-0.5">
+                  See the full report <ArrowRight className="w-3 h-3" />
+                </span>
+              </span>
             </motion.button>
 
             {/* scroll hint */}
@@ -196,7 +202,7 @@ const Landing = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
               onClick={() => document.getElementById('why-section')?.scrollIntoView({ behavior: 'smooth' })}
-              className="mt-12 mx-auto flex flex-col items-center gap-1.5 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+              className="mt-8 mx-auto flex flex-col items-center gap-1.5 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
             >
               <span className="text-[10px] uppercase tracking-[0.25em]">Learn more</span>
               <motion.div animate={{ y: [0, 4, 0] }} transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}>

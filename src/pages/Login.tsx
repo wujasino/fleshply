@@ -8,9 +8,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useTranslation } from '@/lib/locale';
 import { Eye, EyeOff, ArrowRight, Zap, BarChart3, Shield, Loader2, ArrowLeft, Mail, KeyRound, CheckCircle2, Circle, Lock, Sparkles } from 'lucide-react';
 import { getAuthUser, loginUser } from '@/lib/auth';
+import { signInWithGoogle } from '@/lib/googleAuth';
 import { supabase } from '@/lib/supabase';
 import { FloatingPathsBackground } from '@/components/ui/floating-paths';
 import { Wordmark } from '@/components/Wordmark';
+import { GoogleIcon } from '@/components/ui/google-icon';
 
 
 const FEATURES = [
@@ -100,6 +102,7 @@ const Login = () => {
   const [remember, setRemember]     = useState(false);
   const [error, setError]           = useState('');
   const [loading, setLoading]       = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const [mode, setMode]             = useState<'login' | 'forgot' | 'otp' | 'reset' | 'forgot_sent' | 'totp'>('login');
   const [totpFactorId, setTotpFactorId] = useState('');
@@ -266,6 +269,18 @@ const Login = () => {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setError('');
+    setGoogleLoading(true);
+    try {
+      await signInWithGoogle();
+      // signInWithGoogle redirects the browser away — this only resolves on failure.
+    } catch {
+      setError(t('google_signin_failed'));
+      setGoogleLoading(false);
+    }
+  };
+
   const handleTotpVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     if (totpCode.length !== 6) return;
@@ -333,7 +348,7 @@ const Login = () => {
           </div>
         </div>
 
-        <p className="text-[11px] text-muted-foreground/50">© 2024 Perceply</p>
+        <p className="text-[11px] text-muted-foreground/50">© {new Date().getFullYear()} Perceply</p>
       </FloatingPathsBackground>
 
       {/* ── Right panel ── */}
@@ -360,7 +375,7 @@ const Login = () => {
               <motion.div key="login" custom={dir} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25, ease: 'easeOut' }} className="space-y-6">
                 <div>
                   <span className="inline-flex items-center gap-1.5 text-xs font-medium text-primary mb-2">
-                    <span className="text-base leading-none" aria-hidden>👋</span> Welcome back
+                    <Sparkles className="w-3.5 h-3.5" /> Welcome back
                   </span>
                   <h1 className="text-2xl font-display text-foreground">{t('login')}</h1>
                   <p className="text-sm text-muted-foreground mt-1">{t('login_subtitle')}</p>
@@ -418,6 +433,25 @@ const Login = () => {
                     ) : <>{t('submit')}<ArrowRight className="w-3.5 h-3.5" /></>}
                   </Button>
                 </form>
+
+                <div className="flex items-center gap-3">
+                  <div className="h-px flex-1 bg-[hsl(var(--glass-border))]" />
+                  <span className="text-[11px] uppercase tracking-wider text-muted-foreground/60">or</span>
+                  <div className="h-px flex-1 bg-[hsl(var(--glass-border))]" />
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-11 gap-2.5"
+                  onClick={handleGoogleSignIn}
+                  disabled={googleLoading}
+                >
+                  {googleLoading
+                    ? <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    : <GoogleIcon className="w-4 h-4" />}
+                  {t('sign_in_with_google')}
+                </Button>
 
                 <p className="flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground/70">
                   <Lock className="w-3 h-3" /> Secured with 256-bit encryption

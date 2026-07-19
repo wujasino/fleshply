@@ -74,6 +74,11 @@ export async function handler(event) {
       realtime: { transport: ws, params: { eventsPerSecond: 0 } },
     });
 
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) {
+      return { statusCode: 401, body: JSON.stringify({ error: "Unauthorized" }) };
+    }
+
     // Moderation check
     const modResult = await moderate(`${brandName} ${text}`);
     if (modResult.flagged) {
@@ -87,6 +92,7 @@ export async function handler(event) {
     const embeddings = await embedBatch(chunks);
 
     const rows = chunks.map((content, i) => ({
+      user_id: user.id,
       brand_name: brandName.trim(),
       content,
       embedding: JSON.stringify(embeddings[i]),

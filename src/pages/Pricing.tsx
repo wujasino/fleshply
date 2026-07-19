@@ -34,6 +34,7 @@ const Pricing = () => {
   const [message, setMessage] = useState<string>('');
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [showDowngradeDialog, setShowDowngradeDialog] = useState(false);
+  const [downgrading, setDowngrading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
   const prices = PLN;
@@ -50,9 +51,26 @@ const Pricing = () => {
     if (params.get('canceled')) setMessage('Płatność została anulowana.');
   }, []);
 
-  const confirmDowngrade = () => {
-    setShowDowngradeDialog(false);
-    window.location.href = '/dashboard';
+  const confirmDowngrade = async () => {
+    setDowngrading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const res = await fetch('/.netlify/functions/manage-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ action: 'cancel' }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMessage(data?.error || 'Nie udało się anulować subskrypcji. Spróbuj ponownie.');
+        return;
+      }
+      setShowDowngradeDialog(false);
+      window.location.href = '/dashboard';
+    } finally {
+      setDowngrading(false);
+    }
   };
 
   const handlePlanSelect = async (planId: string) => {
@@ -73,12 +91,21 @@ const Pricing = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { window.location.href = '/register?plan=' + planId; return; }
 
-      const priceMap: Record<string, string | undefined> = {
-        starter: import.meta.env.VITE_STRIPE_STARTER_PRICE_ID,
-        solo: import.meta.env.VITE_STRIPE_SOLO_PRICE_ID,
-        growth: import.meta.env.VITE_STRIPE_GROWTH_PRICE_ID,
+      const priceMap: Record<string, { monthly?: string; yearly?: string }> = {
+        starter: {
+          monthly: import.meta.env.VITE_STRIPE_STARTER_PRICE_ID,
+          yearly: import.meta.env.VITE_STRIPE_STARTER_YEARLY_PRICE_ID,
+        },
+        solo: {
+          monthly: import.meta.env.VITE_STRIPE_SOLO_PRICE_ID,
+          yearly: import.meta.env.VITE_STRIPE_SOLO_YEARLY_PRICE_ID,
+        },
+        growth: {
+          monthly: import.meta.env.VITE_STRIPE_GROWTH_PRICE_ID,
+          yearly: import.meta.env.VITE_STRIPE_GROWTH_YEARLY_PRICE_ID,
+        },
       };
-      const priceId = priceMap[planId];
+      const priceId = priceMap[planId]?.[billingCycle];
 
       if (!priceId) { setMessage('Stripe nie jest skonfigurowany. Skontaktuj się z pomocą.'); return; }
 
@@ -283,11 +310,11 @@ const Pricing = () => {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex gap-2 mt-2">
-            <Button variant="outline" className="flex-1" onClick={() => setShowDowngradeDialog(false)}>
+            <Button variant="outline" className="flex-1" disabled={downgrading} onClick={() => setShowDowngradeDialog(false)}>
               Zostań na obecnym planie
             </Button>
-            <Button variant="destructive" className="flex-1" onClick={confirmDowngrade}>
-              Tak, przejdź na Free
+            <Button variant="destructive" className="flex-1" disabled={downgrading} onClick={confirmDowngrade}>
+              {downgrading ? 'Anulowanie...' : 'Tak, przejdź na Free'}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -16,7 +16,7 @@ interface BrandScanInputProps {
  */
 export const BrandScanInput = ({
   onSubmit,
-  placeholder = 'e.g. Tesla, Apple, Nike…',
+  placeholder = 'yourbrand.com',
   suggestions = [],
   className,
 }: BrandScanInputProps) => {

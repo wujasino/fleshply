@@ -191,15 +191,6 @@
     @apply from-amber-400 to-amber-600;
   }
 
-  .hero h1 .highlight {
-    background: linear-gradient(90deg, #f5a623 0%, #ffe066 50%, #f5a623 100%);
-    background-size: 200%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: shimmer 3s linear infinite;
-  }
-
   @keyframes shimmer {
     0%   { background-position: 0% }
     100% { background-position: 200% }
