@@ -22,6 +22,8 @@ export interface PricingTierCard {
   periodMonthly: string;
   periodYearly: string;
   isPopular: boolean;
+  /** Plan the user is already subscribed to — renders the CTA as inert instead of clickable. */
+  isCurrent?: boolean;
   buttonLabel: string;
   features: PricingFeature[];
 }
@@ -136,12 +138,17 @@ export const PricingCards: React.FC<PricingCardsProps> = ({
 
                 <Button
                   onClick={() => onPlanSelect(plan.id, billingCycle)}
-                  disabled={isLoading}
-                  variant={plan.isPopular ? 'default' : 'outline'}
-                  className={cn("w-full mt-4 rounded-xl", !plan.isPopular && "text-primary hover:text-primary")}
+                  disabled={isLoading || plan.isCurrent}
+                  variant={plan.isCurrent ? 'secondary' : plan.isPopular ? 'default' : 'outline'}
+                  className={cn("w-full mt-4 rounded-xl", !plan.isPopular && !plan.isCurrent && "text-primary hover:text-primary")}
                   size="lg"
                 >
-                  {isLoading ? 'Ładowanie…' : plan.buttonLabel}
+                  {isLoading ? 'Ładowanie…' : (
+                    <span className="inline-flex items-center gap-1.5">
+                      {plan.isCurrent && <Check className="h-4 w-4" aria-hidden="true" />}
+                      {plan.buttonLabel}
+                    </span>
+                  )}
                 </Button>
               </div>
 

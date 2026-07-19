@@ -7,12 +7,7 @@ import { PricingCards, type PricingTierCard } from '@/components/ui/pricing-card
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 
-const USD = {
-  solo_monthly: '$29',  solo_yearly: '$279',
-  growth_monthly: '$79', growth_yearly: '$749',
-  credits_20: '$9', credits_50: '$19', credits_120: '$39',
-};
-const PLN = {
+const PRICES = {
   solo_monthly: '99 zł',  solo_yearly: '950 zł',
   growth_monthly: '249 zł', growth_yearly: '2 350 zł',
   credits_20: '39 zł', credits_50: '79 zł', credits_120: '169 zł',
@@ -27,7 +22,6 @@ interface Props {
 export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
   const [tab, setTab] = useState<'plans' | 'credits'>('plans');
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
-  const [currency, setCurrency] = useState<'pln' | 'usd'>('usd');
   const [loading, setLoading] = useState<string | null>(null);
   const [loadingCredits, setLoadingCredits] = useState<string | null>(null);
   const [message, setMessage] = useState('');
@@ -36,7 +30,7 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
 
   useEffect(() => { if (!open) setMessage(''); }, [open]);
 
-  const prices = currency === 'pln' ? PLN : USD;
+  const prices = PRICES;
   const period_month = '/mo';
   const period_year  = '/yr';
 
@@ -132,7 +126,8 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
     {
       id: 'free', name: 'Free', description: 'Start with three free brand analyses, no credit card required.',
       priceMonthly: 'Free', priceYearly: 'Free', periodMonthly: '', periodYearly: '',
-      isPopular: false, buttonLabel: currentPlan === 'free' ? 'Current plan ✓' : 'Start for free',
+      isPopular: false, isCurrent: currentPlan === 'free',
+      buttonLabel: currentPlan === 'free' ? 'Current plan' : 'Start for free',
       features: [
         { name: '3 free brand analyses', isIncluded: true },
         { name: 'Overall AI Visibility Score', isIncluded: true },
@@ -147,7 +142,8 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
       id: 'solo', name: 'Solo', description: 'For indie founders and solo marketers tracking their brand.',
       priceMonthly: prices.solo_monthly, priceYearly: prices.solo_yearly,
       periodMonthly: period_month, periodYearly: period_year,
-      isPopular: false, buttonLabel: currentPlan === 'solo' ? 'Current plan ✓' : 'Get started',
+      isPopular: false, isCurrent: currentPlan === 'solo',
+      buttonLabel: currentPlan === 'solo' ? 'Current plan' : 'Get started',
       features: [
         { name: '10 brand analyses per month', isIncluded: true },
         { name: '3 LLM sources (GPT-4o, Claude, Gemini)', isIncluded: true },
@@ -162,7 +158,8 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
       id: 'growth', name: 'Business', description: 'For growing teams who need deeper competitive insights.',
       priceMonthly: prices.growth_monthly, priceYearly: prices.growth_yearly,
       periodMonthly: period_month, periodYearly: period_year,
-      isPopular: true, buttonLabel: currentPlan === 'growth' ? 'Current plan ✓' : 'Get started',
+      isPopular: currentPlan !== 'growth', isCurrent: currentPlan === 'growth',
+      buttonLabel: currentPlan === 'growth' ? 'Current plan' : 'Get started',
       features: [
         { name: '50 brand analyses per month', isIncluded: true },
         { name: 'All 6 LLM sources + Perplexity', isIncluded: true },
@@ -235,20 +232,6 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
 
             {tab === 'plans' && (
               <motion.div key="plans" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-                {/* Currency switcher */}
-                <div className="flex justify-center mb-2">
-                  <div className="flex items-center gap-1 bg-muted/50 rounded-xl p-1">
-                    {(['pln', 'usd'] as const).map(c => (
-                      <button key={c} onClick={() => setCurrency(c)}
-                        className={cn('px-3 py-1.5 rounded-lg text-xs font-semibold uppercase transition-colors',
-                          currency === c ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-                        )}>
-                        {c === 'pln' ? '🇵🇱 PLN' : '🇺🇸 USD'}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
                 <PricingCards
                   plans={plans}
                   billingCycle={billingCycle}
@@ -261,18 +244,9 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
 
             {tab === 'credits' && (
               <motion.div key="credits" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-                <div className="flex items-center justify-end mb-6">
-                  <div className="flex items-center gap-1 bg-muted/50 rounded-xl p-1">
-                    {(['pln', 'usd'] as const).map(c => (
-                      <button key={c} onClick={() => setCurrency(c)}
-                        className={cn('px-3 py-1.5 rounded-lg text-xs font-semibold uppercase transition-colors',
-                          currency === c ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-                        )}>
-                        {c === 'pln' ? '🇵🇱 PLN' : '🇺🇸 USD'}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                <p className="text-sm text-muted-foreground text-center mb-6">
+                  Need more scans this month without changing plan? Top up with a one-time credit pack.
+                </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {creditPacks.map(pack => (
