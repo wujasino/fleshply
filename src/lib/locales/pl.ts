@@ -247,6 +247,7 @@ const dict: Record<string, string> = {
     credits_left: 'Pozostałe kredyty',
     plan_label: 'Plan',
     profile_best_score: 'Najlepszy wynik',
+    profile_score_trend: 'Trend wyniku w czasie',
     profile_usage: 'Użycie analiz',
     profile_search: 'Szukaj marki…',
     profile_no_results: 'Brak wyników dla podanej frazy.',

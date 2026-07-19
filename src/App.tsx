@@ -5,6 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import RequireScanHistory from "@/components/RequireScanHistory";
 import { applySeo } from "@/hooks/useSeo";
 
 // AppShell (sidebar, app navbar, AI chat) is only used on authenticated app routes —
@@ -68,7 +69,18 @@ const App = () => (
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Landing />} />
-            <Route path="/dashboard" element={<AppShell><Dashboard /></AppShell>} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <RequireScanHistory>
+                    <AppShell><Dashboard /></AppShell>
+                  </RequireScanHistory>
+                </ProtectedRoute>
+              }
+            />
+            {/* /brand-visibility stays open to guests — it's where the free,
+                no-login scan happens (see useBrewing's guest-limit check). */}
             <Route path="/brand-visibility" element={<AppShell><Dashboard /></AppShell>} />
             <Route
               path="/automations"

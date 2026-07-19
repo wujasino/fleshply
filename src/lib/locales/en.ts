@@ -240,6 +240,7 @@ const dict: Record<string, string> = {
     credits_left: 'Credits Left',
     plan_label: 'Plan',
     profile_best_score: 'Best Score',
+    profile_score_trend: 'Score trend over time',
     profile_usage: 'Analysis Usage',
     profile_search: 'Search brand…',
     profile_no_results: 'No results for that query.',

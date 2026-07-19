@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
+import { ScoreTrendChart } from '@/components/charts/ScoreTrendChart';
 
 interface Analysis {
   id: string;
@@ -59,6 +60,7 @@ const Profile = () => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [plan, setPlan] = useState('free');
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
+  const [history, setHistory] = useState<Analysis[]>([]);
   const [prevScores, setPrevScores] = useState<Record<string, number>>({});
   const [subStatus] = useState<'active' | 'paused' | 'cancelled'>('active');
 
@@ -112,6 +114,7 @@ const Profile = () => {
         }
         setAnalyses(latest);
         setPrevScores(second);
+        setHistory([...data].reverse());
       }
     })();
   }, [navigate]);
@@ -146,6 +149,14 @@ const Profile = () => {
   }, [analyses, query, sortDir]);
 
   const displayed = showAll ? filtered : filtered.slice(0, 6);
+
+  /* Score-over-time trend across all scans, oldest to newest */
+  const trendData = useMemo(() => {
+    return history.map(a => ({
+      date: new Date(a.created_at).toLocaleDateString(dateLocale, { day: '2-digit', month: 'short' }),
+      score: a.trust_score,
+    }));
+  }, [history, dateLocale]);
 
   /* Alerts — brands whose latest score dropped >= threshold vs the prior run */
   const ALERT_THRESHOLD = 5;
@@ -220,6 +231,9 @@ const Profile = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* ── SCORE TREND CHART ───────────────────────────────────── */}
+        {trendData.length >= 2 && <ScoreTrendChart data={trendData} />}
 
         {/* ── USAGE BAR ────────────────────────────────────────────── */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
