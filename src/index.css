@@ -229,4 +229,9 @@
     font-variant-numeric: tabular-nums;
     font-family: 'Courier New', monospace;
   }
+
+  /* ── Wordmark ───────────────────────────────────────────────── */
+  .font-wordmark {
+    font-family: 'Manrope', 'Inter', system-ui, -apple-system, sans-serif;
+  }
 }
