@@ -12,6 +12,7 @@ import { NewsletterSignup } from '@/components/ui/newsletter-signup';
 import { GradientMeshBg } from '@/components/ui/gradient-mesh-bg';
 import { ContactForm } from '@/components/ui/contact-form';
 import { FAQ_EN } from '@/lib/faq';
+import { useForceLightTheme } from '@/hooks/useForceLightTheme';
 
 /* ── Integration logos (text-based, gray) ─────────────────────────── */
 const INTEGRATIONS = [
@@ -51,6 +52,7 @@ const TESTIMONIALS = [
 
 const Landing = () => {
   const navigate = useNavigate();
+  useForceLightTheme();
 
   return (
     <div className="min-h-screen bg-background">

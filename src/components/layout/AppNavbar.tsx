@@ -1,6 +1,7 @@
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { LogOut, Settings, User, Code2, CreditCard, MessageSquare, Send, X, Bot, PanelLeftClose, PanelLeftOpen, Menu, Megaphone } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { LogOut, Settings, User, Code2, CreditCard, MessageSquare, Send, X, Bot, PanelLeftClose, PanelLeftOpen, Menu, Megaphone, Sun, Moon } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { logout } from '@/lib/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -50,6 +51,7 @@ interface AppNavbarProps {
 
 export const AppNavbar = ({ collapsed = false, onToggle, onMobileToggle, chatOpen = false, onChatToggle }: AppNavbarProps) => {
   const navigate = useNavigate();
+  const { resolvedTheme, setTheme } = useTheme();
   const { pathname } = useLocation();
   const sectionTitle = SECTION_TITLES[pathname] ?? 'Presora';
   const [open, setOpen] = useState(false);
@@ -192,6 +194,16 @@ export const AppNavbar = ({ collapsed = false, onToggle, onMobileToggle, chatOpe
         title="AI Assistant"
       >
         <Bot className="w-4 h-4" />
+      </button>
+
+      {/* Theme toggle */}
+      <button
+        onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+        className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors shrink-0"
+        aria-label={resolvedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        title={resolvedTheme === 'dark' ? 'Light mode' : 'Dark mode'}
+      >
+        {resolvedTheme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
       </button>
 
       <div className="shrink-0">
