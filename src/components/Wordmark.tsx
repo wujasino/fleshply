@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
  */
 export const Wordmark = ({ className }: { className?: string }) => (
   <span className={cn('font-display font-semibold tracking-tight text-foreground', className)}>
-    Perceply
+    Presora
   </span>
 );
 

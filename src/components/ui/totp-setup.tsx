@@ -40,7 +40,7 @@ export function TotpSetup({ onStatusChange }: Props) {
     setLoading(true);
     setError('');
     try {
-      const { data, error: err } = await supabase.auth.mfa.enroll({ factorType: 'totp', issuer: 'Perceply', friendlyName: 'Perceply Authenticator' });
+      const { data, error: err } = await supabase.auth.mfa.enroll({ factorType: 'totp', issuer: 'Presora', friendlyName: 'Presora Authenticator' });
       if (err) throw err;
       setQrUrl(data.totp.qr_code);
       setSecret(data.totp.secret);

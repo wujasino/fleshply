@@ -20,7 +20,7 @@ import { scoreBrand, type BrandScore } from '@/lib/brandScore';
 
 // Public origin that serves the embeddable badge endpoint (must be a live,
 // absolute URL so copied snippets work on any external site).
-const BADGE_ORIGIN = 'https://www.bitbrew.pl';
+const BADGE_ORIGIN = 'https://www.presora.app';
 
 const PLAN_TIER: Record<string, number> = {
   free: 0,
@@ -353,7 +353,7 @@ const Dashboard = () => {
   const [badgeError, setBadgeError] = useState(false);
   const badgeBrand = result?.brandName || brandFromUrl || 'Your Brand';
   const badgeSrc = `${BADGE_ORIGIN}/.netlify/functions/badge?brand=${encodeURIComponent(badgeBrand)}`;
-  const embedCode = `<a href="${BADGE_ORIGIN}" target="_blank" rel="noopener"><img src="${badgeSrc}" alt="Perceply AI Visibility" height="36" /></a>`;
+  const embedCode = `<a href="${BADGE_ORIGIN}" target="_blank" rel="noopener"><img src="${badgeSrc}" alt="Presora AI Visibility" height="36" /></a>`;
   useEffect(() => { setBadgeError(false); }, [badgeSrc]);
   const copyEmbed = async () => {
     try {
@@ -744,13 +744,13 @@ const Dashboard = () => {
                       // Graceful fallback so a failed badge fetch never shows a broken-image icon
                       <div className="h-9 shrink-0 inline-flex items-center gap-2 rounded-md border border-[hsl(var(--glass-border))] bg-background px-3">
                         <span className="w-3 h-3 rounded-full border-2 border-primary" />
-                        <span className="text-[10px] font-data uppercase tracking-wider text-primary font-semibold">Perceply</span>
+                        <span className="text-[10px] font-data uppercase tracking-wider text-primary font-semibold">Presora</span>
                         <span className="text-[10px] text-muted-foreground">AI Visibility · {badgeBrand}</span>
                       </div>
                     ) : (
                       <img
                         src={badgeSrc}
-                        alt="Perceply AI Visibility badge"
+                        alt="Presora AI Visibility badge"
                         height={36}
                         loading="lazy"
                         onError={() => setBadgeError(true)}

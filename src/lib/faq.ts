@@ -6,8 +6,8 @@ export interface FaqItem {
 
 export const FAQ_EN: FaqItem[] = [
   {
-    q: 'What does Perceply actually do?',
-    a: 'Perceply fires structured prompts at foundation models — GPT-4o, Claude, Gemini, Perplexity, Mistral and more — then scores your brand across 5 dimensions: authority, sentiment, accuracy, mention rate, and recency. Result: one visibility score, model-by-model breakdown, and a ranked list of actionable improvements.',
+    q: 'What does Presora actually do?',
+    a: 'Presora fires structured prompts at foundation models — GPT-4o, Claude, Gemini, Perplexity, Mistral and more — then scores your brand across 5 dimensions: authority, sentiment, accuracy, mention rate, and recency. Result: one visibility score, model-by-model breakdown, and a ranked list of actionable improvements.',
   },
   {
     q: 'Which AI models do you query?',

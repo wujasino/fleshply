@@ -133,13 +133,13 @@ const Profile = () => {
     if (!analyses.length) return;
     const stamp = new Date().toISOString().slice(0, 10);
     if (format === 'json') {
-      downloadFile(JSON.stringify(analyses, null, 2), `bitbrew-analizy-${stamp}.json`, 'application/json');
+      downloadFile(JSON.stringify(analyses, null, 2), `presora-analizy-${stamp}.json`, 'application/json');
       return;
     }
     const header = ['brand_name', 'trust_score', 'created_at'];
     const escape = (v: string) => `"${String(v).replace(/"/g, '""')}"`;
     const rows = analyses.map(a => [escape(a.brand_name), a.trust_score, escape(a.created_at)].join(','));
-    downloadFile([header.join(','), ...rows].join('\n'), `bitbrew-analizy-${stamp}.csv`, 'text/csv;charset=utf-8');
+    downloadFile([header.join(','), ...rows].join('\n'), `presora-analizy-${stamp}.csv`, 'text/csv;charset=utf-8');
   };
 
   const filtered = useMemo(() => {
@@ -186,7 +186,7 @@ const Profile = () => {
             </Avatar>
             <div>
               <h1 className="text-xl font-semibold text-foreground">{email || '…'}</h1>
-              <p className="text-sm text-muted-foreground mt-0.5">Perceply User</p>
+              <p className="text-sm text-muted-foreground mt-0.5">Presora User</p>
               <div className="mt-2 flex items-center gap-2">
                 <span className={`inline-flex h-2 w-2 rounded-full ring-2 ${SUB_DOT[subStatus]} animate-pulse`} />
                 <span className="text-xs text-muted-foreground">{t(SUB_STATUS_KEY[subStatus])}</span>

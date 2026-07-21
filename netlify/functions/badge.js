@@ -60,7 +60,7 @@ export const handler = async (event) => {
   const scoreW = 54;
   const totalW = labelW + scoreW;
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="36" role="img" aria-label="Perceply AI Visibility: ${score} of 100">
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="36" role="img" aria-label="Presora AI Visibility: ${score} of 100">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#1c1c1f"/>
@@ -72,7 +72,7 @@ export const handler = async (event) => {
   <rect x="${labelW}" width="8" height="36" fill="${color}"/>
   <g font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="11">
     <circle cx="16" cy="18" r="6" fill="none" stroke="#FFBF00" stroke-width="2"/>
-    <text x="30" y="15" fill="#FFBF00" font-weight="700" font-size="10">PERCEPLY</text>
+    <text x="30" y="15" fill="#FFBF00" font-weight="700" font-size="10">PRESORA</text>
     <text x="30" y="27" fill="#9b9ba1" font-size="9">AI Visibility · ${brand}</text>
     <text x="${labelW + scoreW / 2}" y="23" fill="#0b0b0c" font-weight="800" font-size="14" text-anchor="middle">${score}</text>
   </g>

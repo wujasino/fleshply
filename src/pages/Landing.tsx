@@ -30,7 +30,7 @@ const AFTER  = { mentions: '7 / 10', sentiment: '81', recommend: '63%' };
 /* ── Testimonials ─────────────────────────────────────────────────── */
 const TESTIMONIALS = [
   {
-    quote: 'We discovered ChatGPT was recommending our competitor for our own category. Two weeks after acting on Perceply’s recommendations, we were the top answer.',
+    quote: 'We discovered ChatGPT was recommending our competitor for our own category. Two weeks after acting on Presora’s recommendations, we were the top answer.',
     name: 'Sarah Lindqvist',
     role: 'Head of Growth, Northwind SaaS',
     initials: 'SL',
@@ -83,7 +83,7 @@ const Landing = () => {
                 </span>
               </h1>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10">
-                When your customers ask ChatGPT, Claude or Gemini for a recommendation, does your brand come up? Perceply shows how AI tells your story — and gives you a plain-English plan of exactly what to publish to get recommended.
+                When your customers ask ChatGPT, Claude or Gemini for a recommendation, does your brand come up? Presora shows how AI tells your story — and gives you a plain-English plan of exactly what to publish to get recommended.
               </p>
             </motion.div>
 
@@ -224,7 +224,7 @@ const Landing = () => {
                 <span className="text-primary">You're in it, or you're nowhere.</span>
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto mb-8">
-                Search let customers choose from ten results. AI just picks one and moves on — and it picks from whatever it already knows best. Perceply shows you exactly where you stand, with the raw model answers to prove it — no black box, no averaged-out score.
+                Search let customers choose from ten results. AI just picks one and moves on — and it picks from whatever it already knows best. Presora shows you exactly where you stand, with the raw model answers to prove it — no black box, no averaged-out score.
               </p>
               <button
                 onClick={() => document.getElementById('hero-input')?.scrollIntoView({ behavior: 'smooth' })}
@@ -391,7 +391,7 @@ const Landing = () => {
               Case study
             </span>
             <h2 className="text-3xl sm:text-4xl font-display text-foreground mb-3">
-              Before and after Perceply
+              Before and after Presora
             </h2>
             <p className="text-sm text-muted-foreground max-w-lg mx-auto">
               See the difference brand optimization makes in AI model responses.
@@ -411,7 +411,7 @@ const Landing = () => {
                 <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-red-500/15 text-red-400 border border-red-500/20">
                   Before
                 </span>
-                <span className="text-xs text-muted-foreground">— baseline Perceply scan</span>
+                <span className="text-xs text-muted-foreground">— baseline Presora scan</span>
               </div>
               <div className="space-y-5">
                 <div>
@@ -510,7 +510,7 @@ const Landing = () => {
               </p>
               <div className="rounded-xl border border-[hsl(var(--glass-border))] bg-muted/20 p-4 text-sm text-muted-foreground leading-relaxed">
                 AI names 5 competitors. Your brand isn't one of them.
-                <span className="block mt-2 text-foreground/80">Perceply finds out <span className="text-primary font-medium">why</span> — and hands you the fix.</span>
+                <span className="block mt-2 text-foreground/80">Presora finds out <span className="text-primary font-medium">why</span> — and hands you the fix.</span>
               </div>
             </motion.div>
 
@@ -558,7 +558,7 @@ const Landing = () => {
               Who is it for?
             </span>
             <h2 className="text-3xl sm:text-4xl font-display text-foreground mb-3">
-              Who uses Perceply?
+              Who uses Presora?
             </h2>
             <p className="text-sm text-muted-foreground max-w-lg mx-auto">
               Built for the people who own the brand story — not just SEO specialists. If you care how AI describes your reputation and recommends your products, this is for you.
@@ -673,10 +673,10 @@ const Landing = () => {
               Comparison
             </span>
             <h2 className="text-3xl sm:text-4xl font-display text-foreground mb-3">
-              Perceply vs. other GEO tools
+              Presora vs. other GEO tools
             </h2>
             <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-              Every AI visibility tracker will show you a score. Here's what's actually different about how Perceply gets there.
+              Every AI visibility tracker will show you a score. Here's what's actually different about how Presora gets there.
             </p>
           </motion.div>
 
@@ -693,7 +693,7 @@ const Landing = () => {
                     </th>
                     <th className="px-6 py-4 text-center bg-primary/5 border-x border-primary/20">
                       <div className="flex flex-col items-center gap-1">
-                        <span className="font-bold text-primary">Perceply</span>
+                        <span className="font-bold text-primary">Presora</span>
                         <span className="text-[10px] text-primary/60 font-normal">AI-native</span>
                       </div>
                     </th>
@@ -734,7 +734,7 @@ const Landing = () => {
               </table>
             </div>
             <p className="text-center text-xs text-muted-foreground/40 mt-4">
-              Most AI visibility trackers stop at a score. Perceply shows the raw query and answer behind every number, so you can verify it yourself.
+              Most AI visibility trackers stop at a score. Presora shows the raw query and answer behind every number, so you can verify it yourself.
             </p>
           </motion.div>
         </div>
@@ -756,7 +756,7 @@ const Landing = () => {
               Teams that stopped guessing
             </h2>
             <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-              Growth leads, brand managers and agencies use Perceply to win the AI recommendation.
+              Growth leads, brand managers and agencies use Presora to win the AI recommendation.
             </p>
           </motion.div>
 
@@ -929,7 +929,7 @@ const Landing = () => {
               <p className="text-sm text-foreground font-medium">Still have questions?</p>
             </div>
             <a
-              href="mailto:kontakt@bitbrew.pl"
+              href="mailto:kontakt@presora.app"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity whitespace-nowrap"
             >
               Contact us

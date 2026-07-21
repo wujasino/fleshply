@@ -38,7 +38,7 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
     if (planId === currentPlan) return;
     if (planId === 'free') { setShowDowngrade(true); return; }
     if (planId === 'enterprise') {
-      window.location.href = 'mailto:kontakt@bitbrew.pl?subject=Custom Plan';
+      window.location.href = 'mailto:kontakt@presora.app?subject=Custom Plan';
       return;
     }
     setLoading(planId);

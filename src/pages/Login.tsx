@@ -319,7 +319,7 @@ const Login = () => {
               <span className="text-primary">sees your brand</span>
             </h2>
             <p className="mt-3 text-sm text-muted-foreground leading-relaxed max-w-xs">
-              Hundreds of brands use Perceply to monitor and improve their visibility in AI models.
+              Hundreds of brands use Presora to monitor and improve their visibility in AI models.
             </p>
           </div>
 
@@ -348,7 +348,7 @@ const Login = () => {
           </div>
         </div>
 
-        <p className="text-[11px] text-muted-foreground/50">© {new Date().getFullYear()} Perceply</p>
+        <p className="text-[11px] text-muted-foreground/50">© {new Date().getFullYear()} Presora</p>
       </FloatingPathsBackground>
 
       {/* ── Right panel ── */}

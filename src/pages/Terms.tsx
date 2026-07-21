@@ -25,7 +25,7 @@ const Terms = () => {
   <tr style="border:1px solid #ccc;">
     <th colspan="2" style="border:1px solid #ccc;padding:8px;padding-top:20px;font-size:18px;line-height:40px;background-color:#f5f5f5;color:#000;text-align:center;">
       Regulamin strony internetowej<br>
-      Perceply PL („Regulamin")<br>
+      Presora PL („Regulamin")<br>
       <small style="font-size:14px;font-weight:normal;">Dokument z dnia: 18.06.2026</small>
     </th>
   </tr>
@@ -40,7 +40,7 @@ const Terms = () => {
   <tr style="border:1px solid #ccc;">
     <td style="border:1px solid #ccc;padding:8px;text-align:left;font-size:14px;line-height:200%;padding-bottom:40px;background-color:#fff;color:#000;">
       <p><strong>Strona internetowa</strong></p>
-      <p>Serwis internetowy <strong>Perceply PL</strong>, dostępny pod adresem <strong><a href="https://www.bitbrew.pl" target="_blank" rel="noopener noreferrer">www.bitbrew.pl</a></strong>, prowadzony przez Usługodawcę.</p>
+      <p>Serwis internetowy <strong>Presora PL</strong>, dostępny pod adresem <strong><a href="https://www.presora.app" target="_blank" rel="noopener noreferrer">www.presora.app</a></strong>, prowadzony przez Usługodawcę.</p>
       <p><strong>Usługodawca</strong></p>
       <p>Patryk Rybacki<br>działalność nierejestrowana<br>Biskupia 7/2</p>
       <p>Kiedy w Regulaminie użyte są takie zwroty jak „my", „nasz", „nami" itp. należy przez to rozumieć Usługodawcę.</p>
@@ -66,8 +66,8 @@ const Terms = () => {
     <td style="border:1px solid #ccc;padding:8px;text-align:left;font-size:14px;line-height:200%;padding-bottom:40px;background-color:#fff;color:#000;">
       <p>W celu kontaktowania się z nami możesz skorzystać z następujących form komunikacji elektronicznej:</p>
       <ul>
-        <li>poczta elektroniczna: <strong>kontakt@bitbrew.pl</strong></li>
-        <li>formularz kontaktowy dostępny pod adresem: <strong><a href="https://www.bitbrew.pl" target="_blank" rel="noopener noreferrer">https://www.bitbrew.pl</a></strong></li>
+        <li>poczta elektroniczna: <strong>kontakt@presora.app</strong></li>
+        <li>formularz kontaktowy dostępny pod adresem: <strong><a href="https://www.presora.app" target="_blank" rel="noopener noreferrer">https://www.presora.app</a></strong></li>
       </ul>
     </td>
   </tr>
@@ -131,7 +131,7 @@ const Terms = () => {
       <p><strong>oraz</strong></p>
       <p><strong>b) Rozszerzone:</strong></p>
       <ul>
-        <li>Sprzedaż subskrypcji oraz kredytów (zasady korzystania z tej usługi określone są w odrębnym dokumencie, dostępnym tutaj: <a href="https://www.bitbrew.pl/regulamin" target="_blank" rel="noopener noreferrer">https://www.bitbrew.pl/regulamin</a>),</li>
+        <li>Sprzedaż subskrypcji oraz kredytów (zasady korzystania z tej usługi określone są w odrębnym dokumencie, dostępnym tutaj: <a href="https://www.presora.app/regulamin" target="_blank" rel="noopener noreferrer">https://www.presora.app/regulamin</a>),</li>
         <li>usługa umożliwiająca wprowadzenie przez Ciebie własnych treści w ramach Strony internetowej (zasady korzystania z tej usługi opisane są niżej, w załączniku do tego Regulaminu).</li>
       </ul>
       <p><strong>USŁUGI PODSTAWOWE</strong></p>
@@ -165,7 +165,7 @@ const Terms = () => {
   </tr>
   <tr style="border:1px solid #ccc;">
     <td style="border:1px solid #ccc;padding:8px;text-align:left;font-size:14px;line-height:200%;padding-bottom:40px;background-color:#fff;color:#000;">
-      <p>Zasady przetwarzania danych osobowych i wykorzystywania plików cookies wskazane są w polityce prywatności dostępnej pod adresem: <strong><a href="https://www.bitbrew.pl/polityka-prywatnosci" target="_blank" rel="noopener noreferrer">https://www.bitbrew.pl/polityka-prywatnosci</a></strong></p>
+      <p>Zasady przetwarzania danych osobowych i wykorzystywania plików cookies wskazane są w polityce prywatności dostępnej pod adresem: <strong><a href="https://www.presora.app/polityka-prywatnosci" target="_blank" rel="noopener noreferrer">https://www.presora.app/polityka-prywatnosci</a></strong></p>
     </td>
   </tr>
 
@@ -247,9 +247,9 @@ const Terms = () => {
   <tr style="border:1px solid #ccc;">
     <td style="border:1px solid #ccc;padding:8px;text-align:left;font-size:14px;line-height:200%;padding-bottom:40px;background-color:#fff;color:#000;">
       <p>Jeśli chcesz zgłosić nam nielegalne treści, skontaktuj się z nami za pośrednictwem adresu e-mail:</p>
-      <p><strong>kontakt@bitbrew.pl</strong></p>
+      <p><strong>kontakt@presora.app</strong></p>
       <p>lub formularza kontaktowego dostępnego pod adresem:</p>
-      <p><strong><a href="https://www.bitbrew.pl" target="_blank" rel="noopener noreferrer">https://www.bitbrew.pl</a></strong></p>
+      <p><strong><a href="https://www.presora.app" target="_blank" rel="noopener noreferrer">https://www.presora.app</a></strong></p>
       <p><strong>Prosimy, abyś w zgłoszeniu zawarł/a:</strong></p>
       <ul>
         <li>Wystarczająco uzasadnione wyjaśnienie powodów, dla których zarzucasz, że odpowiednie informacje stanowią nielegalne treści.</li>
@@ -388,7 +388,7 @@ const Terms = () => {
       <p>Aby skorzystać z prawa odstąpienia od Umowy, musisz poinformować nas o swojej decyzji w drodze jednoznacznego oświadczenia (pismo wysłane pocztą lub pocztą elektroniczną). Możesz skorzystać z wzoru formularza poniżej — nie jest to obowiązkowe.</p>
       <p><strong>WZÓR FORMULARZA ODSTĄPIENIA OD UMOWY</strong></p>
       <p>(Formularz ten należy wypełnić i odesłać tylko w przypadku chęci odstąpienia od umowy)</p>
-      <p>Adresat:<br>Patryk Rybacki, działalność nierejestrowana<br>Biskupia 7/2<br>adres e-mail: kontakt@bitbrew.pl</p>
+      <p>Adresat:<br>Patryk Rybacki, działalność nierejestrowana<br>Biskupia 7/2<br>adres e-mail: kontakt@presora.app</p>
       <p>Ja/My(*) niniejszym informuję/informujemy(*) o moim/naszym(*) odstąpieniu od umowy o świadczenie następującej usługi (*):</p>
       <p>………………………………………………………………………………………</p>
       <p>Data zawarcia umowy(*): ………………………………………</p>

@@ -1,6 +1,6 @@
 {
-  "name": "Perceply",
-  "short_name": "Perceply",
+  "name": "Presora",
+  "short_name": "Presora",
   "description": "Skaner widoczności marki w AI",
   "start_url": "/",
   "display": "standalone",
@@ -19,7 +19,7 @@
       "purpose": "any maskable"
     },
     {
-      "src": "/bitbrew-favicon.svg",
+      "src": "/presora-favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml"
     }

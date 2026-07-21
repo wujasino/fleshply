@@ -160,4 +160,4 @@ Disallow: /reset-password
 Disallow: /auth/confirm
 Disallow: /onboarding
 
-Sitemap: https://www.bitbrew.pl/sitemap.xml
+Sitemap: https://www.presora.app/sitemap.xml

@@ -1,5 +1,5 @@
 -- ================================================================
--- BITBREW — PEŁNA MIGRACJA (idempotentna, bezpieczna do re-uruchomienia)
+-- PRESORA — PEŁNA MIGRACJA (idempotentna, bezpieczna do re-uruchomienia)
 -- Zawiera: tabele, RLS, triggery, funkcje RAG, webhook idempotency,
 --          atomowy increment kredytów, indeksy, storage avatarów.
 -- ================================================================

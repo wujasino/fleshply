@@ -25,9 +25,9 @@ export const Footer = () => {
             {/* Social icons */}
             <div className="flex items-center gap-3">
               {[
-                { href: 'https://twitter.com/bitbrew_ai', Icon: Twitter, label: 'Twitter/X' },
-                { href: 'https://linkedin.com/company/bitbrew', Icon: Linkedin, label: 'LinkedIn' },
-                { href: 'https://github.com/bitbrew-ai', Icon: Github, label: 'GitHub' },
+                { href: 'https://twitter.com/presora_ai', Icon: Twitter, label: 'Twitter/X' },
+                { href: 'https://linkedin.com/company/presora', Icon: Linkedin, label: 'LinkedIn' },
+                { href: 'https://github.com/presora-ai', Icon: Github, label: 'GitHub' },
               ].map(({ href, Icon, label }) => (
                 <a
                   key={label}
@@ -90,7 +90,7 @@ export const Footer = () => {
                 { label: 'About',    to: '#' },
                 { label: 'Blog',     to: '#' },
                 { label: 'Careers',  to: '#', badge: 'Hiring' },
-                { label: 'Contact',  href: 'mailto:kontakt@bitbrew.pl' },
+                { label: 'Contact',  href: 'mailto:kontakt@presora.app' },
               ].map((item) => (
                 <li key={item.label}>
                   {item.href ? (
@@ -145,7 +145,7 @@ export const Footer = () => {
 
         {/* Bottom bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-muted-foreground/60">© 2026 Perceply. All rights reserved.</p>
+          <p className="text-xs text-muted-foreground/60">© 2026 Presora. All rights reserved.</p>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground/50">
             <span className="text-base leading-none">🇵🇱</span>
             Made in Poland

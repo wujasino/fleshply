@@ -13,7 +13,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 );
 
-const ALLOWED_ORIGINS = new Set(['https://bitbrew.pl', 'https://www.bitbrew.pl']);
+const ALLOWED_ORIGINS = new Set(['https://presora.app', 'https://www.presora.app']);
 const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,253}\.[a-zA-Z]{2,}$/;
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
@@ -36,7 +36,7 @@ const shouldRateLimit = (key) => {
 };
 
 const corsHeaders = (origin) => ({
-  'Access-Control-Allow-Origin': ALLOWED_ORIGINS.has(origin) ? origin : 'https://bitbrew.pl',
+  'Access-Control-Allow-Origin': ALLOWED_ORIGINS.has(origin) ? origin : 'https://presora.app',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Content-Type': 'application/json',
@@ -96,8 +96,8 @@ exports.handler = async (event) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'Perceply <noreply@bitbrew.pl>',
-          to: ['kontakt@bitbrew.pl'],
+          from: 'Presora <noreply@presora.app>',
+          to: ['kontakt@presora.app'],
           subject: `[Contact] ${payload.subject}`,
           text: `From: ${payload.name} <${payload.email}>\n\n${payload.message}`,
         }),

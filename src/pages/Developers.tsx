@@ -92,7 +92,7 @@ const Developers = () => {
             </div>
             <h1 className="text-3xl font-display text-foreground">API & Webhooks</h1>
             <p className="text-muted-foreground text-sm mt-1.5">
-              Integrate Perceply with your own stack. Manage API keys and webhooks.
+              Integrate Presora with your own stack. Manage API keys and webhooks.
             </p>
           </div>
           <Link
@@ -371,7 +371,7 @@ const WebhooksSection = ({ userId, hooks, setHooks, deliveries, setDeliveries }:
           <Input
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://your-domain.com/webhooks/bitbrew"
+            placeholder="https://your-domain.com/webhooks/presora"
             className={cn(
               url && !isValidUrl && 'border-red-500/60'
             )}

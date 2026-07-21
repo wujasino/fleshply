@@ -267,7 +267,7 @@ const Register = () => {
           </ol>
         </div>
 
-        <p className="text-[11px] text-muted-foreground/50">© {new Date().getFullYear()} Perceply</p>
+        <p className="text-[11px] text-muted-foreground/50">© {new Date().getFullYear()} Presora</p>
       </FloatingPathsBackground>
 
       {/* ── Right panel (form) ── */}

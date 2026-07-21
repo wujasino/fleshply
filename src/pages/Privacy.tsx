@@ -29,8 +29,8 @@ const Privacy = () => {
   </section>
 
   <h1 style="text-align:center; font-size:1.5em; margin-bottom:0.5em;">
-    Polityka prywatności Serwisu Perceply PL<br>
-    <a href="https://www.bitbrew.pl" target="_blank" rel="noopener noreferrer">www.bitbrew.pl</a><br>
+    Polityka prywatności Serwisu Presora PL<br>
+    <a href="https://www.presora.app" target="_blank" rel="noopener noreferrer">www.presora.app</a><br>
     („Serwis")
   </h1>
 
@@ -42,7 +42,7 @@ const Privacy = () => {
   <section style="margin-bottom:2em;">
     <h2 style="font-size:1.1em; margin-top:1.5em;">ADMINISTRATOR DANYCH OSOBOWYCH</h2>
     <p>Patryk Rybacki<br>działalność nierejestrowana<br>Biskupia 7/2</p>
-    <p>Jeśli chcesz skontaktować się z nami w związku z przetwarzaniem przez nas Twoich danych osobowych, napisz do nas na adres e-mail: <strong>bitbrew.poland@gmail.com</strong>.</p>
+    <p>Jeśli chcesz skontaktować się z nami w związku z przetwarzaniem przez nas Twoich danych osobowych, napisz do nas na adres e-mail: <strong>presora.poland@gmail.com</strong>.</p>
   </section>
 
   <section style="margin-bottom:2em;">
@@ -249,7 +249,7 @@ const Privacy = () => {
         <td style="color:#000;background-color:#fff;text-align:center;border:1px solid #000;padding:0.5em 1em;">utrzymanie sesji zalogowanego użytkownika (uwierzytelnienie)</td>
       </tr>
       <tr>
-        <td style="color:#000;background-color:#fff;text-align:center;border:1px solid #000;padding:0.5em 1em;">bitbrew_cookies</td>
+        <td style="color:#000;background-color:#fff;text-align:center;border:1px solid #000;padding:0.5em 1em;">presora_cookies</td>
         <td style="color:#000;background-color:#fff;text-align:center;border:1px solid #000;padding:0.5em 1em;">czas trwania sesji</td>
         <td style="color:#000;background-color:#fff;text-align:center;border:1px solid #000;padding:0.5em 1em;">śledzenie aktywności użytkownika w Serwisie</td>
       </tr>

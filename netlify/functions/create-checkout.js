@@ -50,8 +50,8 @@ export const handler = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ error: 'Invalid priceId' }) };
   }
 
-  const allowedOrigins = ['https://bitbrew.pl', 'https://www.bitbrew.pl'];
-  let origin = process.env.URL || 'https://bitbrew.pl';
+  const allowedOrigins = ['https://presora.app', 'https://www.presora.app'];
+  let origin = process.env.URL || 'https://presora.app';
   try {
     const reqOrigin = event.headers?.origin;
     if (reqOrigin && allowedOrigins.includes(reqOrigin)) {

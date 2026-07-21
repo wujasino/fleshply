@@ -66,7 +66,7 @@ const Reports = () => {
 
   const downloadReport = (r: Report) => {
     const payload = {
-      source: 'Perceply',
+      source: 'Presora',
       brand: r.brand_name,
       trustScore: r.trust_score,
       dimensions: {
@@ -83,7 +83,7 @@ const Reports = () => {
     const a = document.createElement('a');
     const slug = r.brand_name.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
     a.href = url;
-    a.download = `perceply-raport-${slug}-${new Date(r.created_at).toISOString().slice(0, 10)}.json`;
+    a.download = `presora-raport-${slug}-${new Date(r.created_at).toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };

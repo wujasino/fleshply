@@ -15,7 +15,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 );
 
-const ALLOWED_ORIGINS = new Set(['https://bitbrew.pl', 'https://www.bitbrew.pl']);
+const ALLOWED_ORIGINS = new Set(['https://presora.app', 'https://www.presora.app']);
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const MAX_REQUESTS_PER_WINDOW = 5;
@@ -37,7 +37,7 @@ const shouldRateLimit = (key) => {
 };
 
 const corsHeaders = (origin) => ({
-  'Access-Control-Allow-Origin': ALLOWED_ORIGINS.has(origin) ? origin : 'https://bitbrew.pl',
+  'Access-Control-Allow-Origin': ALLOWED_ORIGINS.has(origin) ? origin : 'https://presora.app',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Content-Type': 'application/json',

@@ -12,11 +12,11 @@ const supabase = createClient(
   { auth: { autoRefreshToken: false, persistSession: false } }
 );
 
-const ALLOWED_ORIGINS = ['https://bitbrew.pl', 'https://www.bitbrew.pl'];
+const ALLOWED_ORIGINS = ['https://presora.app', 'https://www.presora.app'];
 
 function corsHeaders(event) {
   const origin = event.headers?.origin || event.headers?.Origin || '';
-  const allow = ALLOWED_ORIGINS.includes(origin) ? origin : 'https://bitbrew.pl';
+  const allow = ALLOWED_ORIGINS.includes(origin) ? origin : 'https://presora.app';
   return {
     'Access-Control-Allow-Origin': allow,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',

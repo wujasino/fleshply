@@ -21,7 +21,7 @@ const NewsletterTerms = () => {
 <div style="font-family: sans-serif; font-size: 13pt; line-height: 1.8; color: #000; background: #fff; padding: 2em; border-radius: 12px;">
 
   <h1 style="text-align:center; font-size:1.5em; margin-bottom:0.25em;">Regulamin Newslettera</h1>
-  <p style="text-align:center; margin-top:0; margin-bottom:1.5em;">w serwisie Perceply PL</p>
+  <p style="text-align:center; margin-top:0; margin-bottom:1.5em;">w serwisie Presora PL</p>
 
   <p><b>SPIS TREŚCI</b><br>
     <b>§ 1</b> Definicje<br>
@@ -41,7 +41,7 @@ const NewsletterTerms = () => {
     <strong>Newsletter</strong> – wiadomości dotyczące Serwisu, w tym informacje o ofertach, promocjach oraz nowościach, dostarczane nieodpłatnie Usługobiorcy przez Usługodawcę w ramach Umowy, stanowiące treści cyfrowe w rozumieniu Ustawy o prawach konsumenta.<br>
     <strong>Przedsiębiorca uprzywilejowany</strong> – Usługobiorca, który jest osobą fizyczną zawierającą Umowę (lub podejmującą czynności zmierzające do jej zawarcia), bezpośrednio związaną z jej działalnością gospodarczą, ale nieposiadającą dla niej charakteru zawodowego.<br>
     <strong>Regulamin</strong> – niniejszy regulamin.<br>
-    <strong>Serwis</strong> – serwis internetowy Perceply PL prowadzony przez Usługodawcę pod adresem <a href="https://www.bitbrew.pl" target="_blank" rel="noopener noreferrer">www.bitbrew.pl</a>.<br>
+    <strong>Serwis</strong> – serwis internetowy Presora PL prowadzony przez Usługodawcę pod adresem <a href="https://www.presora.app" target="_blank" rel="noopener noreferrer">www.presora.app</a>.<br>
     <strong>Umowa</strong> – umowa o dostarczanie Newslettera.<br>
     <strong>Usługobiorca</strong> – każdy podmiot, który zawarł Umowę lub podejmuje czynności zmierzające do jej zawarcia.<br>
     <strong>Usługobiorca uprzywilejowany</strong> – Usługobiorca, który jest Konsumentem lub Przedsiębiorcą uprzywilejowanym.<br>
@@ -52,7 +52,7 @@ const NewsletterTerms = () => {
   <h2 style="font-size:1.1em; margin-top:1.8em;">§ 2 KONTAKT Z USŁUGODAWCĄ</h2>
   <ol style="margin-bottom:1em;">
     <li>Adres pocztowy: Biskupia 7/2</li>
-    <li>Adres e-mail: <strong>bitbrew.poland@gmail.com</strong></li>
+    <li>Adres e-mail: <strong>presora.poland@gmail.com</strong></li>
     <li>Telefon: 733 555 642</li>
     <li>Koszt połączenia telefonicznego lub transmisji danych wykonywanych przez Usługobiorcę wynika z podstawowej taryfy operatora telekomunikacyjnego lub dostawcy usług internetowych, z którego usług korzysta Usługobiorca.</li>
   </ol>
@@ -134,14 +134,14 @@ const NewsletterTerms = () => {
     <li>Usługobiorca uprzywilejowany ma prawo odstąpić od zawartej z Usługodawcą Umowy w terminie 14 dni bez podania jakiejkolwiek przyczyny.</li>
     <li>Termin do odstąpienia od Umowy wygasa po upływie 14 dni od dnia zawarcia tej Umowy.</li>
     <li>Aby Usługobiorca uprzywilejowany mógł skorzystać z prawa odstąpienia od Umowy, musi poinformować Usługodawcę o swojej decyzji o odstąpieniu w drodze jednoznacznego oświadczenia (na przykład pismo wysłane pocztą lub pocztą elektroniczną). W tym celu Usługobiorca uprzywilejowany może skorzystać z danych Usługodawcy podanych w § 2 Regulaminu albo użyć funkcji odstąpienia od umowy, o której mowa w ust. 4.</li>
-    <li>Usługobiorca uprzywilejowany może wykonać prawo odstąpienia od umowy zawartej przez internet za pomocą funkcji odstąpienia od umowy, dostępnej na stronie internetowej <a href="https://www.bitbrew.pl/settings" target="_blank" rel="noopener noreferrer">https://www.bitbrew.pl/settings</a> (zakładka Rozliczenia). W przypadku skorzystania z tej funkcji, Usługodawca bez zbędnej zwłoki prześle Usługobiorcy uprzywilejowanemu potwierdzenie otrzymania informacji o odstąpieniu od umowy na trwałym nośniku (pocztą elektroniczną), w tym jego treść oraz datę i godzinę złożenia.</li>
+    <li>Usługobiorca uprzywilejowany może wykonać prawo odstąpienia od umowy zawartej przez internet za pomocą funkcji odstąpienia od umowy, dostępnej na stronie internetowej <a href="https://www.presora.app/settings" target="_blank" rel="noopener noreferrer">https://www.presora.app/settings</a> (zakładka Rozliczenia). W przypadku skorzystania z tej funkcji, Usługodawca bez zbędnej zwłoki prześle Usługobiorcy uprzywilejowanemu potwierdzenie otrzymania informacji o odstąpieniu od umowy na trwałym nośniku (pocztą elektroniczną), w tym jego treść oraz datę i godzinę złożenia.</li>
     <li>Usługobiorca uprzywilejowany może skorzystać z wzoru formularza odstąpienia od Umowy umieszczonego na końcu Regulaminu, jednak nie jest to obowiązkowe.</li>
     <li>Aby zachować termin do odstąpienia od Umowy wystarczy, że Usługobiorca uprzywilejowany wyśle informację dotyczącą wykonania przysługującego mu prawa odstąpienia od Umowy przed upływem terminu do odstąpienia od Umowy.</li>
   </ol>
 
   <h2 style="font-size:1.1em; margin-top:1.8em;">§ 7 DANE OSOBOWE</h2>
   <ol style="margin-bottom:1em;">
-    <li>Administratorem danych osobowych przekazanych przez Usługobiorcę w związku z Umową jest Usługodawca. Szczegółowe informacje dotyczące przetwarzania danych osobowych – w tym o pozostałych celach oraz podstawach przetwarzania danych, a także o odbiorcach danych, znajdują się w dostępnej w Serwisie <a href="https://www.bitbrew.pl/polityka-prywatnosci" target="_blank" rel="noopener noreferrer">polityce prywatności</a>.</li>
+    <li>Administratorem danych osobowych przekazanych przez Usługobiorcę w związku z Umową jest Usługodawca. Szczegółowe informacje dotyczące przetwarzania danych osobowych – w tym o pozostałych celach oraz podstawach przetwarzania danych, a także o odbiorcach danych, znajdują się w dostępnej w Serwisie <a href="https://www.presora.app/polityka-prywatnosci" target="_blank" rel="noopener noreferrer">polityce prywatności</a>.</li>
     <li>Celem przetwarzania danych Usługobiorcy jest:
       <ul>
         <li>realizacja Umowy; podstawą przetwarzania danych osobowych w tym przypadku jest Umowa lub działania podejmowane na żądanie Usługobiorcy, zmierzające do jej zawarcia (art. 6 ust. 1 lit. b RODO);</li>
@@ -210,7 +210,7 @@ const NewsletterTerms = () => {
     <p>
       Patryk Rybacki, działalność nierejestrowana<br>
       Biskupia 7/2<br>
-      adres e-mail: bitbrew.poland@gmail.com
+      adres e-mail: presora.poland@gmail.com
     </p>
 
     <p>

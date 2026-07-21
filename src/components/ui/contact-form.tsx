@@ -50,7 +50,7 @@ export function ContactForm() {
 
         <div className="space-y-4">
           {[
-            { icon: '📧', label: 'Email', value: 'kontakt@bitbrew.pl', href: 'mailto:kontakt@bitbrew.pl' },
+            { icon: '📧', label: 'Email', value: 'kontakt@presora.app', href: 'mailto:kontakt@presora.app' },
             { icon: '⚡', label: 'Response time', value: '< 24h', href: null },
             { icon: '🌍', label: 'Languages', value: 'PL / EN', href: null },
           ].map(item => (

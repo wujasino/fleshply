@@ -4,7 +4,7 @@ import { X, Sparkles, ArrowRight } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const DISMISSED_KEY = 'bitbrew_trial_banner_dismissed';
+const DISMISSED_KEY = 'presora_trial_banner_dismissed';
 
 /* Keep in sync with PLAN_LIMITS in Profile.tsx */
 const FREE_MONTHLY_LIMIT = 10;
@@ -69,7 +69,7 @@ export const TrialBanner = () => {
       case 'guest':
         return (
           <>
-            Testujesz Perceply — masz <strong>{GUEST_FREE_ANALYSES} darmowe analizy</strong> bez rejestracji.{' '}
+            Testujesz Presora — masz <strong>{GUEST_FREE_ANALYSES} darmowe analizy</strong> bez rejestracji.{' '}
             <Link
               to="/register"
               className="inline-flex items-center gap-1 font-semibold underline underline-offset-2 hover:opacity-80 transition-opacity"

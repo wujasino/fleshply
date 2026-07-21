@@ -1,6 +1,6 @@
 import { moderate } from "./_lib/moderation.js";
 
-const ALLOWED_ORIGINS = new Set(['https://bitbrew.pl', 'https://www.bitbrew.pl']);
+const ALLOWED_ORIGINS = new Set(['https://presora.app', 'https://www.presora.app']);
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const MAX_REQUESTS_PER_WINDOW = 20;
 
@@ -26,7 +26,7 @@ const shouldRateLimit = (key) => {
 };
 
 const corsHeaders = (origin) => ({
-  'Access-Control-Allow-Origin': ALLOWED_ORIGINS.has(origin) ? origin : 'https://bitbrew.pl',
+  'Access-Control-Allow-Origin': ALLOWED_ORIGINS.has(origin) ? origin : 'https://presora.app',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Vary': 'Origin',
 });

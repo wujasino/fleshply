@@ -1,8 +1,8 @@
-# BitBrew — AI Brand Visibility Platform
+# Presora — AI Brand Visibility Platform
 
-**Live:** [bitbrew.pl](https://bitbrew.pl)
+**Live:** [presora.app](https://presora.app)
 
-BitBrew is a SaaS platform that audits how a brand appears across AI assistants and AI-powered search. It runs structured visibility audits, scores a brand's presence, and surfaces actionable insights — grounding every analysis in brand-specific context through a retrieval pipeline.
+Presora is a SaaS platform that audits how a brand appears across AI assistants and AI-powered search. It runs structured visibility audits, scores a brand's presence, and surfaces actionable insights — grounding every analysis in brand-specific context through a retrieval pipeline.
 
 Designed, built, and shipped **solo**, from idea to production.
 
@@ -34,14 +34,14 @@ Designed, built, and shipped **solo**, from idea to production.
 
 ## Screenshots
 
-<img width="1240" height="1009" alt="Opera Zrzut ekranu_2026-06-28_131506_bitbrew pl" src="https://github.com/user-attachments/assets/e45238ef-7152-431c-853a-151ef7202f15" />
-<img width="1257" height="914" alt="Opera Zrzut ekranu_2026-06-28_131713_bitbrew pl" src="https://github.com/user-attachments/assets/4cb08a9f-598a-4552-b469-a5f44e9ecc44" />
-<img width="1056" height="702" alt="Opera Zrzut ekranu_2026-06-28_131819_bitbrew pl" src="https://github.com/user-attachments/assets/c0675723-40ee-4cb7-8321-bf9020e7a10f" />
+<img width="1240" height="1009" alt="Opera Zrzut ekranu_2026-06-28_131506_presora pl" src="https://github.com/user-attachments/assets/e45238ef-7152-431c-853a-151ef7202f15" />
+<img width="1257" height="914" alt="Opera Zrzut ekranu_2026-06-28_131713_presora pl" src="https://github.com/user-attachments/assets/4cb08a9f-598a-4552-b469-a5f44e9ecc44" />
+<img width="1056" height="702" alt="Opera Zrzut ekranu_2026-06-28_131819_presora pl" src="https://github.com/user-attachments/assets/c0675723-40ee-4cb7-8321-bf9020e7a10f" />
 
 
 
 
-![BitBrew dashboard](docs/dashboard.png)
+![Presora dashboard](docs/dashboard.png)
 
 ---
 
@@ -49,5 +49,5 @@ Designed, built, and shipped **solo**, from idea to production.
 
 Built by **Patryk Rybacki** — Junior Full-Stack Developer (React · TypeScript · Node.js).
 
-- Live product: [bitbrew.pl](https://bitbrew.pl)
+- Live product: [presora.app](https://presora.app)
 - LinkedIn: [patryk-rybacki](https://linkedin.com/in/patryk-rybacki-503599355)

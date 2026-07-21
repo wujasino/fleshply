@@ -93,7 +93,7 @@ export const Sidebar = ({ collapsed = false, mobileOpen = false, onMobileClose }
               <Wordmark className="text-lg" />
             </Link>
           ) : (
-            <Link to="/dashboard" onClick={handleNavigate} aria-label="Perceply">
+            <Link to="/dashboard" onClick={handleNavigate} aria-label="Presora">
               <span className="font-display font-semibold text-lg text-foreground">P</span>
             </Link>
           )}
@@ -106,7 +106,7 @@ export const Sidebar = ({ collapsed = false, mobileOpen = false, onMobileClose }
           <div className="px-4 pt-3 pb-2">
             <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted border border-border">
               <div className="w-2 h-2 rounded-full bg-primary shrink-0" />
-              <span className="text-xs font-medium text-foreground flex-1">Perceply</span>
+              <span className="text-xs font-medium text-foreground flex-1">Presora</span>
               <span className="text-[10px] px-2 py-0.5 rounded bg-primary text-primary-foreground font-bold">{plan}</span>
             </div>
           </div>

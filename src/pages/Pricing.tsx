@@ -80,7 +80,7 @@ const Pricing = () => {
       return;
     }
     if (planId === 'enterprise') {
-      window.location.href = 'mailto:kontakt@bitbrew.pl?subject=Custom Plan';
+      window.location.href = 'mailto:kontakt@presora.app?subject=Custom Plan';
       return;
     }
 
@@ -372,7 +372,7 @@ const Pricing = () => {
           showBillingToggle={false}
         />
 
-        {/* How long this takes everyone else vs Perceply */}
+        {/* How long this takes everyone else vs Presora */}
         <motion.div
           className="mt-20"
           initial={{ opacity: 0, y: 20 }}
@@ -385,7 +385,7 @@ const Pricing = () => {
               <h2 className="text-2xl font-display text-foreground">Ile to zajmuje innym</h2>
             </div>
             <p className="text-sm text-muted-foreground max-w-xl mx-auto">
-              Sprawdzenie, jak modele AI opisują Twoją markę, po staremu zajmuje dni lub tygodnie. Perceply robi to, zanim zdążysz mrugnąć.
+              Sprawdzenie, jak modele AI opisują Twoją markę, po staremu zajmuje dni lub tygodnie. Presora robi to, zanim zdążysz mrugnąć.
             </p>
           </div>
 
@@ -401,10 +401,10 @@ const Pricing = () => {
                 <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">{item.note}</p>
               </div>
             ))}
-            {/* Perceply — the payoff */}
+            {/* Presora — the payoff */}
             <div className="rounded-2xl border border-primary/30 bg-primary/[0.06] p-5 flex flex-col">
               <p className="text-2xl font-display text-primary">~15 sekund</p>
-              <p className="text-sm font-semibold text-foreground mt-2">Perceply</p>
+              <p className="text-sm font-semibold text-foreground mt-2">Presora</p>
               <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">Wszystkie modele odpytane równolegle, ocenione i zamienione w priorytetowy plan działania — automatycznie.</p>
               <div className="mt-3 flex items-center gap-1.5 text-xs font-medium text-primary">
                 <Check className="w-3.5 h-3.5" /> Powtarzalne co miesiąc

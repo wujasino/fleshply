@@ -12,11 +12,11 @@ const supabase = createClient(
   { auth: { autoRefreshToken: false, persistSession: false } }
 );
 
-const ALLOWED_ORIGINS = ['https://bitbrew.pl', 'https://www.bitbrew.pl'];
+const ALLOWED_ORIGINS = ['https://presora.app', 'https://www.presora.app'];
 
 function corsHeaders(event) {
   const origin = event.headers?.origin || event.headers?.Origin || '';
-  const allow = ALLOWED_ORIGINS.includes(origin) ? origin : 'https://bitbrew.pl';
+  const allow = ALLOWED_ORIGINS.includes(origin) ? origin : 'https://presora.app';
   return {
     'Access-Control-Allow-Origin': allow,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -49,13 +49,13 @@ function buildEmail(otp) {
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0f0f0f;"><tr><td align="center" style="padding:48px 16px;">
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;background-color:#1a1a1a;border-radius:16px;border:1px solid #2a2a2a;overflow:hidden;">
       <tr><td style="padding:32px 40px 24px;border-bottom:1px solid #2a2a2a;text-align:center;">
-        <div style="font-size:20px;font-weight:700;color:#F7F1DD;letter-spacing:-0.3px;">Perceply</div>
+        <div style="font-size:20px;font-weight:700;color:#F7F1DD;letter-spacing:-0.3px;">Presora</div>
         <div style="font-size:11px;color:#666;margin-top:2px;text-transform:uppercase;letter-spacing:1px;">AI Brand Intelligence</div>
       </td></tr>
       <tr><td style="padding:36px 40px 28px;">
         <div style="text-align:center;margin-bottom:28px;"><div style="display:inline-block;width:56px;height:56px;border-radius:14px;background-color:#1f1a0e;border:1px solid #D4A01740;text-align:center;line-height:56px;"><span style="font-size:26px;">🔑</span></div></div>
         <h1 style="margin:0 0 10px;font-size:22px;font-weight:700;color:#F7F1DD;text-align:center;letter-spacing:-0.3px;">Twój kod resetowania hasła</h1>
-        <p style="margin:0 0 32px;font-size:14px;line-height:1.65;color:#888;text-align:center;">Wpisz poniższy kod na stronie Perceply,<br/>aby ustawić nowe hasło.</p>
+        <p style="margin:0 0 32px;font-size:14px;line-height:1.65;color:#888;text-align:center;">Wpisz poniższy kod na stronie Presora,<br/>aby ustawić nowe hasło.</p>
         <div style="text-align:center;margin-bottom:32px;"><div style="display:inline-block;background-color:#111;border:2px solid #D4A017;border-radius:14px;padding:20px 40px;">
           <div style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;">Kod jednorazowy</div>
           <div style="font-size:40px;font-weight:800;color:#D4A017;letter-spacing:10px;line-height:1;">${otp}</div>
@@ -65,7 +65,7 @@ function buildEmail(otp) {
         <div style="background-color:#1a0e0e;border:1px solid #ef444430;border-radius:10px;padding:14px 16px;"><p style="margin:0;font-size:12px;color:#888;line-height:1.6;">🔒 <strong style="color:#f87171;">Nie prosiłeś o reset hasła?</strong> Zignoruj tę wiadomość — Twoje konto jest bezpieczne.</p></div>
       </td></tr>
       <tr><td style="padding:20px 40px 28px;border-top:1px solid #2a2a2a;text-align:center;">
-        <p style="margin:0 0 10px;font-size:11px;color:#444;">Wiadomość wysłana automatycznie przez <a href="https://bitbrew.pl" style="color:#D4A017;text-decoration:none;">Perceply</a></p>
+        <p style="margin:0 0 10px;font-size:11px;color:#444;">Wiadomość wysłana automatycznie przez <a href="https://presora.app" style="color:#D4A017;text-decoration:none;">Presora</a></p>
         <div style="display:inline-flex;align-items:center;gap:6px;background-color:#141414;border:1px solid #2a2a2a;border-radius:8px;padding:6px 12px;"><span style="font-size:13px;">🔒</span><span style="font-size:11px;color:#555;">Płatności zabezpieczone przez <strong style="color:#888;">Stripe</strong> · SSL 256-bit</span></div>
       </td></tr>
     </table>
@@ -125,9 +125,9 @@ export const handler = async (event) => {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: process.env.RESEND_FROM || 'noreply@bitbrew.pl',
+      from: process.env.RESEND_FROM || 'noreply@presora.app',
       to: normalizedEmail,
-      subject: `${otp} — kod resetowania hasła Perceply`,
+      subject: `${otp} — kod resetowania hasła Presora`,
       html: buildEmail(otp),
     }),
   });
