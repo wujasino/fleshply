@@ -17,11 +17,11 @@ export const GradientMeshBg = memo(function GradientMeshBg({
         className="absolute inset-0 pointer-events-none overflow-hidden"
         aria-hidden="true"
       >
-        {/* top-left amber/gold orb */}
+        {/* top-left lavender orb */}
         <div
           className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full opacity-[0.18] dark:opacity-[0.12] blur-[120px]"
           style={{
-            background: "radial-gradient(circle, #f5a623 0%, #f5730a 60%, transparent 100%)",
+            background: "radial-gradient(circle, #D6CCFF 0%, #8B79F6 60%, transparent 100%)",
             animation: "orb1 18s ease-in-out infinite alternate",
           }}
         />

@@ -78,7 +78,7 @@ const Landing = () => {
               </span>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display text-foreground mb-6 leading-[1.1]">
                 Be the brand{' '}
-                <span className="bg-gradient-to-r from-[#b87800] via-[#f5a623] to-[#b87800] dark:from-[#f5a623] dark:via-[#ffe066] dark:to-[#f5a623] bg-[length:200%] bg-clip-text text-transparent animate-shimmer">
+                <span className="bg-gradient-to-r from-[#6C57E3] via-[#8B79F6] to-[#6C57E3] dark:from-[#8B79F6] dark:via-[#D6CCFF] dark:to-[#8B79F6] bg-[length:200%] bg-clip-text text-transparent animate-shimmer">
                   AI recommends
                 </span>
               </h1>

@@ -94,7 +94,7 @@ export const Sidebar = ({ collapsed = false, mobileOpen = false, onMobileClose }
             </Link>
           ) : (
             <Link to="/dashboard" onClick={handleNavigate} aria-label="Presora">
-              <span className="font-display font-semibold text-lg text-foreground">P</span>
+              <Wordmark iconOnly className="h-6 w-6" />
             </Link>
           )}
         </div>

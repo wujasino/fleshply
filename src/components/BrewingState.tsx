@@ -77,14 +77,14 @@ export const BrewingProgress = ({ progress, brandName }: BrewingProgressProps) =
         <svg viewBox="0 0 440 440" className="w-full h-full">
           <defs>
             <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%"   stopColor="#FFBF00" stopOpacity="0.9" />
-              <stop offset="60%"  stopColor="#FFBF00" stopOpacity="0.25" />
-              <stop offset="100%" stopColor="#FFBF00" stopOpacity="0" />
+              <stop offset="0%"   stopColor="#8B79F6" stopOpacity="0.9" />
+              <stop offset="60%"  stopColor="#8B79F6" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="#8B79F6" stopOpacity="0" />
             </radialGradient>
             <linearGradient id="connectionLive" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#FFBF00" stopOpacity="0" />
-              <stop offset="50%" stopColor="#FFBF00" stopOpacity="1" />
-              <stop offset="100%" stopColor="#FFBF00" stopOpacity="0" />
+              <stop offset="0%" stopColor="#8B79F6" stopOpacity="0" />
+              <stop offset="50%" stopColor="#8B79F6" stopOpacity="1" />
+              <stop offset="100%" stopColor="#8B79F6" stopOpacity="0" />
             </linearGradient>
             <filter id="modelGlow" x="-50%" y="-50%" width="200%" height="200%">
               <feGaussianBlur stdDeviation="3" result="blur" />
@@ -120,7 +120,7 @@ export const BrewingProgress = ({ progress, brandName }: BrewingProgressProps) =
               cy={center}
               r={30}
               fill="none"
-              stroke="#FFBF00"
+              stroke="#8B79F6"
               strokeWidth={1}
               initial={{ scale: 1, opacity: 0.6 }}
               animate={{ scale: 6, opacity: 0 }}
@@ -151,7 +151,7 @@ export const BrewingProgress = ({ progress, brandName }: BrewingProgressProps) =
                 {isActive && (
                   <motion.circle
                     r={3}
-                    fill="#FFBF00"
+                    fill="#8B79F6"
                     filter="url(#modelGlow)"
                     initial={{ cx: center, cy: center, opacity: 0 }}
                     animate={{
@@ -177,7 +177,7 @@ export const BrewingProgress = ({ progress, brandName }: BrewingProgressProps) =
             cx={center} cy={center}
             r={32}
             fill="hsl(240, 4%, 10%)"
-            stroke="#FFBF00"
+            stroke="#8B79F6"
             strokeWidth={1.5}
             animate={{
               strokeOpacity: [0.5, 1, 0.5],

@@ -80,10 +80,10 @@ export const AvatarUpload = ({ userId, currentUrl, onUpload }: AvatarUploadProps
           <img
             src={preview}
             alt="Avatar"
-            className="w-full h-full rounded-full object-cover border-2 border-[#f5a623]"
+            className="w-full h-full rounded-full object-cover border-2 border-[#8B79F6]"
           />
         ) : (
-          <div className="w-full h-full rounded-full bg-[rgba(245,166,35,0.15)] border-2 border-[#f5a623] flex items-center justify-center text-[#f5a623] font-bold text-xl">
+          <div className="w-full h-full rounded-full bg-[rgba(139,121,246,0.15)] border-2 border-[#8B79F6] flex items-center justify-center text-[#8B79F6] font-bold text-xl">
             {initials}
           </div>
         )}

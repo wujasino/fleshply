@@ -61,7 +61,7 @@ export const ScanResultPreview = () => {
         <div className="lg:col-span-4 flex flex-col items-center lg:items-start justify-center">
           <div className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-2">AI Trust Score</div>
           <div className="flex items-baseline gap-1 font-display">
-            <span className="text-6xl sm:text-7xl font-light text-primary tabular-nums drop-shadow-[0_0_30px_rgba(255,191,0,0.3)]">{SAMPLE.score}</span>
+            <span className="text-6xl sm:text-7xl font-light text-primary tabular-nums drop-shadow-[0_0_30px_rgba(139,121,246,0.3)]">{SAMPLE.score}</span>
             <span className="text-2xl text-primary/60">%</span>
           </div>
           <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] uppercase tracking-wider font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">

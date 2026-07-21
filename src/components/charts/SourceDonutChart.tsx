@@ -37,7 +37,7 @@ export const SourceDonutChart = memo(function SourceDonutChart({ data }: SourceD
             <Tooltip
               contentStyle={{
                 backgroundColor: 'hsl(240, 4%, 14%)',
-                border: '1px solid rgba(255,191,0,0.2)',
+                border: '1px solid rgba(139,121,246,0.2)',
                 borderRadius: '8px',
                 color: 'hsl(240, 5%, 96%)',
               }}

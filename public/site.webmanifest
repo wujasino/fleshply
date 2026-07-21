@@ -4,8 +4,8 @@
   "description": "Skaner widoczności marki w AI",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#111111",
-  "theme_color": "#111111",
+  "background_color": "#0F0F23",
+  "theme_color": "#0F0F23",
   "icons": [
     {
       "src": "/android-chrome-192.png",

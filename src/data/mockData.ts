@@ -32,7 +32,7 @@ export const mockTeslaAnalysis: AnalysisResult = {
     { date: 'Oct', score: 84 },
   ],
   sourceBreakdown: [
-    { name: 'GPT-4o', value: 35, color: '#FFBF00' },
+    { name: 'GPT-4o', value: 35, color: '#8B79F6' },
     { name: 'Claude', value: 28, color: '#D97706' },
     { name: 'Gemini', value: 20, color: '#92400E' },
     { name: 'Llama', value: 10, color: '#78716C' },
@@ -71,7 +71,7 @@ export const mockAppleAnalysis: AnalysisResult = {
     { date: 'Oct', score: 91 },
   ],
   sourceBreakdown: [
-    { name: 'GPT-4o', value: 40, color: '#FFBF00' },
+    { name: 'GPT-4o', value: 40, color: '#8B79F6' },
     { name: 'Claude', value: 30, color: '#D97706' },
     { name: 'Gemini', value: 30, color: '#92400E' },
   ],

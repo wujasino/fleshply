@@ -22,7 +22,7 @@ const buildViewFromStored = (
     score: Math.max(0, Math.min(100, Math.round(dims.sentiment + Math.round(Math.sin(i + dims.authority) * 6)))),
   }));
   const sourceBreakdown = [
-    { name: 'News', value: Math.max(20, Math.min(70, Math.round((dims.authority + dims.accuracy) / 2))), color: '#FFBF00' },
+    { name: 'News', value: Math.max(20, Math.min(70, Math.round((dims.authority + dims.accuracy) / 2))), color: '#8B79F6' },
     { name: 'Social', value: Math.max(10, Math.min(60, Math.round((dims.mentions + dims.sentiment) / 2))), color: '#60A5FA' },
     { name: 'Blogs', value: Math.max(5, Math.min(40, Math.round(dims.recency / 2))), color: '#34D399' },
   ];
@@ -135,7 +135,7 @@ export function useBrewing() {
       const sourceBreakdownData = (data.sourceBreakdown && Array.isArray(data.sourceBreakdown) && data.sourceBreakdown.length > 0)
         ? data.sourceBreakdown
         : [
-          { name: 'News', value: 55, color: '#FFBF00' },
+          { name: 'News', value: 55, color: '#8B79F6' },
           { name: 'Social', value: 30, color: '#60A5FA' },
           { name: 'Blogs', value: 15, color: '#34D399' }
         ];
@@ -317,7 +317,7 @@ export function useBrewing() {
         }));
 
         const sourceBreakdown = [
-          { name: 'News', value: Math.max(20, Math.min(70, Math.round((authority + accuracy) / 2))), color: '#FFBF00' },
+          { name: 'News', value: Math.max(20, Math.min(70, Math.round((authority + accuracy) / 2))), color: '#8B79F6' },
           { name: 'Social', value: Math.max(10, Math.min(60, Math.round((mentions + sentiment) / 2))), color: '#60A5FA' },
           { name: 'Blogs', value: Math.max(5, Math.min(40, Math.round((recency) / 2))), color: '#34D399' }
         ];

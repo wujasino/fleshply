@@ -36,8 +36,8 @@ export const ScoreTrendChart = memo(function ScoreTrendChart({ data }: ScoreTren
           <AreaChart data={data}>
             <defs>
               <linearGradient id="profileTrendGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#FFBF00" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="#FFBF00" stopOpacity={0} />
+                <stop offset="0%" stopColor="#8B79F6" stopOpacity={0.3} />
+                <stop offset="100%" stopColor="#8B79F6" stopOpacity={0} />
               </linearGradient>
             </defs>
             <XAxis
@@ -55,7 +55,7 @@ export const ScoreTrendChart = memo(function ScoreTrendChart({ data }: ScoreTren
             <Tooltip
               contentStyle={{
                 backgroundColor: 'hsl(240, 4%, 14%)',
-                border: '1px solid rgba(255,191,0,0.2)',
+                border: '1px solid rgba(139,121,246,0.2)',
                 borderRadius: '8px',
                 color: 'hsl(240, 5%, 96%)',
               }}
@@ -63,7 +63,7 @@ export const ScoreTrendChart = memo(function ScoreTrendChart({ data }: ScoreTren
             <Area
               type="monotone"
               dataKey="score"
-              stroke="#FFBF00"
+              stroke="#8B79F6"
               strokeWidth={2}
               fill="url(#profileTrendGradient)"
             />

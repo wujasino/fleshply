@@ -103,7 +103,7 @@ export const RadarChartCard = memo(function RadarChartCard({
         {hasCompetitor ? (
           <div className="flex items-center gap-4 text-xs">
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#FFBF00' }} />
+              <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#8B79F6' }} />
               <span className="text-foreground font-medium">{brandName || t('radar_you')}</span>
             </span>
             <span className="flex items-center gap-1.5">
@@ -137,13 +137,13 @@ export const RadarChartCard = memo(function RadarChartCard({
             <Radar
               name={brandName || 'Score'}
               dataKey="value"
-              stroke="#FFBF00"
-              fill="#FFBF00"
+              stroke="#8B79F6"
+              fill="#8B79F6"
               fillOpacity={hasCompetitor ? 0.28 : 0.34}
               strokeWidth={3}
               strokeOpacity={1}
-              dot={{ r: 4, fill: '#FFBF00' }}
-              style={{ filter: 'drop-shadow(0 8px 20px rgba(255,191,0,0.18))' }}
+              dot={{ r: 4, fill: '#8B79F6' }}
+              style={{ filter: 'drop-shadow(0 8px 20px rgba(139,121,246,0.18))' }}
             />
             {hasCompetitor && (
               <Radar

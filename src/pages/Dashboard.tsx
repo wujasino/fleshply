@@ -168,7 +168,7 @@ const ScoreHero = ({ result, t }: { result: AnalysisResult; t: (k: string) => st
               {t('dashboard_overall_score')}
             </div>
             <div className="relative flex items-baseline gap-1 font-display">
-              <span className="text-7xl sm:text-8xl font-light text-primary tabular-nums drop-shadow-[0_0_30px_rgba(255,191,0,0.35)]">
+              <span className="text-7xl sm:text-8xl font-light text-primary tabular-nums drop-shadow-[0_0_30px_rgba(139,121,246,0.35)]">
                 {animScore}
               </span>
               <span className="text-3xl text-primary/60">%</span>

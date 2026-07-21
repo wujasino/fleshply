@@ -46,7 +46,7 @@ const escapeXml = (s) =>
 
 function scoreColor(score) {
   if (score >= 75) return '#34D399';
-  if (score >= 50) return '#FFBF00';
+  if (score >= 50) return '#8B79F6';
   return '#F87171';
 }
 
@@ -71,8 +71,8 @@ export const handler = async (event) => {
   <rect rx="6" x="${labelW}" width="${scoreW}" height="36" fill="${color}"/>
   <rect x="${labelW}" width="8" height="36" fill="${color}"/>
   <g font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="11">
-    <circle cx="16" cy="18" r="6" fill="none" stroke="#FFBF00" stroke-width="2"/>
-    <text x="30" y="15" fill="#FFBF00" font-weight="700" font-size="10">PRESORA</text>
+    <circle cx="16" cy="18" r="6" fill="none" stroke="#8B79F6" stroke-width="2"/>
+    <text x="30" y="15" fill="#8B79F6" font-weight="700" font-size="10">PRESORA</text>
     <text x="30" y="27" fill="#9b9ba1" font-size="9">AI Visibility · ${brand}</text>
     <text x="${labelW + scoreW / 2}" y="23" fill="#0b0b0c" font-weight="800" font-size="14" text-anchor="middle">${score}</text>
   </g>
