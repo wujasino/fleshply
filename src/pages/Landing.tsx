@@ -1,7 +1,7 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Zap, Eye, BarChart3, Shield, ChevronDown, HelpCircle, Mail, TrendingUp, ArrowRight, Globe, Star, Quote, ShieldCheck, Clock, Search, PenLine, Sparkles, MessageSquare } from 'lucide-react';
+import { Zap, Eye, BarChart3, Shield, ChevronDown, HelpCircle, Mail, TrendingUp, ArrowRight, Globe, Star, Quote, ShieldCheck, Clock, Search, PenLine, Sparkles, MessageSquare, Megaphone, Building2, Rocket, ShoppingBag, Target } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -112,45 +112,45 @@ const Landing = () => {
               Free analysis. No credit card required.
             </motion.p>
 
-            {/* ── Social proof bar ────────────────────────────────── */}
+            {/* ── Trust bar: real product facts, not vanity metrics ── */}
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.55 }}
               className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-x-8 gap-y-4"
             >
-              {/* Avatar stack */}
+              {/* Models checked */}
               <div className="flex items-center gap-3">
                 <div className="flex -space-x-2.5">
-                  {['#f5a623', '#7c3aed', '#059669', '#0ea5e9', '#e11d48'].map((c, i) => (
+                  {['#8B79F6', '#6C57E3', '#0ea5e9', '#059669', '#e11d48'].map((c, i) => (
                     <div
                       key={i}
-                      className="w-8 h-8 rounded-full border-2 border-background flex items-center justify-center text-[10px] font-semibold text-white shadow-sm"
+                      className="w-8 h-8 rounded-full border-2 border-background flex items-center justify-center text-[9px] font-semibold text-white shadow-sm"
                       style={{ backgroundColor: c }}
                     >
-                      {['NW', 'VC', 'HD', 'AX', 'Qb'][i]}
+                      {['GPT', 'CLD', 'GEM', 'PPX', 'MIS'][i]}
                     </div>
                   ))}
                 </div>
                 <div className="text-left">
-                  <div className="text-sm font-semibold text-foreground leading-tight">2,400+ brands</div>
-                  <div className="text-[11px] text-muted-foreground leading-tight">analyzed this month</div>
+                  <div className="text-sm font-semibold text-foreground leading-tight">6 AI models</div>
+                  <div className="text-[11px] text-muted-foreground leading-tight">checked per scan</div>
                 </div>
               </div>
 
               {/* Divider */}
               <div className="hidden sm:block w-px h-9 bg-[hsl(var(--glass-border))]" />
 
-              {/* Rating */}
+              {/* Scoring methodology */}
               <div className="flex items-center gap-2.5">
                 <div className="flex gap-0.5">
                   {[0, 1, 2, 3, 4].map((i) => (
-                    <Star key={i} className="w-4 h-4 fill-primary text-primary" />
+                    <Target key={i} className="w-4 h-4 fill-primary/20 text-primary" />
                   ))}
                 </div>
                 <div className="text-left">
-                  <div className="text-sm font-semibold text-foreground leading-tight">4.9 / 5 rating</div>
-                  <div className="text-[11px] text-muted-foreground leading-tight">from 180+ marketing teams</div>
+                  <div className="text-sm font-semibold text-foreground leading-tight">5 signals scored</div>
+                  <div className="text-[11px] text-muted-foreground leading-tight">results in ~15 seconds</div>
                 </div>
               </div>
             </motion.div>
@@ -211,6 +211,69 @@ const Landing = () => {
                 <ChevronDown className="w-4 h-4" />
               </motion.div>
             </motion.button>
+          </div>
+        </section>
+
+        {/* ── Who it's for ─────────────────────────────────────────── */}
+        <section className="py-16 px-4 border-t border-[hsl(var(--glass-border))]">
+          <div className="max-w-5xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-10"
+            >
+              <span className="inline-block px-3 py-1 text-xs badge rounded-lg mb-4 font-data uppercase tracking-wider">
+                Who it's for
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-display text-foreground mb-3">
+                Built for whoever owns the brand's reputation
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                If AI answers shape how customers find and judge your brand, this is for you.
+              </p>
+            </motion.div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                {
+                  icon: Megaphone,
+                  title: 'Marketing teams',
+                  desc: 'Track how ChatGPT and Gemini describe your brand, and prove the impact of content work.',
+                },
+                {
+                  icon: Building2,
+                  title: 'Agencies',
+                  desc: 'Monitor AI visibility for every client from one dashboard instead of manually prompting models.',
+                },
+                {
+                  icon: Rocket,
+                  title: 'Founders & solo marketers',
+                  desc: 'No team, no time to guess — get a plain-English read on where you stand and what to fix first.',
+                },
+                {
+                  icon: ShoppingBag,
+                  title: 'E-commerce & DTC brands',
+                  desc: 'See whether AI recommends you or a competitor when someone asks for a product like yours.',
+                },
+              ].map((persona) => (
+                <motion.div
+                  key={persona.title}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="glass-card-hover p-5 flex flex-col gap-3"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                    <persona.icon className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground mb-1">{persona.title}</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{persona.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </section>
 
