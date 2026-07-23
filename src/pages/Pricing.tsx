@@ -15,17 +15,17 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 
-/* Ceny w PLN — rynek lokalny */
-const PLN = {
-  starter_monthly: '49 zł',
-  starter_yearly: '470 zł',
-  solo_monthly: '99 zł',
-  solo_yearly: '950 zł',
-  growth_monthly: '249 zł',
-  growth_yearly: '2 350 zł',
-  credits_20: '39 zł',
-  credits_50: '79 zł',
-  credits_120: '169 zł',
+/* Ceny w USD */
+const USD = {
+  starter_monthly: '$39',
+  starter_yearly: '$374',
+  solo_monthly: '$59',
+  solo_yearly: '$566',
+  growth_monthly: '$89.99',
+  growth_yearly: '$863.99',
+  credits_20: '$29',
+  credits_50: '$55',
+  credits_120: '$99',
 };
 
 const Pricing = () => {
@@ -37,7 +37,7 @@ const Pricing = () => {
   const [downgrading, setDowngrading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
-  const prices = PLN;
+  const prices = USD;
   const period_month = '/mies.';
   const period_year  = '/rok';
 
@@ -250,12 +250,12 @@ const Pricing = () => {
     },
     {
       id: 'enterprise',
-      name: 'Custom',
+      name: 'Agency',
       description: 'Plan skrojony dla zespołów potrzebujących pełnej kontroli widoczności w AI.',
-      priceMonthly: 'Wycena',
-      priceYearly: 'Wycena',
-      periodMonthly: '',
-      periodYearly: '',
+      priceMonthly: 'od $220',
+      priceYearly: 'od $220',
+      periodMonthly: '/mies.',
+      periodYearly: '/mies.',
       isPopular: false,
       buttonLabel: 'Skontaktuj się',
       features: [
