@@ -68,7 +68,7 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('node_modules/@supabase')) return 'vendor-supabase';
           if (id.includes('node_modules/@radix-ui')) return 'vendor-radix';
           if (id.includes('node_modules/react-dom') || id.includes('node_modules/react-router-dom')) return 'vendor-react';
-          if (id.includes('node_modules/react')) return 'vendor-react';
+          if (/node_modules\/react\//.test(id)) return 'vendor-react';
           if (id.includes('node_modules/lucide-react')) return 'vendor-icons';
         },
       },

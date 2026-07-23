@@ -1,4 +1,4 @@
-import { AnalysisResult, PricingTier } from '@/types/analysis';
+import { AnalysisResult } from '@/types/analysis';
 
 export const mockTeslaAnalysis: AnalysisResult = {
   id: 'analysis-001',
@@ -94,65 +94,5 @@ export const pastBrews = [
     timestamp: '2024-10-18T11:20:00Z',
     trustScore: 88,
     status: 'completed' as const,
-  },
-];
-
-export const pricingTiers: PricingTier[] = [
-  {
-    name: 'Free',
-    price: 'Free',
-    periodKey: 'tier_period_empty',
-    descriptionKey: 'tier_free_desc',
-    featureKeys: [
-      'tier_free_feat_1',
-      'tier_free_feat_2',
-      'tier_free_feat_3',
-    ],
-  },
-  {
-    name: 'Solo Brew',
-    price: '99 zł',
-    monthlyPrice: '99 zł',
-    yearlyPrice: '950 zł',
-    periodKey: 'tier_period_month',
-    descriptionKey: 'tier_solo_desc',
-    featureKeys: [
-      'tier_solo_feat_1',
-      'tier_solo_feat_2',
-      'tier_solo_feat_3',
-      'tier_solo_feat_4',
-      'tier_solo_feat_5',
-    ],
-  },
-  {
-    name: 'Growth',
-    price: '249 zł',
-    monthlyPrice: '249 zł',
-    yearlyPrice: '2 350 zł',
-    periodKey: 'tier_period_month',
-    descriptionKey: 'tier_growth_desc',
-    featureKeys: [
-      'tier_growth_feat_1',
-      'tier_growth_feat_2',
-      'tier_growth_feat_3',
-      'tier_growth_feat_4',
-      'tier_growth_feat_5',
-    ],
-    highlighted: true,
-  },
-  {
-    name: 'Enterprise Suite',
-    price: 'Indywidualna wycena',
-    monthlyPrice: 'Indywidualna wycena',
-    yearlyPrice: 'Indywidualna wycena',
-    periodKey: 'tier_period_empty',
-    descriptionKey: 'tier_ent_desc',
-    featureKeys: [
-      'tier_ent_feat_1',
-      'tier_ent_feat_2',
-      'tier_ent_feat_3',
-      'tier_ent_feat_4',
-      'tier_ent_feat_5',
-    ],
   },
 ];

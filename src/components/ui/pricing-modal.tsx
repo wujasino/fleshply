@@ -8,9 +8,9 @@ import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 
 const PRICES = {
-  solo_monthly: '99 zł',  solo_yearly: '950 zł',
-  growth_monthly: '249 zł', growth_yearly: '2 350 zł',
-  credits_20: '39 zł', credits_50: '79 zł', credits_120: '169 zł',
+  solo_monthly: '$59',  solo_yearly: '$566',
+  growth_monthly: '$89.99', growth_yearly: '$863.99',
+  credits_20: '$29', credits_50: '$55', credits_120: '$99',
 };
 
 interface Props {
@@ -171,9 +171,9 @@ export function PricingModal({ open, onClose, currentPlan = 'free' }: Props) {
       ],
     },
     {
-      id: 'enterprise', name: 'Custom', description: 'A tailored plan for teams that need full AI visibility control.',
-      priceMonthly: "Let's talk", priceYearly: "Let's talk",
-      periodMonthly: '', periodYearly: '',
+      id: 'enterprise', name: 'Agency', description: 'A tailored plan for teams that need full AI visibility control.',
+      priceMonthly: 'From $220', priceYearly: 'From $220',
+      periodMonthly: '/mo', periodYearly: '/mo',
       isPopular: false, buttonLabel: 'Contact Sales',
       features: [
         { name: 'Unlimited analyses', isIncluded: true },
