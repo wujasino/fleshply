@@ -1,9 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import {
-  Bot, Send, Loader2, Target, Users, CalendarClock, Bell, Sparkles, Check, ArrowRight, Radar,
+  Bot, Send, Loader2, Target, Users, CalendarClock, Bell, Sparkles, Check, ArrowRight,
+  MessageSquare, Box,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
+
+// Pulls in three.js — only fetched once the user actually opens Preview, not on every Automations visit.
+const AutomationGraph3D = lazy(() =>
+  import('@/components/automations/AutomationGraph3D').then(m => ({ default: m.AutomationGraph3D }))
+);
 
 interface Message {
   role: 'user' | 'assistant';
@@ -114,61 +120,8 @@ const ProposalCard = ({
   </div>
 );
 
-/* "How this works" flow — shows the pipeline steps, filled in with the saved config once one exists. */
-const AutomationFlow = ({ config }: { config: MonitorConfig | null }) => {
-  const steps = [
-    {
-      icon: Target,
-      title: 'Define',
-      desc: config?.brand
-        ? `${config.brand}${config.competitors.length ? ` vs ${config.competitors.slice(0, 2).join(', ')}` : ''}`
-        : 'Brand + competitors',
-    },
-    {
-      icon: CalendarClock,
-      title: 'Schedule',
-      desc: config ? `${config.frequency} scan` : 'Daily, weekly or monthly',
-    },
-    {
-      icon: Radar,
-      title: 'Scan',
-      desc: config?.models?.length ? config.models.join(', ') : 'GPT-4o, Claude, Gemini…',
-    },
-    {
-      icon: Bell,
-      title: 'Alert',
-      desc: config?.alert_metric ? `${config.alert_metric} < ${config.alert_threshold}` : 'Only when it matters',
-    },
-  ];
-
-  return (
-    <div className="mb-6 rounded-xl border border-border bg-card/30 p-4">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-        How this automation works
-      </p>
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-        {steps.map((step, i) => (
-          <div key={step.title} className="flex items-center gap-2 flex-1 min-w-0">
-            <div className="flex-1 min-w-0 rounded-lg border border-border bg-background/60 px-3 py-2.5 flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <step.icon className="w-4 h-4 text-primary" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs font-semibold text-foreground">{step.title}</p>
-                <p className="text-[11px] text-muted-foreground truncate">{step.desc}</p>
-              </div>
-            </div>
-            {i < steps.length - 1 && (
-              <ArrowRight className="w-4 h-4 text-muted-foreground/50 shrink-0 hidden sm:block" />
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
 const Automations = () => {
+  const [view, setView] = useState<'chat' | 'preview'>('chat');
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [config, setConfig] = useState<MonitorConfig | null>(null);
@@ -274,85 +227,110 @@ const Automations = () => {
         </div>
       </div>
 
-      <AutomationFlow config={config} />
-
-      {config && <div className="mb-4"><ConfigCard config={config} /></div>}
-
-      {/* Conversation */}
-      <div className="flex-1 space-y-3">
-        {messages.length === 0 && (
-          <div className="rounded-xl border border-border bg-card/40 p-5 space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Tell me what to monitor and I'll set it up — you review and confirm before anything saves. Try:
-            </p>
-            <div className="space-y-2">
-              {SUGGESTIONS.map(s => (
-                <button
-                  key={s}
-                  onClick={() => send(s)}
-                  className="w-full text-left text-sm rounded-lg border border-border bg-background px-3 py-2.5 text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
-                >
-                  “{s}”
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {messages.map((m, i) => (
-          <div key={i} className={cn('flex', m.role === 'user' ? 'justify-end' : 'justify-start')}>
-            <div
-              className={cn(
-                'max-w-[85%] rounded-xl px-3.5 py-2.5 text-sm whitespace-pre-wrap',
-                m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'
-              )}
-            >
-              {m.text}
-            </div>
-          </div>
-        ))}
-
-        {pending.length > 0 && !loading && (
-          <ProposalCard pending={pending} onApply={applyPending} onDiscard={discardPending} applying={applying} />
-        )}
-
-        {loading && (
-          <div className="flex justify-start">
-            <div className="flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-sm bg-muted text-muted-foreground">
-              <Loader2 className="w-4 h-4 animate-spin" /> Thinking…
-            </div>
-          </div>
-        )}
-
-        {error && (
-          <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3.5 py-2.5">
-            {error}
-          </p>
-        )}
-        <div ref={bottomRef} />
-      </div>
-
-      {/* Input */}
-      <div className="sticky bottom-0 pt-4 bg-gradient-to-t from-background via-background to-transparent">
-        <div className="flex items-center gap-2 rounded-xl border border-border bg-background p-1.5 shadow-sm">
-          <input
-            className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground px-3 py-2 focus:outline-none disabled:opacity-50"
-            placeholder="e.g. track Tesla and Rivian daily"
-            value={input}
-            disabled={loading}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send(input)}
-          />
+      {/* Chat / Preview toggle */}
+      <div className="flex items-center gap-1 p-1 rounded-lg border border-border bg-muted/40 w-fit mb-6">
+        {(['chat', 'preview'] as const).map(v => (
           <button
-            onClick={() => send(input)}
-            disabled={!input.trim() || loading}
-            className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-40"
-            aria-label="Send"
+            key={v}
+            onClick={() => setView(v)}
+            className={cn(
+              'relative flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-medium transition-colors',
+              view === v
+                ? 'bg-background text-foreground shadow-sm border border-input'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
           >
-            <Send className="w-4 h-4" />
+            {v === 'chat' ? <MessageSquare className="w-3.5 h-3.5" /> : <Box className="w-3.5 h-3.5" />}
+            {v === 'chat' ? 'Chat' : 'Preview'}
           </button>
-        </div>
+        ))}
       </div>
+
+      {view === 'preview' ? (
+        <Suspense fallback={<div className="h-[420px] rounded-xl border border-border bg-card/30 animate-pulse" />}>
+          <AutomationGraph3D config={config} />
+        </Suspense>
+      ) : (
+        <>
+          {config && <div className="mb-4"><ConfigCard config={config} /></div>}
+
+          {/* Conversation */}
+          <div className="flex-1 space-y-3">
+            {messages.length === 0 && (
+              <div className="rounded-xl border border-border bg-card/40 p-5 space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Tell me what to monitor and I'll set it up — you review and confirm before anything saves. Try:
+                </p>
+                <div className="space-y-2">
+                  {SUGGESTIONS.map(s => (
+                    <button
+                      key={s}
+                      onClick={() => send(s)}
+                      className="w-full text-left text-sm rounded-lg border border-border bg-background px-3 py-2.5 text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+                    >
+                      “{s}”
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {messages.map((m, i) => (
+              <div key={i} className={cn('flex', m.role === 'user' ? 'justify-end' : 'justify-start')}>
+                <div
+                  className={cn(
+                    'max-w-[85%] rounded-xl px-3.5 py-2.5 text-sm whitespace-pre-wrap',
+                    m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'
+                  )}
+                >
+                  {m.text}
+                </div>
+              </div>
+            ))}
+
+            {pending.length > 0 && !loading && (
+              <ProposalCard pending={pending} onApply={applyPending} onDiscard={discardPending} applying={applying} />
+            )}
+
+            {loading && (
+              <div className="flex justify-start">
+                <div className="flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-sm bg-muted text-muted-foreground">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Thinking…
+                </div>
+              </div>
+            )}
+
+            {error && (
+              <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3.5 py-2.5">
+                {error}
+              </p>
+            )}
+            <div ref={bottomRef} />
+          </div>
+
+          {/* Input */}
+          <div className="sticky bottom-0 pt-4 bg-gradient-to-t from-background via-background to-transparent">
+            <div className="flex items-center gap-2 rounded-xl border border-border bg-background p-1.5 shadow-sm">
+              <input
+                className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground px-3 py-2 focus:outline-none disabled:opacity-50"
+                placeholder="e.g. track Tesla and Rivian daily"
+                value={input}
+                disabled={loading}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send(input)}
+              />
+              <button
+                onClick={() => send(input)}
+                disabled={!input.trim() || loading}
+                className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-40"
+                aria-label="Send"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
