@@ -6,6 +6,8 @@
 -- returns success and removes the row from local state, while the row
 -- stays in the database forever. Add the missing policy.
 
+DROP POLICY IF EXISTS "Users can delete own analyses" ON public.analyses;
+
 CREATE POLICY "Users can delete own analyses"
   ON public.analyses FOR DELETE TO authenticated
   USING (auth.uid() = user_id);
