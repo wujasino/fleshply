@@ -1,7 +1,7 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Zap, Eye, BarChart3, Shield, ChevronDown, HelpCircle, Mail, TrendingUp, ArrowRight, Globe, Star, Quote, ShieldCheck, Clock, Search, PenLine, Sparkles, MessageSquare } from 'lucide-react';
+import { Zap, Eye, BarChart3, Shield, ChevronDown, HelpCircle, Mail, TrendingUp, ArrowRight, Globe, Star, Quote, ShieldCheck, Clock, Search, PenLine, Sparkles, MessageSquare, Layers, Gift } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -48,6 +48,16 @@ const TESTIMONIALS = [
     role: 'Founder, Halo Digital Agency',
     initials: 'PN',
   },
+];
+
+/* ── Reasons to choose Presora ────────────────────────────────────── */
+const REASONS = [
+  { icon: Eye, title: 'Real model answers, not synthetic scores', desc: 'Every metric traces back to an actual GPT-4o, Claude or Gemini response you can read yourself — no black-box averaging.' },
+  { icon: Layers, title: 'Multi-model coverage', desc: 'ChatGPT, Claude, Gemini and more, queried in parallel — not just one model\'s opinion of your brand.' },
+  { icon: PenLine, title: 'An action plan, not just a report', desc: 'Every scan ends with prioritized, plain-English fixes: exactly what to publish to get recommended.' },
+  { icon: Zap, title: 'Live in under 15 seconds', desc: 'No onboarding calls, no waiting days for a report. Enter a brand, get your score.' },
+  { icon: Gift, title: 'Free plan with real usage', desc: 'Start monitoring your AI visibility today — no credit card required to see real results.' },
+  { icon: ShieldCheck, title: '14-day money-back guarantee', desc: 'Cancel anytime with one click. No retention maze, no hidden terms.' },
 ];
 
 const Landing = () => {
@@ -788,6 +798,47 @@ const Landing = () => {
                     <p className="text-xs text-muted-foreground leading-tight">{t.role}</p>
                   </div>
                 </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Why choose Presora ───────────────────────────────────── */}
+      <section className="py-24 px-4 border-t border-[hsl(var(--glass-border))]">
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-14"
+          >
+            <span className="inline-block px-3 py-1 text-xs badge rounded-lg mb-4 font-data uppercase tracking-wider">
+              Why buy
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-display text-foreground mb-3">
+              Why teams choose Presora
+            </h2>
+            <p className="text-sm text-muted-foreground max-w-lg mx-auto">
+              Not just another score generator — here's what you actually get for your money.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {REASONS.map((r, i) => (
+              <motion.div
+                key={r.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+                className="glass-card p-6 flex flex-col gap-3"
+              >
+                <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
+                  <r.icon className="w-5 h-5 text-primary" />
+                </div>
+                <h3 className="text-base font-semibold text-foreground">{r.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{r.desc}</p>
               </motion.div>
             ))}
           </div>
